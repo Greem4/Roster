@@ -39,9 +39,10 @@ curl http://127.0.0.1:8000/health
 Фронт и Caddy (с Mac):
 
 ```bash
-chmod +x scripts/deploy-caddy.sh scripts/deploy-frontend.sh
+chmod +x scripts/deploy-all.sh scripts/deploy-caddy.sh scripts/deploy-frontend.sh
+./scripts/deploy-all.sh        # push + API на B3 + фронт (типовой цикл после коммита)
 ./scripts/deploy-caddy.sh      # proxy /api/ → контейнер api (один раз или после смены Caddyfile)
-./scripts/deploy-frontend.sh   # сборка → ~/server/www на B3
+./scripts/deploy-frontend.sh   # только сборка → ~/server/www на B3
 ```
 
 Проверка: `curl -s https://medicine.greemlab.ru/api/health` → JSON `{"status":"ok"}`.
@@ -60,43 +61,70 @@ docker compose exec db pg_dump -U roster roster > backup.sql
 
 ---
 
-## Mac: посмотреть React локально (БД и API на B3)
+## Mac: SSH без пароля (один раз)
 
-На Mac **не нужен** локальный Python/Docker для API — всё крутится на B3, с Mac только туннель и Vite.
-
-**На B3** (один раз или после обновлений):
+Скрипты ходят на Pi по SSH (туннель к БД/API). Чтобы не вводить пароль каждый раз:
 
 ```bash
-ssh greem4@192.168.31.96
-cd ~/RosterRx && docker compose up -d
+chmod +x scripts/setup-ssh-key.sh
+./scripts/setup-ssh-key.sh
+# в .env: PI_SSH=roster-b3
 ```
 
-**На Mac — два терминала:**
+---
 
-Терминал 1 — туннель к API:
+## Mac: быстро открыть localhost с логикой как на проде
+
+API уже на B3 (после деплоя). Два терминала, **без** `.env` и без локального Python:
 
 ```bash
-./scripts/api-tunnel.sh
+./scripts/api-tunnel.sh      # терминал 1 — пароль SSH только если ключ ещё не настроен
+./scripts/dev-frontend.sh    # терминал 2
 ```
 
-Терминал 2 — React:
+http://localhost:5173 — обычный пользователь видит лекарства; правки — только у админа (`users:manage` или `admin`).
+
+---
+
+## Mac: локальная разработка backend
+
+**Один терминал** — свой API на Mac (hot-reload), БД та же на B3:
 
 ```bash
-./scripts/dev-frontend.sh
-# или: cd frontend && npm run dev
+cp .env.example .env
+# В .env раскомментируйте DATABASE_URL (пароль postgres с B3, не SSH)
+
+chmod +x scripts/dev-local.sh
+./scripts/dev-local.sh
 ```
 
-Откройте **http://localhost:5173** — логин `admin` / `admin`.  
-Данные в PostgreSQL на B3 (та же БД, что и в проде).
+Откройте **http://localhost:5173** — правки в `backend/` и `frontend/` видны сразу, без деплоя.
 
-Проверка API с Mac: `curl http://127.0.0.1:8000/health`
-
-### Опционально: туннель только к PostgreSQL
-
-Если нужен `psql` или миграции с Mac (нужен Python 3.12; на 3.14 venv не собирается):
+Быстрая проверка перед выкладкой:
 
 ```bash
-./scripts/db-tunnel.sh
+./scripts/dev-local.sh --check
+```
+
+Нужен **Python 3.12** (`brew install python@3.12`, в скрипте `PYTHON=python3.12`). На 3.14 venv может не собраться.
+
+### Только UI, API как на проде (backend не тестируется)
+
+Два терминала — туннель к API на B3, затем Vite:
+
+```bash
+./scripts/api-tunnel.sh      # терминал 1
+./scripts/dev-frontend.sh    # терминал 2
+```
+
+На B3: `docker compose up -d` в `~/RosterRx`.
+
+### Вручную: туннель к БД + API отдельно
+
+```bash
+./scripts/db-tunnel.sh       # терминал 1
+./scripts/dev-api.sh         # терминал 2 (нужен .env с DATABASE_URL)
+./scripts/dev-frontend.sh    # терминал 3
 ```
 
 ---
@@ -106,11 +134,32 @@ cd ~/RosterRx && docker compose up -d
 | Где | PostgreSQL | API |
 |-----|------------|-----|
 | B3 | `docker compose up` (сервис `db`) | `docker compose up` (сервис `api`) |
-| Mac | **не запускать** | туннель + `dev-api.sh` или `docker-compose.local.yml` |
+| Mac | туннель `:5432` | **`dev-local.sh`** (свой API) или `dev-api.sh` |
 
 Миграции на B3 — при старте контейнера `api`. С Mac — `./scripts/dev-api.sh` (alembic перед uvicorn) против **той же** БД через туннель.
 
 Данные, созданные локально, сразу видны на проде и наоборот.
+
+### Деплой backend на B3 (без git)
+
+После правок API с Mac — сразу на Pi (rsync + пересборка):
+
+```bash
+./scripts/deploy-backend.sh
+```
+
+Использует Cursor-агент по правилу `.cursor/rules/api-auto-deploy-b3.mdc`.
+
+### Деплой «всё сразу» после коммита
+
+```bash
+git add -A && git commit -m "…"
+./scripts/deploy-all.sh
+```
+
+Скрипт: `git push` → на Pi `git pull` и `docker compose up -d --build` → `deploy-frontend.sh`.
+
+Опции: `--no-push`, `--no-backend`, `--no-frontend`.
 
 ---
 
@@ -118,9 +167,10 @@ cd ~/RosterRx && docker compose up -d
 
 | Код | Назначение |
 |-----|------------|
-| `medicines:view` | Просмотр |
-| `medicines:edit` | Редактирование |
-| `users:manage` | Пользователи |
+| — | Список лекарств на сайте — **без входа** (публично) |
+| активный пользователь | Личный кабинет, алерты (после входа и активации) |
+| `users:manage` | Админ: пользователи, добавление/изменение/удаление лекарств |
+| супер-админ (`admin`) | Всё, включая правки лекарств |
 
 API: `/auth/*`, `/medicines`, `/alerts/expiring`, `/users` — снаружи префикс `/api` (nginx).
 

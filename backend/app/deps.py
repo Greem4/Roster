@@ -39,3 +39,12 @@ def require_permission(code: str):
         return user
 
     return checker
+
+
+PERM_ADMIN = "users:manage"
+
+
+def require_admin(user: Annotated[User, Depends(require_active_user)]) -> User:
+    if user.is_superadmin or user.has_permission(PERM_ADMIN):
+        return user
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")

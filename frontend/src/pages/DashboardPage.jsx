@@ -11,25 +11,23 @@ function urgencyClass(days) {
 }
 
 export default function DashboardPage() {
-  const { hasPermission, user } = useAuth()
+  const { isAdmin, hasPermission, user } = useAuth()
   const [alerts, setAlerts] = useState(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!hasPermission('medicines:view')) return
     api.alerts
       .expiring()
       .then(setAlerts)
       .catch((e) => setError(e.message))
-  }, [hasPermission])
+  }, [])
 
   return (
     <div>
       <h1>Личный кабинет</h1>
       <p className="muted">Добро пожаловать, {user?.username}</p>
 
-      {hasPermission('medicines:view') && (
-        <section className="card section">
+      <section className="card section">
           <div className="section-header">
             <h2>Скоро истекает срок годности</h2>
             {alerts && (
@@ -60,11 +58,10 @@ export default function DashboardPage() {
           <Link to="/medicines" className="btn-secondary link-btn">
             Все лекарства
           </Link>
-        </section>
-      )}
+      </section>
 
       <section className="card section quick-links">
-        {hasPermission('medicines:edit') && (
+        {isAdmin && (
           <Link to="/medicines/new" className="btn-primary link-btn">
             Добавить лекарство
           </Link>

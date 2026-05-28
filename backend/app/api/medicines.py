@@ -5,15 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import require_permission
+from app.deps import require_admin
 from app.models import Medicine, User
 from app.schemas.medicine import MedicineCreate, MedicineResponse, MedicineUpdate
 
 router = APIRouter(prefix="/medicines", tags=["medicines"])
-
-PERM_VIEW = "medicines:view"
-PERM_EDIT = "medicines:edit"
-
 
 def _days_until(expiry: date) -> int:
     return (expiry - date.today()).days
@@ -34,7 +30,6 @@ def _to_response(m: Medicine) -> MedicineResponse:
 @router.get("", response_model=list[MedicineResponse])
 def list_medicines(
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[User, Depends(require_permission(PERM_VIEW))],
     sort: str = Query(default="expiry_date"),
     expiring_within: int | None = None,
 ):
@@ -55,7 +50,7 @@ def list_medicines(
 def create_medicine(
     body: MedicineCreate,
     db: Annotated[Session, Depends(get_db)],
-    user: Annotated[User, Depends(require_permission(PERM_EDIT))],
+    user: Annotated[User, Depends(require_admin)],
 ):
     medicine = Medicine(
         name=body.name,
@@ -73,7 +68,6 @@ def create_medicine(
 def get_medicine(
     medicine_id: int,
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[User, Depends(require_permission(PERM_VIEW))],
 ):
     medicine = db.get(Medicine, medicine_id)
     if not medicine:
@@ -86,7 +80,7 @@ def update_medicine(
     medicine_id: int,
     body: MedicineUpdate,
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[User, Depends(require_permission(PERM_EDIT))],
+    _: Annotated[User, Depends(require_admin)],
 ):
     medicine = db.get(Medicine, medicine_id)
     if not medicine:
@@ -106,7 +100,7 @@ def update_medicine(
 def delete_medicine(
     medicine_id: int,
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[User, Depends(require_permission(PERM_EDIT))],
+    _: Annotated[User, Depends(require_admin)],
 ):
     medicine = db.get(Medicine, medicine_id)
     if not medicine:

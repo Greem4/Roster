@@ -1,14 +1,16 @@
 #!/usr/sh
-# Локальный React; API на B3 — сначала в другом терминале: ./scripts/api-tunnel.sh
+# Только React. API на :8000 должен быть уже запущен.
+# Разработка backend: ./scripts/dev-local.sh  (свой API на Mac)
+# Только UI против прода: api-tunnel.sh + этот скрипт (правки Python не проверяются)
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/frontend"
 if ! curl -sf http://127.0.0.1:8000/health >/dev/null 2>&1; then
   echo "Ошибка: API недоступен на http://127.0.0.1:8000"
-  echo "Запустите в другом терминале: ./scripts/api-tunnel.sh"
-  echo "(на B3 должен работать: docker compose up -d api)"
+  echo "Для разработки с backend:  ./scripts/dev-local.sh"
+  echo "Только UI + API на B3:      ./scripts/api-tunnel.sh  (в другом терминале), затем снова этот скрипт"
   exit 1
 fi
 echo "Откройте http://localhost:5173"
-echo "Логин: admin / admin"
+echo "Вход: учётная запись с правами админа — правки лекарств; обычная — только просмотр"
 exec npm run dev

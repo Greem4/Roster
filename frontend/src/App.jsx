@@ -1,6 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ActiveUserRoute, PermissionRoute, ProtectedRoute } from './components/ProtectedRoute'
-import Layout from './components/Layout'
+import AppShell from './components/AppShell'
 import { AuthProvider } from './context/AuthContext'
 import AdminUsersPage from './pages/AdminUsersPage'
 import DashboardPage from './pages/DashboardPage'
@@ -16,24 +16,21 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route element={<Layout />}>
-              <Route path="/" element={<DashboardPage />} />
+          <Route element={<AppShell />}>
+            <Route path="/medicines" element={<MedicinesPage />} />
+            <Route path="/" element={<Navigate to="/medicines" replace />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/cabinet" element={<DashboardPage />} />
               <Route element={<ActiveUserRoute />}>
-                <Route element={<PermissionRoute permission="medicines:view" />}>
-                  <Route path="/medicines" element={<MedicinesPage />} />
-                </Route>
-                <Route element={<PermissionRoute permission="medicines:edit" />}>
+                <Route element={<PermissionRoute permission="users:manage" />}>
                   <Route path="/medicines/new" element={<MedicineFormPage />} />
                   <Route path="/medicines/:id/edit" element={<MedicineFormPage />} />
-                </Route>
-                <Route element={<PermissionRoute permission="users:manage" />}>
                   <Route path="/admin/users" element={<AdminUsersPage />} />
                 </Route>
               </Route>
             </Route>
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/medicines" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

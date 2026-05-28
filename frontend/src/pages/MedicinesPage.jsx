@@ -11,7 +11,7 @@ function urgencyClass(days) {
 }
 
 export default function MedicinesPage() {
-  const { hasPermission } = useAuth()
+  const { isAdmin } = useAuth()
   const [items, setItems] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -43,7 +43,7 @@ export default function MedicinesPage() {
     <div>
       <div className="page-header">
         <h1>Лекарства</h1>
-        {hasPermission('medicines:edit') && (
+        {isAdmin && (
           <Link to="/medicines/new" className="btn-primary link-btn">
             Добавить
           </Link>
@@ -60,7 +60,7 @@ export default function MedicinesPage() {
                 <th>Серия</th>
                 <th>Срок годности</th>
                 <th>Осталось</th>
-                {hasPermission('medicines:edit') && <th />}
+                {isAdmin && <th />}
               </tr>
             </thead>
             <tbody>
@@ -70,7 +70,7 @@ export default function MedicinesPage() {
                   <td>{m.series}</td>
                   <td>{m.expiry_date}</td>
                   <td>{m.days_until_expiry} дн.</td>
-                  {hasPermission('medicines:edit') && (
+                  {isAdmin && (
                     <td className="actions">
                       <Link to={`/medicines/${m.id}/edit`}>Изменить</Link>
                       <button type="button" className="link-danger" onClick={() => handleDelete(m.id)}>

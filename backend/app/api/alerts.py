@@ -6,19 +6,16 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
-from app.deps import require_permission
+from app.deps import require_active_user
 from app.models import Medicine, User
 from app.schemas.alert import ExpiringAlertsResponse, ExpiringMedicineAlert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
-PERM_VIEW = "medicines:view"
-
-
 @router.get("/expiring", response_model=ExpiringAlertsResponse)
 def expiring_alerts(
     db: Annotated[Session, Depends(get_db)],
-    _: Annotated[User, Depends(require_permission(PERM_VIEW))],
+    _: Annotated[User, Depends(require_active_user)],
     days: int | None = Query(default=None, description="Max days until expiry; default = max warn threshold"),
 ):
     settings = get_settings()

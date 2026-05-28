@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  if (isAuthenticated) return <Navigate to="/" replace />
+  if (isAuthenticated) return <Navigate to="/cabinet" replace />
 
   const handleSubmit = async (e) => {
     e.preventDefault()

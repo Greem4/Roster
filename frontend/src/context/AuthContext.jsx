@@ -46,6 +46,8 @@ export function AuthProvider({ children }) {
     return user.permissions.includes(code)
   }
 
+  const isAdmin = !!user && (user.is_superadmin || user.permissions.includes('users:manage'))
+
   const value = useMemo(
     () => ({
       user,
@@ -54,10 +56,11 @@ export function AuthProvider({ children }) {
       logout,
       refresh,
       hasPermission,
+      isAdmin,
       isAuthenticated: !!user,
       isActive: user?.is_active || user?.is_superadmin,
     }),
-    [user, loading, refresh],
+    [user, loading, refresh, isAdmin],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

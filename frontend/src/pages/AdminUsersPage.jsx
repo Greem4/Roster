@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 
 const ALL_PERMISSIONS = [
-  { code: 'medicines:view', label: 'Просмотр лекарств' },
-  { code: 'medicines:edit', label: 'Редактирование лекарств' },
-  { code: 'users:manage', label: 'Управление пользователями' },
+  { code: 'users:manage', label: 'Администратор (пользователи и лекарства)' },
 ]
 
 export default function AdminUsersPage() {
