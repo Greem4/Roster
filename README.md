@@ -36,13 +36,17 @@ curl http://127.0.0.1:8000/health
 
 `DATABASE_URL` для контейнера `api` подставляет [docker-compose.yml](docker-compose.yml) (`@db:5432`).
 
-Фронт и nginx — как раньше:
+Фронт и Caddy (с Mac):
 
 ```bash
-cd frontend && npm ci && npm run build
-sudo rsync -a dist/ /var/www/roster/
-# nginx: location /api/ → 127.0.0.1:8000 (см. nginx/nginx.conf)
+chmod +x scripts/deploy-caddy.sh scripts/deploy-frontend.sh
+./scripts/deploy-caddy.sh      # proxy /api/ → контейнер api (один раз или после смены Caddyfile)
+./scripts/deploy-frontend.sh   # сборка → ~/server/www на B3
 ```
+
+Проверка: `curl -s https://medicine.greemlab.ru/api/health` → JSON `{"status":"ok"}`.
+
+На B3 вручную: статика в `~/server/www`, Caddy — `~/server` (`server/caddy/Caddyfile` в репозитории).
 
 Вход: `admin` / `admin` — затем сменить пароль.
 

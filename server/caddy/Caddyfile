@@ -1,0 +1,36 @@
+# Caddy на B3 (~/server). Статика: /srv/www ← ./www
+# API RosterRx: контейнер api в сети rosterrx_default
+
+{
+	admin off
+}
+
+:80 {
+	handle /health {
+		respond "ok" 200
+	}
+
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:8000
+	}
+
+	handle {
+		root * /srv/www
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# HTTPS + medicine.greemlab.ru — когда DNS/порты готовы:
+# medicine.greemlab.ru {
+# 	handle /api/* {
+# 		uri strip_prefix /api
+# 		reverse_proxy api:8000
+# 	}
+# 	handle {
+# 		root * /srv/www
+# 		try_files {path} /index.html
+# 		file_server
+# 	}
+# }

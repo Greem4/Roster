@@ -1,0 +1,27 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./www:/srv/www:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+      - rosterrx
+
+networks:
+  web:
+    name: server_web
+  rosterrx:
+    external: true
+    name: rosterrx_default
+
+volumes:
+  caddy_data:
+  caddy_config:
