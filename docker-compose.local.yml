@@ -1,0 +1,12 @@
+# Локально на Mac: только API, БД — на B3 через SSH-туннель (127.0.0.1:5432).
+# В .env: DATABASE_URL=postgresql://roster:PASSWORD@host.docker.internal:5432/roster
+
+services:
+  api:
+    build: ./backend
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8000:8000"
