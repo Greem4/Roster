@@ -1,7 +1,5 @@
 #!/usr/sh
-# Только React. API на :8000 должен быть уже запущен.
-# Разработка backend: ./scripts/dev-local.sh  (свой API на Mac)
-# Только UI против прода: api-tunnel.sh + этот скрипт (правки Python не проверяются)
+# Только Vite (API на :8000 уже должен быть). Удобнее: ./scripts/dev-ui.sh
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/frontend"

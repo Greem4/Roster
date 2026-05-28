@@ -1,7 +1,6 @@
 #!/bin/sh
-# Полный деплой на B3: git push → pull на Pi → пересборка API (миграции) → фронт.
-# Сначала проверьте локально: ./scripts/dev-local.sh  (или ./scripts/dev-local.sh --check)
-# Запускать после коммита: ./scripts/deploy-all.sh
+# Полный деплой: git push → API на Pi → фронт на сайт.
+# Обычно: API — deploy-backend.sh; UI смотрите dev-ui.sh, фронт — deploy-frontend.sh.
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PI_SSH="${PI_SSH:-greem4@192.168.31.96}"
