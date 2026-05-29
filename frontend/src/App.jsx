@@ -5,20 +5,20 @@ import MedicineEditRedirect from './components/MedicineEditRedirect'
 import MedicinesLayout from './components/MedicinesLayout'
 import AdminUsersOverlay from './components/overlays/AdminUsersOverlay'
 import CabinetOverlay from './components/overlays/CabinetOverlay'
+import LoginOverlay from './components/overlays/LoginOverlay'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
 import { AuthProvider } from './context/AuthContext'
-import LoginPage from './pages/LoginPage'
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
           <Route element={<AppShell />}>
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />
               <Route path="/" element={<Navigate to="/medicines" replace />} />
+              <Route path="/login" element={<LoginOverlay />} />
               <Route path="/register" element={<RegisterOverlay />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/cabinet" element={<CabinetOverlay />} />

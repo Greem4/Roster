@@ -1,13 +1,12 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import RouteModal from './RouteModal'
 import { useAuth } from '../context/AuthContext'
 
 export function ProtectedRoute() {
   const { isAuthenticated, loading } = useAuth()
-  const location = useLocation()
   if (loading) return null
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />
+    return <Navigate to="/login" replace />
   }
   return <Outlet />
 }

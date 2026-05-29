@@ -11,7 +11,7 @@ export default function RegisterOverlay() {
       <RouteModal title="Заявка отправлена">
         <p>Дождитесь одобрения администратора, затем войдите в систему.</p>
         <Link to="/login" className="btn-primary link-btn">
-          На страницу входа
+          Войти
         </Link>
       </RouteModal>
     )
