@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
       <section className="card section quick-links">
         {isAdmin && (
-          <Link to="/medicines/new" className="btn-primary link-btn">
+          <Link to="/medicines?add=1" className="btn-primary link-btn">
             Добавить лекарство
           </Link>
         )}
