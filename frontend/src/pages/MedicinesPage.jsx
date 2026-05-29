@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import MedicineForm from '../components/MedicineForm'
@@ -53,9 +53,78 @@ function compareItems(a, b, key, dir) {
   return 0
 }
 
+/**
+ * Действия строки: при удалении кнопки подтверждения появляются на месте иконок.
+ */
 function MedicineActions({ id, onEdit, onDelete }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const wrapRef = useRef(null)
+
+  useEffect(() => {
+    if (!confirming || deleting) return
+    const onOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setConfirming(false)
+      }
+    }
+    document.addEventListener('pointerdown', onOutside, true)
+    return () => document.removeEventListener('pointerdown', onOutside, true)
+  }, [confirming, deleting])
+
+  const startDelete = (e) => {
+    e.stopPropagation()
+    setConfirming(true)
+  }
+
+  const cancelDelete = (e) => {
+    e.stopPropagation()
+    if (!deleting) setConfirming(false)
+  }
+
+  const confirmDelete = async (e) => {
+    e.stopPropagation()
+    setDeleting(true)
+    try {
+      await onDelete(id)
+      setConfirming(false)
+    } catch {
+      /* ошибка показывается на странице */
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  if (confirming) {
+    return (
+      <div
+        ref={wrapRef}
+        className="medicine-actions medicine-actions--confirm"
+        role="group"
+        aria-label="Подтвердите удаление"
+      >
+        <button
+          type="button"
+          className="btn-inline btn-inline-cancel"
+          onClick={cancelDelete}
+          disabled={deleting}
+        >
+          Отмена
+        </button>
+        <button
+          type="button"
+          className="btn-inline btn-inline-delete"
+          onClick={confirmDelete}
+          disabled={deleting}
+        >
+          {deleting ? 'Удаление…' : 'Удалить'}
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="medicine-actions">
+    <div ref={wrapRef} className="medicine-actions">
       <button
         type="button"
         className="btn-icon"
@@ -67,7 +136,7 @@ function MedicineActions({ id, onEdit, onDelete }) {
       <button
         type="button"
         className="btn-icon btn-icon--danger"
-        onClick={() => onDelete(id)}
+        onClick={startDelete}
         aria-label="Удалить"
       >
         <IconTrash />
@@ -148,12 +217,12 @@ export default function MedicinesPage() {
   )
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Удалить запись?')) return
     try {
       await api.medicines.delete(id)
-      load()
+      load(false)
     } catch (e) {
       setError(e.message)
+      throw e
     }
   }
 
@@ -233,6 +302,7 @@ export default function MedicinesPage() {
           />
         </Modal>
       )}
+
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-export default function Modal({ title, onClose, children }) {
+export default function Modal({ title, onClose, children, size }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose()
@@ -17,7 +17,7 @@ export default function Modal({ title, onClose, children }) {
   return (
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div
-        className="modal-panel"
+        className={`modal-panel${size === 'wide' ? ' modal-panel--wide' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

@@ -2,12 +2,12 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ActiveUserRoute, PermissionRoute, ProtectedRoute } from './components/ProtectedRoute'
 import AppShell from './components/AppShell'
 import MedicineEditRedirect from './components/MedicineEditRedirect'
+import MedicinesLayout from './components/MedicinesLayout'
+import AdminUsersOverlay from './components/overlays/AdminUsersOverlay'
+import CabinetOverlay from './components/overlays/CabinetOverlay'
+import RegisterOverlay from './components/overlays/RegisterOverlay'
 import { AuthProvider } from './context/AuthContext'
-import AdminUsersPage from './pages/AdminUsersPage'
-import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
-import MedicinesPage from './pages/MedicinesPage'
-import RegisterPage from './pages/RegisterPage'
 
 export default function App() {
   return (
@@ -15,18 +15,23 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route element={<AppShell />}>
-            <Route path="/medicines" element={<MedicinesPage />} />
-            <Route path="/" element={<Navigate to="/medicines" replace />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="/cabinet" element={<DashboardPage />} />
-              <Route element={<ActiveUserRoute />}>
-                <Route element={<PermissionRoute permission="users:manage" />}>
-                  <Route path="/medicines/new" element={<Navigate to="/medicines?add=1" replace />} />
-                  <Route path="/medicines/:id/edit" element={<MedicineEditRedirect />} />
+            <Route element={<MedicinesLayout />}>
+              <Route path="/medicines" />
+              <Route path="/" element={<Navigate to="/medicines" replace />} />
+              <Route path="/register" element={<RegisterOverlay />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/cabinet" element={<CabinetOverlay />} />
+                <Route element={<ActiveUserRoute />}>
+                  <Route element={<PermissionRoute permission="users:manage" />}>
+                    <Route
+                      path="/medicines/new"
+                      element={<Navigate to="/medicines?add=1" replace />}
+                    />
+                    <Route path="/medicines/:id/edit" element={<MedicineEditRedirect />} />
+                    <Route path="/admin/users" element={<AdminUsersOverlay />} />
+                  </Route>
                 </Route>
-                <Route path="/admin/users" element={<AdminUsersPage />} />
               </Route>
             </Route>
           </Route>

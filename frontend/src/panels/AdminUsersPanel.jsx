@@ -5,7 +5,8 @@ const ALL_PERMISSIONS = [
   { code: 'users:manage', label: 'Администратор (пользователи и лекарства)' },
 ]
 
-export default function AdminUsersPage() {
+/** Управление пользователями внутри модального окна. */
+export default function AdminUsersPanel() {
   const [users, setUsers] = useState([])
   const [error, setError] = useState('')
   const [savingId, setSavingId] = useState(null)
@@ -56,8 +57,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div>
-      <h1>Пользователи</h1>
+    <div className="admin-users-panel">
       {error && <p className="error">{error}</p>}
       <div className="users-grid">
         {users.map((u) => (
