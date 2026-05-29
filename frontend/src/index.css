@@ -521,3 +521,206 @@ input[type='date'] {
   border-top: 1px solid #eee;
   padding-top: 0.5rem;
 }
+
+/* ——— Лекарства: компактный список на телефоне ——— */
+
+.medicine-meta-mobile,
+.medicine-days-mobile,
+.medicine-actions-mobile,
+.medicines-sort-mobile {
+  display: none;
+}
+
+.medicines-sort-mobile {
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e8ecf0;
+  background: #fff;
+}
+
+.sort-chip {
+  border: 1px solid #cfd8dc;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  background: #fff;
+  color: #455a64;
+  cursor: pointer;
+}
+
+.sort-chip-active {
+  border-color: #1565c0;
+  background: #e3f2fd;
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+.sort-chip-dir {
+  font-size: 0.7rem;
+}
+
+.medicine-name-row {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .app-main:has(.medicines-page) {
+    padding: 0.5rem 0;
+    max-width: none;
+  }
+
+  .app-header {
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .brand {
+    font-size: 1.1rem;
+  }
+
+  .nav {
+    order: 3;
+    flex: 1 1 100%;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .user-bar {
+    margin-left: auto;
+    font-size: 0.85rem;
+  }
+
+  .user-bar .btn-secondary {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .medicines-page-header {
+    padding: 0 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .medicines-page-header h1 {
+    font-size: 1.25rem;
+    margin: 0;
+  }
+
+  .medicines-page-header .btn-primary {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .medicines-card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .medicines-card .expiry-legend {
+    justify-content: space-between;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .legend-item {
+    font-size: 0.72rem;
+    gap: 0.3rem;
+  }
+
+  .legend-swatch {
+    width: 0.75rem;
+    height: 0.75rem;
+  }
+
+  .medicines-sort-mobile {
+    display: flex;
+  }
+
+  .medicines-table-wrap {
+    overflow-x: visible;
+  }
+
+  .medicines-table thead {
+    display: none;
+  }
+
+  .medicines-table .cell-series,
+  .medicines-table .cell-date,
+  .medicines-table .cell-days,
+  .medicines-table .cell-actions-desktop {
+    display: none;
+  }
+
+  .medicines-table tbody tr {
+    display: block;
+    border-bottom: 1px solid #e0e4ea;
+  }
+
+  .medicines-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .medicines-table .cell-name {
+    display: block;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .medicine-name-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .medicine-name-short {
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .medicine-days-mobile {
+    display: inline-block;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    padding: 0.12rem 0.4rem;
+  }
+
+  .medicine-meta-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.65rem;
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: #546e7a;
+  }
+
+  .medicine-series-mobile {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .medicine-expiry-mobile {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .medicine-expiry-mobile::before {
+    content: '·';
+    margin: 0 0.4rem;
+    color: #b0bec5;
+  }
+
+  .medicine-actions-mobile {
+    display: flex;
+    gap: 0.85rem;
+    margin-top: 0.45rem;
+    font-size: 0.85rem;
+  }
+
+  .medicines-table td {
+    border-bottom: none;
+  }
+}

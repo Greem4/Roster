@@ -27,7 +27,14 @@ if ! curl -sf http://127.0.0.1:8000/health >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "http://localhost:5173 — правки React сразу; на сайт: ./scripts/deploy-frontend.sh"
+. "$ROOT/scripts/_lan-ip.sh"
+echo "Mac:    http://localhost:5173"
+if lan=$(roster_lan_ip); then
+  echo "Телефон (та же Wi‑Fi): http://${lan}:5173"
+else
+  echo "Телефон: подключите Mac к Wi‑Fi — покажем http://<IP>:5173 после перезапуска"
+fi
+echo "На сайт: ./scripts/deploy-frontend.sh"
 cd "$ROOT/frontend"
 [ -d node_modules ] || npm ci
 exec npm run dev

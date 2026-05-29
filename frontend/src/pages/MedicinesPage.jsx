@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import MedicineForm from '../components/MedicineForm'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
+import { shortMedicineName } from '../utils/medicineName'
 
 const MONTH_DAYS = 30
 const TWO_MONTHS_DAYS = 60
@@ -28,6 +29,19 @@ function formatDate(iso) {
   const d = new Date(iso + 'T12:00:00')
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })
 }
+
+/** Компактная дата для узкого экрана. */
+function formatDateShort(iso) {
+  const d = new Date(iso + 'T12:00:00')
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })
+}
+
+const SORT_OPTIONS = [
+  { key: 'name', label: 'Название' },
+  { key: 'series', label: 'Серия' },
+  { key: 'expiry_date', label: 'Срок' },
+  { key: 'days_until_expiry', label: 'Осталось' },
+]
 
 function compareItems(a, b, key, dir) {
   const mul = dir === 'asc' ? 1 : -1
@@ -150,8 +164,8 @@ export default function MedicinesPage() {
   }
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="medicines-page">
+      <div className="page-header medicines-page-header">
         <h1>Лекарства</h1>
         {isAdmin && (
           <button type="button" className="btn-primary" onClick={openCreate}>
@@ -166,18 +180,38 @@ export default function MedicinesPage() {
           <div className="expiry-legend" aria-label="Подсветка по сроку годности">
             <span className="legend-item">
               <span className="legend-swatch legend-swatch-danger" />
-              менее 1 месяца
+              <span className="legend-text">&lt; 1 мес</span>
             </span>
             <span className="legend-item">
               <span className="legend-swatch legend-swatch-warn" />
-              1–2 месяца
+              <span className="legend-text">1–2 мес</span>
             </span>
             <span className="legend-item">
               <span className="legend-swatch legend-swatch-ok" />
-              более 2 месяцев
+              <span className="legend-text">&gt; 2 мес</span>
             </span>
           </div>
-          <div className="table-wrap">
+          <div className="medicines-sort-mobile" role="toolbar" aria-label="Сортировка">
+            {SORT_OPTIONS.map(({ key, label }) => {
+              const active = sortKey === key
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  className={`sort-chip${active ? ' sort-chip-active' : ''}`}
+                  onClick={() => handleSort(key)}
+                >
+                  {label}
+                  {active && (
+                    <span className="sort-chip-dir" aria-hidden>
+                      {sortDir === 'asc' ? ' ↑' : ' ↓'}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+          <div className="table-wrap medicines-table-wrap">
             <table className="data-table medicines-table">
               <thead>
                 <tr>
@@ -215,16 +249,46 @@ export default function MedicinesPage() {
               <tbody>
                 {sortedItems.map((m) => {
                   const status = expiryStatus(m.days_until_expiry)
+                  const displayName = shortMedicineName(m.name)
                   return (
                     <tr key={m.id} className={expiryRowClass(m.days_until_expiry)}>
-                      <td className="cell-name">{m.name}</td>
-                      <td>{m.series}</td>
+                      <td className="cell-name">
+                        <div className="medicine-name-row">
+                          <span className="medicine-name-short" title={m.name}>
+                            {displayName}
+                          </span>
+                          <span className={`badge medicine-days-mobile ${status.badge}`}>
+                            {status.text}
+                          </span>
+                        </div>
+                        <div className="medicine-meta-mobile">
+                          <span className="medicine-series-mobile">сер. {m.series}</span>
+                          <span className="medicine-expiry-mobile">
+                            до {formatDateShort(m.expiry_date)}
+                          </span>
+                        </div>
+                        {isAdmin && (
+                          <div className="medicine-actions-mobile">
+                            <button type="button" className="link-btn-plain" onClick={() => openEdit(m.id)}>
+                              Изменить
+                            </button>
+                            <button
+                              type="button"
+                              className="link-danger"
+                              onClick={() => handleDelete(m.id)}
+                            >
+                              Удалить
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                      <td className="cell-series">{m.series}</td>
                       <td className="cell-date">{formatDate(m.expiry_date)}</td>
-                      <td>
+                      <td className="cell-days">
                         <span className={`badge ${status.badge}`}>{status.text}</span>
                       </td>
                       {isAdmin && (
-                        <td className="actions">
+                        <td className="actions cell-actions-desktop">
                           <button type="button" className="link-btn-plain" onClick={() => openEdit(m.id)}>
                             Изменить
                           </button>
