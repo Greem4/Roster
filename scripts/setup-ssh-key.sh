@@ -1,5 +1,6 @@
 #!/bin/sh
 # Один раз: ключ SSH → B3, дальше dev-local и deploy без пароля.
+# SSH-ключ не даёт sudo без пароля на Pi — это отдельная настройка (см. README, «B3: SSH и sudo»).
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/scripts/_ssh-b3.sh"

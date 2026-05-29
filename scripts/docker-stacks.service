@@ -1,0 +1,16 @@
+[Unit]
+Description=Поднять Docker Compose-стеки (RosterRx, Caddy, sing-box)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=greem4
+Group=docker
+ExecStart=/home/greem4/bin/docker-stacks-up.sh
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

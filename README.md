@@ -12,7 +12,7 @@
 **Один терминал для UI** (API с Pi по туннелю, React с hot-reload):
 
 ```bash
-chmod +x scripts/dev-ui.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh
+chmod +x scripts/dev-ui.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/setup-docker-autostart.sh
 ./scripts/dev-ui.sh
 ```
 
@@ -24,7 +24,8 @@ chmod +x scripts/dev-ui.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh
 
 Cursor-агент после правок **API** сам запускает `deploy-backend.sh`; **фронт на сайт** — только если вы попросите.
 
-SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.env` можно `PI_SSH=roster-b3`.
+SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.env` можно `PI_SSH=roster-b3`.  
+Автозапуск Docker на Pi после перезагрузки: `./scripts/setup-docker-autostart.sh` (один раз).
 
 ---
 
@@ -67,12 +68,13 @@ SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.en
 | **B3 (Pi)** | дома | PostgreSQL, API, Caddy, статика — **все данные** |
 | **Mac** | dev | Туннель к API/БД на Pi; на прод не участвует |
 
-На Pi **два Docker Compose**:
+На Pi **три Docker Compose** (все с `restart: unless-stopped`):
 
 | Каталог | Сервисы |
 |---------|---------|
 | `~/RosterRx` | `db`, `api` |
 | `~/server` | `caddy` (:80 — то, что видит туннель) |
+| `~/singbox` | `sing-box` (VPN, `network_mode: host`) |
 
 **Важно:**
 
@@ -105,7 +107,20 @@ SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.en
 | env | `/home/greem4/.config/vps-tunnel/env` |
 | Скрипт | `/home/greem4/.local/bin/start-vps-tunnel.sh` |
 | Лог | `/home/greem4/.config/vps-tunnel/tunnel.log` |
-| Автозапуск | `crontab` пользователя `greem4` |
+| Автозапуск | `crontab` пользователя `greem4` (`@reboot` → `start-vps-tunnel.sh`) |
+
+**Pi — автозапуск Docker после перезагрузки / отключения питания:**
+
+| Что | Путь / команда |
+|-----|----------------|
+| `docker.service` | `systemctl enable docker` — уже в автозагрузке |
+| Скрипт стеков | `/home/greem4/bin/docker-stacks-up.sh` (из репозитория: `scripts/docker-stacks-up.sh`) |
+| Лог | `/home/greem4/docker-stacks.log` |
+| Автозапуск | `crontab`: `@reboot sleep 45 && /home/greem4/bin/docker-stacks-up.sh` |
+| Установка с Mac | `./scripts/setup-docker-autostart.sh` |
+| Опционально systemd | `scripts/docker-stacks.service` → `/etc/systemd/system/` (нужен `sudo` на Pi) |
+
+После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/RosterRx`, `~/server`, `~/singbox`.
 
 Конфиги туннеля и nginx на VPS **вне этого git-репозитория** — на машинах; здесь только приложение RosterRx.
 
@@ -125,6 +140,10 @@ ssh root@176.12.65.86 "curl -I http://127.0.0.1:18080"
 
 # Процесс на Pi
 ssh greem4@192.168.31.96 "pgrep -af start-vps-tunnel.sh"
+
+# Docker-стеки на Pi
+ssh greem4@192.168.31.96 "docker ps --format 'table {{.Names}}\t{{.Status}}'"
+ssh greem4@192.168.31.96 "tail -20 ~/docker-stacks.log"
 ```
 
 ### Если сайт с LTE не открывается
@@ -140,6 +159,25 @@ ssh greem4@192.168.31.96 "pgrep -af start-vps-tunnel.sh"
 
 5. Лог: `ssh greem4@192.168.31.96 "tail -80 /home/greem4/.config/vps-tunnel/tunnel.log"`
 6. На Pi: `docker compose -f ~/RosterRx/docker-compose.yml ps` и Caddy в `~/server`.
+7. Если после отключения света контейнеры не поднялись: `ssh greem4@192.168.31.96 "/home/greem4/bin/docker-stacks-up.sh"` или переустановить автозапуск: `./scripts/setup-docker-autostart.sh`.
+
+---
+
+## B3: SSH и sudo
+
+| Что | Как настроено |
+|-----|----------------|
+| **SSH по ключу** | `~/.ssh/authorized_keys` на Pi; с Mac — `~/.ssh/id_ed25519` или отдельный ключ через `./scripts/setup-ssh-key.sh` → Host `roster-b3` |
+| **Пароль SSH** | отключён на Pi (`PasswordAuthentication no`) — без ключа не войти |
+| **`sudo` на Pi** | **отдельно** от SSH-ключа; для systemd/Cursor-агента нужен пароль или `NOPASSWD` в `/etc/sudoers.d/` |
+
+Проверка ключа с Mac:
+
+```bash
+ssh -o BatchMode=yes greem4@192.168.31.96 'echo OK'
+```
+
+Если «не пускает» — это обычно не слетевший ключ, а другой хост/устройство без ключа в `authorized_keys`, или запрос **пароля sudo** (не SSH).
 
 ---
 
@@ -158,8 +196,9 @@ curl http://127.0.0.1:8000/health
 С Mac (после `./scripts/setup-ssh-key.sh`):
 
 ```bash
-./scripts/deploy-caddy.sh      # один раз или после смены Caddyfile
-./scripts/deploy-frontend.sh   # сборка React → ~/server/www на Pi
+./scripts/setup-docker-autostart.sh   # один раз: crontab + скрипт автозапуска стеков
+./scripts/deploy-caddy.sh             # один раз или после смены Caddyfile
+./scripts/deploy-frontend.sh          # сборка React → ~/server/www на Pi
 ```
 
 Проверка снаружи: `curl -s https://medicine.greemlab.ru/api/health`
@@ -218,7 +257,7 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
    curl http://127.0.0.1:8000/health
    ```
 
-6. На новой Pi: `~/server` + `./scripts/deploy-caddy.sh` + `./scripts/deploy-frontend.sh`, **заново поднять reverse-туннель на VPS** (`start-vps-tunnel.sh`, crontab).
+6. На новой Pi: `~/server` + `./scripts/deploy-caddy.sh` + `./scripts/deploy-frontend.sh`, **заново поднять reverse-туннель на VPS** (`start-vps-tunnel.sh`, crontab) и **автозапуск Docker** (`./scripts/setup-docker-autostart.sh`).
 7. **VPS не переезжает** — DNS по-прежнему на `176.12.65.86`; nginx всё так же на `127.0.0.1:18080`.
 8. Проверка: блок «Быстрые проверки» выше + вход на сайт.
 
@@ -231,6 +270,7 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
 | `~/server/www` | статика фронта | можно пересобрать `deploy-frontend.sh` |
 | `~/server/caddy/` | Caddyfile | есть в репозитории `server/` |
 | Туннель Pi→VPS | `~/.config/vps-tunnel/`, `start-vps-tunnel.sh` | без туннеля сайт с интернета мёртв |
+| Автозапуск Docker | `~/bin/docker-stacks-up.sh`, crontab | после reboot / отключения питания |
 | VPS nginx + Let's Encrypt | `/etc/nginx`, `/etc/letsencrypt` | бэкапить при смене VPS |
 
 ### 4. Тяжёлый путь: том PostgreSQL целиком
@@ -286,6 +326,9 @@ docker compose up -d
 | `deploy-caddy.sh` | Caddyfile и compose в `~/server` |
 | `deploy-all.sh` | `git push` → на Pi `git pull` + API + фронт (`--no-push`, `--no-backend`, `--no-frontend`) |
 | `setup-ssh-key.sh` | SSH-ключ, Host `roster-b3` |
+| `setup-docker-autostart.sh` | crontab + `docker-stacks-up.sh` на Pi (автозапуск после reboot) |
+| `docker-stacks-up.sh` | поднимает `~/RosterRx`, `~/server`, `~/singbox` (запускается на Pi) |
+| `docker-stacks.service` | опциональный systemd unit для Pi (копировать вручную с `sudo`) |
 | `import-medicines-invoices.py` | разовый импорт из JSON в medicines (нужен API/туннель) |
 
 ---
