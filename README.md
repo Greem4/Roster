@@ -329,7 +329,8 @@ docker compose up -d
 | `setup-docker-autostart.sh` | crontab + `docker-stacks-up.sh` на Pi (автозапуск после reboot) |
 | `docker-stacks-up.sh` | поднимает `~/RosterRx`, `~/server`, `~/singbox` (запускается на Pi) |
 | `docker-stacks.service` | опциональный systemd unit для Pi (копировать вручную с `sudo`) |
-| `import-medicines-invoices.py` | разовый импорт из JSON в medicines (нужен API/туннель) |
+| `reload-medicines.sh` | **одна команда:** туннель к БД (если нет) + полная перезаливка из `scripts/data/medicines-invoices.json` |
+| `import-medicines-invoices.py` | то же вручную (`--replace`); обычно вызывается из `reload-medicines.sh` |
 
 ---
 

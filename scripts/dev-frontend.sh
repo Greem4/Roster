@@ -1,4 +1,4 @@
-#!/usr/sh
+#!/bin/sh
 # Только Vite (API на :8000 уже должен быть). Удобнее: ./scripts/dev-ui.sh
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

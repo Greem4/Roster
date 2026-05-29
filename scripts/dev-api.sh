@@ -1,4 +1,4 @@
-#!/usr/sh
+#!/bin/sh
 # API на Mac без Docker (нужен открытый db-tunnel.sh и venv).
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
