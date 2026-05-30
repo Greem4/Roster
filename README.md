@@ -302,10 +302,36 @@ docker compose up -d
 
 | Режим | Команда | Когда |
 |-------|---------|--------|
-| UI, API как на проде | `./scripts/dev-ui.sh` | обычная работа над фронтом |
-| Backend на Mac | `./scripts/dev-local.sh` | правки Python, hot-reload; БД на Pi через туннель :5432 |
-| Только туннель к БД | `./scripts/db-tunnel.sh` | `psql`, ручные миграции, `pg_dump` с Mac |
-| API-туннель + Vite вручную | `api-tunnel.sh` + `dev-frontend.sh` | то же, что dev-ui, но два терминала |
+| UI, API как на проде | `./scripts/dev-ui.sh` | дома; **вне дома сам переключится на prod API** |
+| UI вне дома (явно) | `./scripts/dev-away.sh` | ноутбук без доступа к Pi в LAN |
+| Backend на Mac | `./scripts/dev-local.sh` | правки Python; БД на Pi (LAN или VPS после setup) |
+| Только туннель к БД | `./scripts/db-tunnel.sh` | дома: `psql`, миграции, `pg_dump` |
+| БД через VPS | `./scripts/db-tunnel-vps.sh` | вне дома, после `setup-vps-dev-ssh.sh` |
+| API-туннель + Vite вручную | `api-tunnel.sh` + `dev-frontend.sh` | два терминала дома |
+
+### Ноутбук вне домашней Wi‑Fi
+
+**Сразу, без настройки** — только фронт с живыми данными с малинки:
+
+```bash
+./scripts/dev-away.sh
+# или просто ./scripts/dev-ui.sh — сам определит, что Pi в LAN недоступна
+```
+
+Vite проксирует `/api` на `https://medicine.greemlab.ru` — SSH и открытый Postgres не нужны.
+
+**Backend + та же БД** — один раз **из дома**:
+
+```bash
+./scripts/setup-vps-dev-ssh.sh
+```
+
+Pi добавит проброс SSH на VPS (`127.0.0.1:22022`). Потом с ноутбука где угодно:
+
+```bash
+./scripts/dev-local.sh
+# или в отдельном терминале: ./scripts/db-tunnel-vps.sh
+```
 
 Для `dev-local.sh`: в `.env` раскомментировать `DATABASE_URL=postgresql://roster:ПАРОЛЬ@127.0.0.1:5432/roster` (пароль как на Pi). Нужен Python 3.12.
 
@@ -317,9 +343,12 @@ docker compose up -d
 
 | Скрипт | Назначение |
 |--------|------------|
-| `dev-ui.sh` | Фронт локально + туннель API на B3 |
-| `dev-local.sh` | API на Mac + туннель БД на B3 |
-| `db-tunnel.sh` | PostgreSQL Pi → `localhost:5432` |
+| `dev-ui.sh` | Фронт локально + туннель API на B3 (вне дома → prod API) |
+| `dev-away.sh` | Фронт локально + prod API через интернет (без SSH) |
+| `dev-local.sh` | API на Mac + туннель БД на B3 (LAN или VPS) |
+| `db-tunnel.sh` | PostgreSQL Pi → `localhost:5432` (дома) |
+| `db-tunnel-vps.sh` | PostgreSQL Pi → `localhost:5432` (через VPS :22022) |
+| `setup-vps-dev-ssh.sh` | Один раз дома: проброс SSH Pi→VPS для dev вне LAN |
 | `api-tunnel.sh` | API Pi → `localhost:8000` |
 | `deploy-backend.sh` | rsync backend + `docker compose up -d --build api` на Pi |
 | `deploy-frontend.sh` | `npm run build` → `~/server/www` |

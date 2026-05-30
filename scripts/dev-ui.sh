@@ -1,9 +1,11 @@
 #!/bin/sh
 # Фронт на Mac (Vite), API на B3 — основной режим разработки UI.
+# Вне дома Pi в LAN недоступна → автоматически prod API (см. dev-away.sh).
 # Деплой на сайт только когда готово: ./scripts/deploy-frontend.sh
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/scripts/_ssh-b3.sh"
+. "$ROOT/scripts/_dev-remote.sh"
 if [ -f "$ROOT/.env" ]; then
   set -a
   # shellcheck disable=SC1091
@@ -16,13 +18,28 @@ port_open() {
 }
 
 if ! port_open 8000; then
-  roster_ssh_ensure_master || exit 1
-  echo "Туннель API: localhost:8000 → B3"
-  roster_ssh -f -N -L 8000:127.0.0.1:8000 "$PI_SSH"
-  sleep 1
+  if pi_ssh_reachable; then
+    roster_ssh_ensure_master || exit 1
+    echo "Туннель API: localhost:8000 → B3"
+    roster_ssh -f -N -L 8000:127.0.0.1:8000 "$PI_SSH"
+    sleep 1
+  elif remote_api_ok; then
+    echo "Pi в LAN недоступна — режим вне дома (API через интернет)"
+    echo "API: ${ROSTER_REMOTE_API_HEALTH} — OK"
+    run_dev_frontend_remote
+  else
+    echo "Pi (${PI_SSH}) недоступна и прод API не отвечает." >&2
+    echo "  Дома: ./scripts/dev-ui.sh" >&2
+    echo "  Вне дома: ./scripts/dev-away.sh (нужен интернет и ${ROSTER_REMOTE_API_URL})" >&2
+    exit 1
+  fi
 fi
 
 if ! curl -sf http://127.0.0.1:8000/health >/dev/null 2>&1; then
+  if remote_api_ok; then
+    echo "Туннель :8000 не отвечает — переключаюсь на prod API"
+    run_dev_frontend_remote
+  fi
   echo "API на :8000 не отвечает. На B3: docker compose up -d api" >&2
   exit 1
 fi

@@ -10,6 +10,7 @@
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 . "$ROOT/scripts/_ssh-b3.sh"
+. "$ROOT/scripts/_dev-remote.sh"
 if [ -f "$ROOT/.env" ]; then
   set -a
   # shellcheck disable=SC1091
@@ -59,12 +60,27 @@ ensure_db_tunnel() {
     echo "PostgreSQL: localhost:5432 (туннель уже открыт)"
     return
   fi
-  roster_ssh_ensure_master || exit 1
-  echo "Туннель к БД на B3…"
-  roster_ssh -f -N -L "5432:127.0.0.1:5432" "$PI_SSH"
+  if pi_ssh_reachable; then
+    roster_ssh_ensure_master || exit 1
+    echo "Туннель к БД на B3…"
+    roster_ssh -f -N -L "5432:127.0.0.1:5432" "$PI_SSH"
+  else
+    echo "Pi в LAN недоступна — туннель к БД через VPS (:${ROSTER_VPS_PI_SSH_PORT})…"
+    KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
+    SSH_ID=""
+    [ -f "$KEY" ] && SSH_ID="-i $KEY"
+    # shellcheck disable=SC2086
+    ssh $SSH_ID -o ServerAliveInterval=60 -f -N -L "5432:127.0.0.1:5432" \
+      -p "${ROSTER_VPS_PI_SSH_PORT}" "greem4@${ROSTER_VPS_SSH#*@}" || {
+      echo "Не удалось подключиться через VPS." >&2
+      echo "Один раз из дома: ./scripts/setup-vps-dev-ssh.sh" >&2
+      echo "Только UI без своего API: ./scripts/dev-away.sh" >&2
+      exit 1
+    }
+  fi
   sleep 1
   if ! port_open 5432; then
-    echo "Не удалось подключиться к :5432. Проверьте SSH: $PI_SSH" >&2
+    echo "Не удалось подключиться к :5432." >&2
     exit 1
   fi
   OWN_TUNNEL_PID=$(pgrep -f "ssh.*5432:127.0.0.1:5432" 2>/dev/null | head -1 || true)
