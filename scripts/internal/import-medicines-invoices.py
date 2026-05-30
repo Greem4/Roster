@@ -12,7 +12,7 @@ import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DATA_FILE = Path(__file__).resolve().parent / "data" / "medicines-invoices.json"
 
 

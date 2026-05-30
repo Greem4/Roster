@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import AuthOAuthSection from './AuthOAuthSection'
 import { useAuth } from '../context/AuthContext'
 
 /**
@@ -30,6 +31,7 @@ export default function LoginForm({ onSuccess, showRegisterLink = true }) {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
+      <AuthOAuthSection disabled={submitting} mode="login" />
       <label>
         Логин
         <input

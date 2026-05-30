@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     expiry_warn_days: str = "30,14,7"
 
+    yandex_client_id: str = ""
+    yandex_client_secret: str = ""
+    yandex_redirect_uri_local: str = "http://localhost:5173/api/auth/yandex/callback"
+    yandex_redirect_uri_prod: str = "https://medicine.greemlab.ru/api/auth/yandex/callback"
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

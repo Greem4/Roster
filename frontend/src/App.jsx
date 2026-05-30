@@ -7,6 +7,7 @@ import AdminUsersOverlay from './components/overlays/AdminUsersOverlay'
 import CabinetOverlay from './components/overlays/CabinetOverlay'
 import LoginOverlay from './components/overlays/LoginOverlay'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
+import AuthCallbackPage from './components/AuthCallbackPage'
 import { AuthProvider } from './context/AuthContext'
 
 export default function App() {
@@ -14,6 +15,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route element={<AppShell />}>
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />

@@ -35,6 +35,11 @@ export function AuthProvider({ children }) {
     await refresh()
   }
 
+  const loginWithToken = async (accessToken) => {
+    setToken(accessToken)
+    await refresh()
+  }
+
   const logout = () => {
     setToken(null)
     setUser(null)
@@ -53,6 +58,7 @@ export function AuthProvider({ children }) {
       user,
       loading,
       login,
+      loginWithToken,
       logout,
       refresh,
       hasPermission,

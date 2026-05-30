@@ -1,10 +1,15 @@
 #!/bin/sh
-# Один раз из домашней Wi‑Fi: Pi начнёт пробрасывать SSH на VPS (127.0.0.1:22022).
-# После этого с ноутбука вне дома: ./scripts/db-tunnel-vps.sh и ./scripts/dev-local.sh
+# Один раз из домашней Wi‑Fi: Pi пробросит SSH на VPS (127.0.0.1:22022).
 set -e
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-. "$ROOT/scripts/_ssh-b3.sh"
-. "$ROOT/scripts/_dev-remote.sh"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [ -f "$ROOT/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT/.env"
+  set +a
+fi
+. "$ROOT/scripts/internal/_ssh-b3.sh"
+. "$ROOT/scripts/internal/_pi-route.sh"
 
 TUNNEL_SCRIPT='/home/greem4/.local/bin/start-vps-tunnel.sh'
 MARKER='127.0.0.1:22022:127.0.0.1:22'
@@ -27,10 +32,10 @@ else
   roster_ssh "$PI_SSH" "cp '${TUNNEL_SCRIPT}' '${TUNNEL_SCRIPT}.bak-\$(date +%Y%m%d%H%M%S)'"
   roster_ssh "$PI_SSH" "sed -i 's/-R 127.0.0.1:18080:127.0.0.1:80/-R 127.0.0.1:18080:127.0.0.1:80 -R ${MARKER}/' '${TUNNEL_SCRIPT}'" || {
     echo "Не удалось дописать -R в ${TUNNEL_SCRIPT}." >&2
-    echo "Вручную добавьте в ssh-команду Pi:  -R ${MARKER}" >&2
+    echo "Вручную добавьте: -R ${MARKER}" >&2
     exit 1
   }
-  echo "Добавлен -R ${MARKER} в ${TUNNEL_SCRIPT}"
+  echo "Добавлен -R ${MARKER}"
 fi
 
 echo "Перезапуск VPS-туннеля на Pi…"
@@ -38,19 +43,13 @@ roster_ssh "$PI_SSH" "pkill -f start-vps-tunnel.sh 2>/dev/null || true; nohup '$
 sleep 3
 
 echo ""
-echo "Проверка с Mac (SSH к Pi через VPS)…"
-KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
-SSH_ID=""
-[ -f "$KEY" ] && SSH_ID="-i $KEY"
-# shellcheck disable=SC2086
-if ssh $SSH_ID -o ConnectTimeout=8 -o BatchMode=yes -p "${REMOTE_PORT}" "greem4@${ROSTER_VPS_SSH#*@}" 'echo OK' 2>/dev/null; then
-  echo "OK — с ноутбука вне дома:"
-  echo "  ./scripts/db-tunnel-vps.sh    # БД на localhost:5432"
-  echo "  ./scripts/dev-local.sh        # свой API + та же БД"
-  echo "  ./scripts/dev-away.sh         # только UI (без туннеля)"
+echo "Проверка с Mac…"
+if pi_route_pick auto 2>/dev/null; then
+  echo "OK — с ноутбука откуда угодно:"
+  echo "  ./scripts/deploy-backend.sh --with-env"
+  echo "  ./scripts/internal/import.sh"
 else
-  echo "Пока не пускает на :${REMOTE_PORT}. На VPS проверьте:" >&2
+  echo "Пока не пускает на :${REMOTE_PORT}." >&2
   echo "  ssh ${ROSTER_VPS_SSH} \"ss -tln | grep ${REMOTE_PORT}\"" >&2
-  echo "  ssh ${PI_SSH} \"tail -30 /home/greem4/.config/vps-tunnel/tunnel.log\"" >&2
   exit 1
 fi

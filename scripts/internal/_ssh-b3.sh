@@ -21,12 +21,12 @@ roster_ssh_ensure_master() {
     return 0
   fi
   echo "SSH к B3 (${PI_SSH})…"
-  echo "Пароль спросят один раз за сессию. Чтобы не спрашивало вообще: ./scripts/setup-ssh-key.sh"
+  echo "Пароль спросят один раз за сессию. Чтобы не спрашивало вообще: ./scripts/setup/ssh-key.sh"
   # shellcheck disable=SC2086
   ssh $ROSTER_SSH_BASE -f -N "$PI_SSH" || {
     echo "" >&2
     echo "Не удалось подключиться по SSH." >&2
-    echo "  ./scripts/setup-ssh-key.sh   — вход по ключу без пароля" >&2
+    echo "  ./scripts/setup/ssh-key.sh   — вход по ключу без пароля" >&2
     echo "  PI_SSH=… в .env             — другой хост" >&2
     return 1
   }

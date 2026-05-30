@@ -3,7 +3,7 @@
 # Страховка после отключения питания: docker.service уже enabled, контейнеры — restart: unless-stopped,
 # но этот скрипт ещё раз вызывает compose up -d для всех каталогов.
 #
-# Устанавливается на Pi: ./scripts/setup-docker-autostart.sh
+# Устанавливается на Pi: ./scripts/setup/docker-autostart.sh
 # Лог: ~/docker-stacks.log
 
 set -euo pipefail

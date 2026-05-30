@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import AuthOAuthSection from './AuthOAuthSection'
 
 /**
  * Форма регистрации нового пользователя.
@@ -34,6 +35,7 @@ export default function RegisterForm({ onSuccess }) {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
+      <AuthOAuthSection disabled={submitting} mode="register" />
       <label>
         Логин
         <input

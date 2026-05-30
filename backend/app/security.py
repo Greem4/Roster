@@ -32,3 +32,23 @@ def decode_access_token(token: str) -> str | None:
         return str(sub) if sub else None
     except JWTError:
         return None
+
+
+def create_oauth_state(return_to: str) -> str:
+    """Короткоживущий state для OAuth (куда вернуть браузер после входа)."""
+    settings = get_settings()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    payload = {"return_to": return_to, "exp": expire, "typ": "oauth_state"}
+    return jwt.encode(payload, settings.jwt_secret, algorithm=ALGORITHM)
+
+
+def decode_oauth_state(state: str) -> str | None:
+    settings = get_settings()
+    try:
+        payload = jwt.decode(state, settings.jwt_secret, algorithms=[ALGORITHM])
+        if payload.get("typ") != "oauth_state":
+            return None
+        return_to = payload.get("return_to")
+        return str(return_to) if return_to else None
+    except JWTError:
+        return None

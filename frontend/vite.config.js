@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-/** Продовый API через VPS (режим ./scripts/dev-away.sh — ноутбук вне домашней Wi‑Fi). */
+/** Продовый API (Pi недоступна в LAN — dev.sh сам переключится). */
 const remoteApi = process.env.ROSTER_DEV_REMOTE === '1'
 const remoteApiTarget =
   process.env.ROSTER_REMOTE_API_URL || 'https://medicine.greemlab.ru'
