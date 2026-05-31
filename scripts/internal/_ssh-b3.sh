@@ -2,8 +2,17 @@
 PI_SSH="${PI_SSH:-greem4@192.168.31.96}"
 ROSTER_SSH_SOCKET="${ROSTER_SSH_SOCKET:-$HOME/.ssh/roster-b3-%C}"
 
+_roster_ssh_identity() {
+  KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
+  if [ -f "$KEY" ]; then
+    echo "-i ${KEY}"
+  elif [ -f "$HOME/.ssh/id_ed25519" ]; then
+    echo "-i $HOME/.ssh/id_ed25519"
+  fi
+}
+
 # Одно подключение на сессию (ControlPersist), без повторного пароля каждый rsync/ssh.
-ROSTER_SSH_BASE="-o ControlMaster=auto -o ControlPath=${ROSTER_SSH_SOCKET} -o ControlPersist=8h -o ServerAliveInterval=60"
+ROSTER_SSH_BASE="-o ControlMaster=auto -o ControlPath=${ROSTER_SSH_SOCKET} -o ControlPersist=8h -o ServerAliveInterval=60 $(_roster_ssh_identity)"
 
 roster_ssh() {
   # shellcheck disable=SC2086

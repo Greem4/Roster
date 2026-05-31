@@ -27,9 +27,43 @@ Cursor-агент после правок **API** сам запускает `dep
 ```bash
 ./scripts/setup/ssh-key.sh           # SSH без пароля
 ./scripts/setup/vps-dev-ssh.sh      # деплой/import из интернета
+./scripts/setup/vps-ssh-config.sh   # Host roster-pi-remote в ~/.ssh/config
 ./scripts/setup/docker-autostart.sh # Docker после reboot
 ./scripts/setup/caddy.sh            # Caddy на Pi
 ```
+
+### Разработка вне дома
+
+С интернета к Pi **напрямую не зайти** (CGNAT). Доступ только через **ваш** VPS и SSH-ключи:
+
+| Что | Как | Кто может |
+|-----|-----|-----------|
+| Сайт / prod API | `https://medicine.greemlab.ru` | все с URL |
+| SSH на Pi | `ProxyJump` → VPS → `127.0.0.1:22022` (туннель с Pi) | только ключи в `authorized_keys` на VPS и Pi |
+| PostgreSQL | `127.0.0.1:5432` на Pi, с Mac — `./scripts/internal/tunnel-db.sh` | тот же SSH |
+| Деплой API | `./scripts/deploy-backend.sh` | тот же SSH (auto: LAN или VPS hop) |
+
+**Один раз дома** (Pi в LAN):
+
+1. `./scripts/setup/ssh-key.sh` — ключ на Pi, без пароля SSH.
+2. `./scripts/setup/vps-dev-ssh.sh` — Pi пробрасывает `127.0.0.1:22022` на VPS (не в интернет, только localhost VPS).
+3. `./scripts/setup/vps-ssh-config.sh` — удобные Host `roster-vps` / `roster-pi-remote`.
+
+**Вне дома** (кафе, LTE):
+
+```bash
+./scripts/deploy-backend.sh              # обновить API на Pi
+./scripts/internal/tunnel-db.sh          # БД на localhost:5432 (в другом терминале)
+./scripts/dev.sh                         # UI локально; API — prod, если Pi недоступна
+```
+
+Проверка доступа к Pi:
+
+```bash
+ssh roster-pi-remote 'hostname'
+```
+
+Безопасность: пароль SSH на Pi отключён; порты API/БД на Pi — `127.0.0.1`; порт `22022` на VPS слушает только `127.0.0.1` — сначала нужен SSH на VPS под **вашим** `root` (или другим пользователем с ключом), затем hop на Pi.
 
 ---
 
@@ -309,17 +343,18 @@ docker compose up -d
 | Команда | Назначение |
 |---------|------------|
 | `./scripts/dev.sh` | UI локально (дома — API с Pi, вне дома — prod) |
-| `./scripts/deploy-backend.sh` | API на малинку |
+| `./scripts/deploy-backend.sh` | API на малинку (дома и вне дома) |
 | `./scripts/deploy-frontend.sh` | Фронт на сайт |
 
-**Редко:** `./scripts/internal/import.sh` — перезаливка лекарств из JSON.
+**Редко (`scripts/internal/`):** `tunnel-db.sh` — PostgreSQL → `127.0.0.1:5432`; `import.sh` — перезаливка лекарств из JSON.
 
 **Один раз дома** — каталог `scripts/setup/`:
 
 | Скрипт | Назначение |
 |--------|------------|
 | `setup/ssh-key.sh` | SSH-ключ на Pi |
-| `setup/vps-dev-ssh.sh` | доступ к Pi через VPS (деплой вне дома) |
+| `setup/vps-dev-ssh.sh` | проброс SSH Pi→VPS (`:22022`, деплой вне дома) |
+| `setup/vps-ssh-config.sh` | `~/.ssh/config`: `roster-pi-remote` |
 | `setup/docker-autostart.sh` | Docker после reboot |
 | `setup/caddy.sh` | Caddy на Pi |
 
