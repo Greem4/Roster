@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { getCachedYandexAvatar, YANDEX_AVATAR_EVENT } from '../utils/yandexAvatar'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
@@ -21,9 +22,12 @@ export default function YandexLoginButton({
   onSuccess,
   onPending,
 }) {
-  const { loginWithToken } = useAuth()
+  const { loginWithToken, user } = useAuth()
   const [oauthPending, setOauthPending] = useState(false)
   const [error, setError] = useState('')
+  const [cachedAvatar, setCachedAvatar] = useState(() => getCachedYandexAvatar())
+
+  const avatarUrl = user?.avatar_url || cachedAvatar
 
   const label = LABELS[mode] ?? LABELS.login
 
@@ -59,6 +63,8 @@ export default function YandexLoginButton({
 
       try {
         await loginWithToken(data.token)
+        const fresh = getCachedYandexAvatar()
+        if (fresh) setCachedAvatar(fresh)
         setError('')
         onSuccess?.()
       } catch (err) {
@@ -72,6 +78,22 @@ export default function YandexLoginButton({
     window.addEventListener('message', handleOAuthMessage)
     return () => window.removeEventListener('message', handleOAuthMessage)
   }, [handleOAuthMessage])
+
+  useEffect(() => {
+    const syncAvatar = () => setCachedAvatar(getCachedYandexAvatar())
+    window.addEventListener(YANDEX_AVATAR_EVENT, syncAvatar)
+    window.addEventListener('storage', syncAvatar)
+    return () => {
+      window.removeEventListener(YANDEX_AVATAR_EVENT, syncAvatar)
+      window.removeEventListener('storage', syncAvatar)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (user?.avatar_url) {
+      setCachedAvatar(user.avatar_url)
+    }
+  }, [user?.avatar_url])
 
   const startOAuth = async () => {
     if (disabled || oauthPending) return
@@ -118,9 +140,16 @@ export default function YandexLoginButton({
         onClick={startOAuth}
       >
         <span className="yandex-plaque__glow" aria-hidden="true" />
-        <span className="yandex-plaque__avatar" aria-hidden="true">
+        <span
+          className={`yandex-plaque__avatar${avatarUrl ? ' yandex-plaque__avatar--photo' : ''}`}
+          aria-hidden="true"
+        >
           <span className="yandex-plaque__avatar-ring" />
-          <span className="yandex-plaque__avatar-face" />
+          {avatarUrl ? (
+            <img className="yandex-plaque__avatar-img" src={avatarUrl} alt="" />
+          ) : (
+            <span className="yandex-plaque__avatar-face" />
+          )}
         </span>
         <span className="yandex-plaque__label">{oauthPending ? 'Ожидаем Яндекс…' : label}</span>
         <span className="yandex-plaque__logo" aria-hidden="true">

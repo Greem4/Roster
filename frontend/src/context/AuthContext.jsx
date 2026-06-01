@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api, setToken } from '../api/client'
+import { setCachedYandexAvatar } from '../utils/yandexAvatar'
 
 const AuthContext = createContext(null)
 
@@ -17,6 +18,9 @@ export function AuthProvider({ children }) {
     try {
       const me = await api.me()
       setUser(me)
+      if (me.avatar_url) {
+        setCachedYandexAvatar(me.avatar_url)
+      }
     } catch {
       setToken(null)
       setUser(null)

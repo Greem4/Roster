@@ -75,15 +75,29 @@ def _unique_username(db: Session, base: str) -> str:
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Could not allocate username")
 
 
+def _sync_yandex_profile(db: Session, user: User, profile: dict) -> User:
+    """Обновляет email и аватар из ответа Яндекс ID (тот же аккаунт при повторном входе)."""
+    email = yandex_oauth.profile_email(profile)
+    avatar_url = yandex_oauth.profile_avatar_url(profile)
+    changed = False
+    if email and user.email != email:
+        user.email = email
+        changed = True
+    if avatar_url and user.avatar_url != avatar_url:
+        user.avatar_url = avatar_url
+        changed = True
+    if changed:
+        db.commit()
+        db.refresh(user)
+    return user
+
+
 def _get_or_create_yandex_user(db: Session, profile: dict) -> User:
     yandex_id = yandex_oauth.profile_yandex_id(profile)
+    avatar_url = yandex_oauth.profile_avatar_url(profile)
     user = db.query(User).filter(User.yandex_id == yandex_id).first()
     if user:
-        email = yandex_oauth.profile_email(profile)
-        if email and user.email != email:
-            user.email = email
-            db.commit()
-        return user
+        return _sync_yandex_profile(db, user, profile)
 
     email = yandex_oauth.profile_email(profile)
     if email:
@@ -97,7 +111,7 @@ def _get_or_create_yandex_user(db: Session, profile: dict) -> User:
             by_email.yandex_id = yandex_id
             db.commit()
             db.refresh(by_email)
-            return by_email
+            return _sync_yandex_profile(db, by_email, profile)
 
     username = _unique_username(db, yandex_oauth.profile_username_base(profile))
     user = User(
@@ -105,6 +119,7 @@ def _get_or_create_yandex_user(db: Session, profile: dict) -> User:
         email=email,
         password_hash=None,
         yandex_id=yandex_id,
+        avatar_url=avatar_url,
         is_active=False,
         is_superadmin=False,
     )
@@ -247,6 +262,8 @@ def me(user: Annotated[User, Depends(get_current_user)]):
         id=user.id,
         username=user.username,
         email=user.email,
+        avatar_url=user.avatar_url,
+        yandex_linked=bool(user.yandex_id),
         is_superadmin=user.is_superadmin,
         is_active=user.is_active,
         permissions=[p.code for p in user.permissions],

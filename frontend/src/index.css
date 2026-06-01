@@ -140,6 +140,15 @@ a:hover {
   gap: 0.75rem;
 }
 
+.user-bar__avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(252, 63, 29, 0.45);
+  flex-shrink: 0;
+}
+
 .app-main {
   padding: 1.5rem;
   max-width: 1100px;
@@ -856,6 +865,21 @@ input[type='date']:focus {
   margin: 2px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #ffe8d8 0%, #e8a88e 55%, #c97862 100%);
+}
+
+.yandex-plaque__avatar-img {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  margin: 2px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.yandex-plaque__avatar--photo .yandex-plaque__avatar-ring {
+  animation: none;
 }
 
 .yandex-plaque__label {

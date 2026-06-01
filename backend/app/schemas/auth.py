@@ -21,6 +21,8 @@ class UserMeResponse(BaseModel):
     id: int
     username: str
     email: str | None
+    avatar_url: str | None = None
+    yandex_linked: bool = False
     is_superadmin: bool
     is_active: bool
     permissions: list[str]

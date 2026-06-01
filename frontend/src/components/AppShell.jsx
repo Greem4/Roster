@@ -24,6 +24,15 @@ export default function AppShell() {
         <div className="user-bar">
           {isAuthenticated ? (
             <>
+              {user?.avatar_url && (
+                <img
+                  className="user-bar__avatar"
+                  src={user.avatar_url}
+                  alt=""
+                  width={32}
+                  height={32}
+                />
+              )}
               <span>{user?.username}</span>
               <button type="button" className="btn-secondary" onClick={handleLogout}>
                 Выйти

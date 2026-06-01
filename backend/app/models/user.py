@@ -28,6 +28,7 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     yandex_id: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
+    avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(

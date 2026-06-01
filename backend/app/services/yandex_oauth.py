@@ -21,7 +21,6 @@ def build_authorize_url(*, client_id: str, redirect_uri: str, state: str) -> str
         "redirect_uri": redirect_uri,
         "state": state,
         "scope": YANDEX_SCOPES,
-        "force_confirm": "yes",
     }
     return f"{YANDEX_AUTH_URL}?{urlencode(params)}"
 
@@ -75,6 +74,19 @@ def profile_email(profile: dict) -> str | None:
         if value:
             return str(value)
     return None
+
+
+YANDEX_AVATAR_SIZE = "islands-200"
+
+
+def profile_avatar_url(profile: dict) -> str | None:
+    """URL аватара Яндекс ID или None, если аватар не задан."""
+    if profile.get("is_avatar_empty"):
+        return None
+    avatar_id = profile.get("default_avatar_id")
+    if not avatar_id:
+        return None
+    return f"https://avatars.yandex.net/get-yapic/{avatar_id}/{YANDEX_AVATAR_SIZE}"
 
 
 def profile_username_base(profile: dict) -> str:
