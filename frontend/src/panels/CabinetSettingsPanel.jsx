@@ -10,7 +10,7 @@ export default function CabinetSettingsPanel() {
   return (
     <div className="cabinet-panel">
       <section className="cabinet-section">
-        <h2 className="section-title">Пароль</h2>
+        <h2 className="cabinet-section__title">Пароль</h2>
         <p className="muted cabinet-section__lead">
           {user?.has_password
             ? 'Смените пароль для входа по логину.'
@@ -20,7 +20,7 @@ export default function CabinetSettingsPanel() {
       </section>
 
       <section className="cabinet-section">
-        <h2 className="section-title">Вход через Яндекс</h2>
+        <h2 className="cabinet-section__title">Вход через Яндекс</h2>
         <div className="cabinet-yandex">
           <p className="muted">
             {user?.yandex_linked

@@ -55,7 +55,7 @@ export default function CabinetOverviewPanel() {
 
       <section className="cabinet-section">
         <div className="section-header">
-          <h2 className="section-title">Скоро истекает срок годности</h2>
+          <h2 className="cabinet-section__title">Скоро истекает срок годности</h2>
           {alerts && (
             <span className={`badge ${alerts.total > 0 ? 'badge-warn' : 'badge-ok'}`}>
               {alerts.total}
@@ -80,7 +80,15 @@ export default function CabinetOverviewPanel() {
           </ul>
         )}
         {alerts && alerts.total > 10 && (
-          <p className="muted">И ещё {alerts.total - 10} позиций…</p>
+          <p className="muted">
+            И ещё {alerts.total - 10} позиций.{' '}
+            <Link to="/medicines">Открыть список лекарств</Link>
+          </p>
+        )}
+        {alerts && alerts.total > 0 && alerts.total <= 10 && (
+          <p className="muted cabinet-section__footer">
+            <Link to="/medicines">Список лекарств</Link>
+          </p>
         )}
       </section>
 

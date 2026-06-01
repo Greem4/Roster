@@ -49,7 +49,7 @@ export default function PromoteFounderBlock() {
 
   return (
     <section className="cabinet-section cabinet-section--warn">
-      <h3 className="section-title">Назначить основателя</h3>
+      <h3 className="cabinet-section__title">Назначить основателя</h3>
       <p className="muted">
         Один раз укажите учётную запись с полным доступом (рекомендуется — ваш логин после
         регистрации и смены пароля). После этого супер-админ <strong>admin</strong> можно удалить.
