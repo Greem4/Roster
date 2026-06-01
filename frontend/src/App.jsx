@@ -3,9 +3,8 @@ import { ActiveUserRoute, PermissionRoute, ProtectedRoute } from './components/P
 import AppShell from './components/AppShell'
 import MedicineEditRedirect from './components/MedicineEditRedirect'
 import MedicinesLayout from './components/MedicinesLayout'
-import AdminUsersOverlay from './components/overlays/AdminUsersOverlay'
-import CabinetOverlay from './components/overlays/CabinetOverlay'
 import LoginOverlay from './components/overlays/LoginOverlay'
+import CabinetPage from './pages/CabinetPage'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
 import AuthCallbackPage from './components/AuthCallbackPage'
 import { AuthProvider } from './context/AuthContext'
@@ -17,13 +16,15 @@ export default function App() {
         <Routes>
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route element={<AppShell />}>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/cabinet/*" element={<CabinetPage />} />
+            </Route>
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />
               <Route path="/" element={<Navigate to="/medicines" replace />} />
               <Route path="/login" element={<LoginOverlay />} />
               <Route path="/register" element={<RegisterOverlay />} />
               <Route element={<ProtectedRoute />}>
-                <Route path="/cabinet" element={<CabinetOverlay />} />
                 <Route element={<ActiveUserRoute />}>
                   <Route element={<PermissionRoute permission="users:manage" />}>
                     <Route
@@ -31,11 +32,14 @@ export default function App() {
                       element={<Navigate to="/medicines?add=1" replace />}
                     />
                     <Route path="/medicines/:id/edit" element={<MedicineEditRedirect />} />
-                    <Route path="/admin/users" element={<AdminUsersOverlay />} />
                   </Route>
                 </Route>
               </Route>
             </Route>
+            <Route
+              path="/admin/users"
+              element={<Navigate to="/cabinet/users" replace />}
+            />
           </Route>
           <Route path="*" element={<Navigate to="/medicines" replace />} />
         </Routes>

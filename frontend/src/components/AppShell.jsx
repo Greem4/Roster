@@ -1,9 +1,9 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import RoleBadge from './cabinet/RoleBadge'
 import { useAuth } from '../context/AuthContext'
 
 export default function AppShell() {
-  const { user, logout, canManageUsers, isAuthenticated } = useAuth()
+  const { user, logout, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -19,8 +19,14 @@ export default function AppShell() {
         </Link>
         <nav className="nav">
           <Link to="/medicines">Лекарства</Link>
-          {isAuthenticated && <Link to="/cabinet">Личный кабинет</Link>}
-          {canManageUsers && <Link to="/admin/users">Пользователи</Link>}
+          {isAuthenticated && (
+            <NavLink
+              to="/cabinet"
+              className={({ isActive }) => (isActive ? 'nav-link--active' : undefined)}
+            >
+              Личный кабинет
+            </NavLink>
+          )}
         </nav>
         <div className="user-bar">
           {isAuthenticated ? (

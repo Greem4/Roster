@@ -109,7 +109,10 @@ export default function AdminUsersPanel() {
   }
 
   return (
-    <div className="admin-users-panel">
+    <div className="cabinet-panel admin-users-panel">
+      <p className="muted admin-users-panel__lead">
+        Активация учётных записей, права доступа, сброс пароля и удаление (для основателя).
+      </p>
       {error && <p className="error">{error}</p>}
       <div className="users-grid">
         {users.map((u) => {
