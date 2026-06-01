@@ -6,6 +6,8 @@ class UserListItem(BaseModel):
     username: str
     email: str | None
     is_superadmin: bool
+    is_founder: bool
+    role: str
     is_active: bool
     permissions: list[str]
 

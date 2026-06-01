@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
+import ChangePasswordForm from '../components/cabinet/ChangePasswordForm'
+import PromoteFounderBlock from '../components/cabinet/PromoteFounderBlock'
+import RoleBadge from '../components/cabinet/RoleBadge'
+import YandexLoginButton from '../components/YandexLoginButton'
 import { useAuth } from '../context/AuthContext'
 
 function urgencyClass(days) {
@@ -10,9 +14,9 @@ function urgencyClass(days) {
   return 'badge-ok'
 }
 
-/** Содержимое личного кабинета: алерты и быстрые действия. */
+/** Личный кабинет: профиль, безопасность, роли, алерты. */
 export default function DashboardPanel() {
-  const { isAdmin, hasPermission, user } = useAuth()
+  const { isAdmin, canManageUsers, user } = useAuth()
   const [alerts, setAlerts] = useState(null)
   const [error, setError] = useState('')
 
@@ -24,10 +28,43 @@ export default function DashboardPanel() {
   }, [])
 
   return (
-    <div className="dashboard-panel">
-      <p className="muted dashboard-greeting">Добро пожаловать, {user?.username}</p>
+    <div className="dashboard-panel cabinet">
+      <header className="cabinet-profile">
+        {user?.avatar_url ? (
+          <img className="cabinet-profile__avatar" src={user.avatar_url} alt="" width={72} height={72} />
+        ) : (
+          <div className="cabinet-profile__avatar cabinet-profile__avatar--placeholder" aria-hidden />
+        )}
+        <div className="cabinet-profile__main">
+          <h2 className="cabinet-profile__name">{user?.username}</h2>
+          <div className="cabinet-profile__meta">
+            <RoleBadge role={user?.role} />
+            {!user?.is_active && !user?.is_founder && !user?.is_superadmin && (
+              <span className="badge badge-warn">ожидает активации</span>
+            )}
+          </div>
+          {user?.email && <p className="muted cabinet-profile__email">{user.email}</p>}
+        </div>
+      </header>
 
-      <section className="section">
+      <section className="cabinet-section">
+        <h3 className="section-title">Безопасность</h3>
+        <ChangePasswordForm />
+        <div className="cabinet-yandex">
+          <p className="muted">
+            {user?.yandex_linked
+              ? 'Яндекс ID привязан — можно входить через кнопку на странице входа.'
+              : 'Привяжите Яндекс ID для входа без пароля.'}
+          </p>
+          {!user?.yandex_linked && (
+            <YandexLoginButton mode="login" onSuccess={() => window.location.reload()} />
+          )}
+        </div>
+      </section>
+
+      <PromoteFounderBlock />
+
+      <section className="cabinet-section">
         <div className="section-header">
           <h3 className="section-title">Скоро истекает срок годности</h3>
           {alerts && (
@@ -64,7 +101,7 @@ export default function DashboardPanel() {
             Добавить лекарство
           </Link>
         )}
-        {hasPermission('users:manage') && (
+        {canManageUsers && (
           <Link to="/admin/users" className="btn-secondary link-btn">
             Управление пользователями
           </Link>

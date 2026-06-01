@@ -27,7 +27,7 @@ def get_current_user(
 
 
 def require_active_user(user: Annotated[User, Depends(get_current_user)]) -> User:
-    if not user.is_active and not user.is_superadmin:
+    if not user.is_active and not user.is_superadmin and not user.is_founder:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account pending approval")
     return user
 
@@ -45,6 +45,12 @@ PERM_ADMIN = "users:manage"
 
 
 def require_admin(user: Annotated[User, Depends(require_active_user)]) -> User:
-    if user.is_superadmin or user.has_permission(PERM_ADMIN):
+    if user.is_founder or user.is_superadmin or user.has_permission(PERM_ADMIN):
         return user
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+
+
+def require_founder(user: Annotated[User, Depends(require_active_user)]) -> User:
+    if not user.is_founder:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Founder only")
+    return user

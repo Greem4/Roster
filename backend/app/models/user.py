@@ -30,6 +30,7 @@ class User(Base):
     yandex_id: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True, index=True)
     avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_founder: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -44,6 +45,6 @@ class User(Base):
     )
 
     def has_permission(self, code: str) -> bool:
-        if self.is_superadmin:
+        if self.is_founder or self.is_superadmin:
             return True
         return any(p.code == code for p in self.permissions)

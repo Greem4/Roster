@@ -1,8 +1,9 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
+import RoleBadge from './cabinet/RoleBadge'
 import { useAuth } from '../context/AuthContext'
 
 export default function AppShell() {
-  const { user, logout, hasPermission, isAuthenticated } = useAuth()
+  const { user, logout, canManageUsers, isAuthenticated } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -19,7 +20,7 @@ export default function AppShell() {
         <nav className="nav">
           <Link to="/medicines">Лекарства</Link>
           {isAuthenticated && <Link to="/cabinet">Личный кабинет</Link>}
-          {hasPermission('users:manage') && <Link to="/admin/users">Пользователи</Link>}
+          {canManageUsers && <Link to="/admin/users">Пользователи</Link>}
         </nav>
         <div className="user-bar">
           {isAuthenticated ? (
@@ -33,7 +34,8 @@ export default function AppShell() {
                   height={32}
                 />
               )}
-              <span>{user?.username}</span>
+              <span className="user-bar__name">{user?.username}</span>
+              <RoleBadge role={user?.role} />
               <button type="button" className="btn-secondary" onClick={handleLogout}>
                 Выйти
               </button>

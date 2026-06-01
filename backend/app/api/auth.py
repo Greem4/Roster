@@ -9,9 +9,10 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.database import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user, require_active_user
 from app.models import User
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserMeResponse
+from app.roles import can_promote_founder, user_role
+from app.schemas.auth import ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse, UserMeResponse
 from app.security import (
     create_access_token,
     create_oauth_state,
@@ -122,6 +123,7 @@ def _get_or_create_yandex_user(db: Session, profile: dict) -> User:
         avatar_url=avatar_url,
         is_active=False,
         is_superadmin=False,
+        is_founder=False,
     )
     db.add(user)
     db.commit()
@@ -136,7 +138,7 @@ def login(body: LoginRequest, db: Annotated[Session, Depends(get_db)]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if not verify_password(body.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    if not user.is_active and not user.is_superadmin:
+    if not user.is_active and not user.is_superadmin and not user.is_founder:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account pending approval")
     token = create_access_token(user.username)
     return TokenResponse(access_token=token)
@@ -152,6 +154,7 @@ def register(body: RegisterRequest, db: Annotated[Session, Depends(get_db)]):
         password_hash=hash_password(body.password),
         is_active=False,
         is_superadmin=False,
+        is_founder=False,
     )
     db.add(user)
     db.commit()
@@ -244,7 +247,7 @@ async def yandex_callback(
                 oauth_error="Ошибка сохранения аккаунта. Сообщите администратору.",
             )
 
-        if not user.is_active and not user.is_superadmin:
+        if not user.is_active and not user.is_superadmin and not user.is_founder:
             return _oauth_front_redirect(return_to, oauth_pending="1")
 
         access_token = create_access_token(user.username)
@@ -256,8 +259,27 @@ async def yandex_callback(
         return _oauth_front_redirect(fallback, oauth_error="Внутренняя ошибка входа через Яндекс")
 
 
+@router.post("/change-password")
+def change_password(
+    body: ChangePasswordRequest,
+    db: Annotated[Session, Depends(get_db)],
+    user: Annotated[User, Depends(require_active_user)],
+):
+    """Смена или установка пароля (для OAuth-аккаунта текущий пароль не нужен)."""
+    if user.password_hash:
+        if not body.current_password or not verify_password(body.current_password, user.password_hash):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный текущий пароль")
+    user.password_hash = hash_password(body.new_password)
+    db.commit()
+    return {"message": "Пароль обновлён"}
+
+
 @router.get("/me", response_model=UserMeResponse)
-def me(user: Annotated[User, Depends(get_current_user)]):
+def me(
+    user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    has_founder = db.query(User).filter(User.is_founder.is_(True)).first() is not None
     return UserMeResponse(
         id=user.id,
         username=user.username,
@@ -265,6 +287,10 @@ def me(user: Annotated[User, Depends(get_current_user)]):
         avatar_url=user.avatar_url,
         yandex_linked=bool(user.yandex_id),
         is_superadmin=user.is_superadmin,
+        is_founder=user.is_founder,
+        role=user_role(user),
         is_active=user.is_active,
+        has_password=bool(user.password_hash),
+        can_promote_founder=can_promote_founder(user, has_founder),
         permissions=[p.code for p in user.permissions],
     )
