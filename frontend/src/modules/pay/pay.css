@@ -242,7 +242,21 @@
 }
 
 .pay-chart__wrap {
+  position: relative;
   margin: 0 -0.25rem;
+}
+
+.pay-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pay-chart__tooltip--floating {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
 }
 
 .pay-chart__empty {
