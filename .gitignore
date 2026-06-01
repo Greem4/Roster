@@ -5,6 +5,13 @@ __pycache__/
 venv/
 backend/.pytest_cache/
 *.egg-info/
-.cursor/
+
+# Cursor: в репо только правила и агенты проекта; остальное — локально
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
+!.cursor/agents/
+!.cursor/agents/**
+
 .idea/
 .vscode/
