@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { ActiveUserRoute, PermissionRoute, ProtectedRoute } from '../../components/ProtectedRoute'
 import { PERM_PAY_VIEW } from './constants'
-import PayAnalyticsPage from './pages/PayAnalyticsPage'
 import PayPage from './pages/PayPage'
 
 /**
@@ -14,7 +13,6 @@ export default function PayRoutes() {
         <Route element={<ActiveUserRoute />}>
           <Route element={<PermissionRoute permission={PERM_PAY_VIEW} />}>
             <Route index element={<PayPage />} />
-            <Route path="analytics" element={<PayAnalyticsPage />} />
           </Route>
         </Route>
       </Route>

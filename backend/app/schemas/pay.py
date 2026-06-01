@@ -4,47 +4,21 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 
-class PayAccountBase(BaseModel):
-    name: str = Field(min_length=1, max_length=128)
-    note: str | None = Field(default=None, max_length=2000)
-    balance: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2, max_digits=14)
-    currency: str = Field(default="RUB", min_length=3, max_length=3)
-
-
-class PayAccountCreate(PayAccountBase):
-    pass
-
-
-class PayAccountResponse(PayAccountBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-
-    model_config = {"from_attributes": True}
-
-
-class PaySummaryResponse(BaseModel):
-    """Сводка по всем счетам кабинета."""
-
-    account_count: int
-    total_balance: Decimal
-    currency: str = "RUB"
-
-
 class PayMonthlyUpsert(BaseModel):
-    """Создание или обновление суммы за месяц."""
+    """Создание или замена всех сумм зарплаты за месяц."""
 
     year: int = Field(ge=2000, le=2100)
     month: int = Field(ge=1, le=12)
-    amount: Decimal = Field(ge=0, decimal_places=2, max_digits=14)
+    amounts: list[Decimal] = Field(default_factory=list)
     currency: str = Field(default="RUB", min_length=3, max_length=3)
 
 
 class PayMonthlyResponse(BaseModel):
+    """Агрегат по месяцу: сумма и отдельные строки."""
+
     year: int
     month: int
     amount: Decimal
+    amounts: list[Decimal]
     currency: str = "RUB"
     updated_at: datetime | None = None
-
-    model_config = {"from_attributes": True}

@@ -10,13 +10,12 @@ import {
 } from 'recharts'
 import { formatMoney } from '../utils/formatMoney'
 
-const CHART_ACCENT = '#2dd4bf'
 const CHART_LINE = '#5eead4'
 const CHART_GRID = '#27272a'
 const CHART_MUTED = '#71717a'
 
 /**
- * Комбинированный график: столбцы по месяцам и сглаженная линия чуть выше вершин.
+ * Комбинированный график зарплаты: столбцы по месяцам и сглаженная линия чуть выше вершин.
  * @param {{ label: string, amount: number, lineAmount: number }[]} data
  * @param {string} [currency='RUB']
  */
@@ -24,7 +23,7 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
   const hasValues = data.some((d) => d.amount > 0)
   if (!hasValues) {
     return (
-      <p className="pay-analytics__chart-empty muted">
+      <p className="pay-chart__empty muted">
         Введите суммы за месяцы — график появится здесь.
       </p>
     )
@@ -37,9 +36,15 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
   }
 
   return (
-    <div className="pay-analytics__chart-wrap">
+    <div className="pay-chart__wrap">
       <ResponsiveContainer width="100%" height={320}>
         <ComposedChart data={data} margin={{ top: 28, right: 12, left: 4, bottom: 8 }}>
+          <defs>
+            <linearGradient id="payBarGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#5eead4" stopOpacity={0.95} />
+              <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.75} />
+            </linearGradient>
+          </defs>
           <CartesianGrid stroke={CHART_GRID} strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="label"
@@ -61,9 +66,9 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
               const row = payload[0]?.payload
               if (!row) return null
               return (
-                <div className="pay-analytics__tooltip">
-                  <p className="pay-analytics__tooltip-month">{row.label}</p>
-                  <p className="pay-analytics__tooltip-value">
+                <div className="pay-chart__tooltip">
+                  <p className="pay-chart__tooltip-month">{row.label}</p>
+                  <p className="pay-chart__tooltip-value">
                     {formatMoney(row.amount, currency)}
                   </p>
                 </div>
@@ -72,8 +77,7 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
           />
           <Bar
             dataKey="amount"
-            fill={CHART_ACCENT}
-            fillOpacity={0.85}
+            fill="url(#payBarGradient)"
             radius={[6, 6, 0, 0]}
             maxBarSize={40}
           />

@@ -1,39 +1,83 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../../context/AuthContext'
-import { payApi } from '../api'
-import { PERM_PAY_MANAGE } from '../constants'
-import { formatMoney } from '../utils/formatMoney'
 import RosterModuleTitle from '../../../components/RosterModuleTitle'
-import PayNav from '../components/PayNav'
+import { payApi } from '../api'
+import PayMonthCell from '../components/PayMonthCell'
+import PayMonthlyChart from '../components/PayMonthlyChart'
+import { PERM_PAY_MANAGE } from '../constants'
+import { MONTH_LABELS, MONTH_NAMES } from '../constants/months'
+import { formatMoney } from '../utils/formatMoney'
 import '../pay.css'
 
-const EMPTY_FORM = { name: '', note: '', balance: '0' }
+const currentYear = () => new Date().getFullYear()
+
+/** Пустая сетка из 12 месяцев для выбранного года. */
+function emptyMonths(year) {
+  return Array.from({ length: 12 }, (_, i) => ({
+    year,
+    month: i + 1,
+    amounts: [''],
+    hadData: false,
+  }))
+}
+
+/** Сумма по строковым полям месяца. */
+function monthTotal(amounts) {
+  return amounts.reduce((sum, raw) => {
+    const n = Number(raw)
+    return sum + (Number.isNaN(n) ? 0 : n)
+  }, 0)
+}
+
+/** Числа для API из полей ввода (без пустых и отрицательных). */
+function amountsForApi(amounts) {
+  return amounts
+    .map((s) => s.trim())
+    .filter((s) => s !== '')
+    .map((s) => Number(s))
+    .filter((n) => !Number.isNaN(n) && n >= 0)
+}
 
 /**
- * Главная страница RosterPay: сводка и список счетов кабинета.
+ * RosterPay: учёт зарплаты — несколько сумм за месяц, итог за месяц и за год.
  */
 export default function PayPage() {
   const { hasPermission } = useAuth()
   const canManage = hasPermission(PERM_PAY_MANAGE)
 
-  const [summary, setSummary] = useState(null)
-  const [accounts, setAccounts] = useState([])
+  const [year, setYear] = useState(currentYear)
+  const [months, setMonths] = useState(() => emptyMonths(currentYear()))
+  const [currency, setCurrency] = useState('RUB')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [savedHint, setSavedHint] = useState('')
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (y) => {
     setError('')
     setLoading(true)
     try {
-      const [summaryData, accountRows] = await Promise.all([
-        payApi.summary(),
-        payApi.listAccounts(),
-      ])
-      setSummary(summaryData)
-      setAccounts(accountRows)
+      const rows = await payApi.listMonthly(y)
+      const byMonth = Object.fromEntries(rows.map((r) => [r.month, r]))
+      setMonths(
+        emptyMonths(y).map((slot) => {
+          const saved = byMonth[slot.month]
+          if (!saved) return slot
+          const list =
+            saved.amounts?.length > 0
+              ? saved.amounts.map((a) => String(Number(a)))
+              : saved.amount != null && Number(saved.amount) > 0
+                ? [String(Number(saved.amount))]
+                : ['']
+          return {
+            year: y,
+            month: slot.month,
+            amounts: list.length ? list : [''],
+            hadData: true,
+          }
+        }),
+      )
+      if (rows[0]?.currency) setCurrency(rows[0].currency)
     } catch (e) {
       setError(e.message || 'Не удалось загрузить данные')
     } finally {
@@ -42,24 +86,91 @@ export default function PayPage() {
   }, [])
 
   useEffect(() => {
-    load()
-  }, [load])
+    load(year)
+  }, [year, load])
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
+  const yearTotal = useMemo(
+    () => months.reduce((sum, row) => sum + monthTotal(row.amounts), 0),
+    [months],
+  )
+
+  const chartData = useMemo(() => {
+    return months.map((m, index) => {
+      const amount = monthTotal(m.amounts)
+      const bump = amount > 0 ? Math.max(amount * 0.04, amount * 0.01 + 1) : 0
+      return {
+        label: MONTH_LABELS[index],
+        amount,
+        lineAmount: amount > 0 ? amount + bump : 0,
+      }
+    })
+  }, [months])
+
+  const onYearChange = (delta) => {
+    setYear((y) => y + delta)
+    setSavedHint('')
+  }
+
+  const onAmountsChange = (month, amounts) => {
+    setMonths((prev) =>
+      prev.map((row) => (row.month === month ? { ...row, amounts } : row)),
+    )
+    setSavedHint('')
+  }
+
+  const onAddLine = (month) => {
+    setMonths((prev) =>
+      prev.map((row) =>
+        row.month === month ? { ...row, amounts: [...row.amounts, ''] } : row,
+      ),
+    )
+    setSavedHint('')
+  }
+
+  const onRemoveLine = (month, index) => {
+    setMonths((prev) =>
+      prev.map((row) => {
+        if (row.month !== month || row.amounts.length <= 1) return row
+        return { ...row, amounts: row.amounts.filter((_, i) => i !== index) }
+      }),
+    )
+    setSavedHint('')
+  }
+
+  const onSave = async () => {
+    if (!canManage) return
     setSaving(true)
     setError('')
+    setSavedHint('')
     try {
-      await payApi.createAccount({
-        name: form.name.trim(),
-        note: form.note.trim() || null,
-        balance: Number(form.balance) || 0,
-      })
-      setForm(EMPTY_FORM)
-      setShowForm(false)
-      await load()
-    } catch (err) {
-      setError(err.message || 'Не удалось создать счёт')
+      const tasks = months
+        .map((m) => {
+          const parsed = amountsForApi(m.amounts)
+          const hasFilled = m.amounts.some((s) => s.trim() !== '')
+          if (hasFilled) {
+            return payApi.upsertMonthly({
+              year,
+              month: m.month,
+              amounts: parsed,
+              currency,
+            })
+          }
+          if (m.hadData) {
+            return payApi.upsertMonthly({
+              year,
+              month: m.month,
+              amounts: [],
+              currency,
+            })
+          }
+          return null
+        })
+        .filter(Boolean)
+      await Promise.all(tasks)
+      setSavedHint('Сохранено')
+      await load(year)
+    } catch (e) {
+      setError(e.message || 'Не удалось сохранить')
     } finally {
       setSaving(false)
     }
@@ -69,134 +180,83 @@ export default function PayPage() {
     return <p className="pay-loading muted">Загрузка…</p>
   }
 
-  const currency = summary?.currency || 'RUB'
-
   return (
     <div className="pay-page">
       <header className="pay-page__header">
         <div>
           <RosterModuleTitle moduleKey="pay" as="h1" className="pay-page__title" />
-          <p className="pay-page__subtitle muted">Учёт счетов и остатков в кабинете</p>
+          <p className="pay-page__subtitle muted">
+            Зарплата по месяцам — несколько сумм в месяце, итог за год
+          </p>
         </div>
-        {canManage && !showForm && (
-          <button type="button" className="btn-primary" onClick={() => setShowForm(true)}>
-            Добавить счёт
+        <div className="pay-year-picker" aria-label="Год">
+          <button
+            type="button"
+            className="pay-year-picker__btn"
+            onClick={() => onYearChange(-1)}
+            aria-label="Предыдущий год"
+          >
+            ‹
           </button>
-        )}
+          <span className="pay-year-picker__value">{year}</span>
+          <button
+            type="button"
+            className="pay-year-picker__btn"
+            onClick={() => onYearChange(1)}
+            aria-label="Следующий год"
+          >
+            ›
+          </button>
+        </div>
       </header>
-
-      <PayNav />
 
       {error && <p className="pay-error">{error}</p>}
 
-      {summary && (
-        <section className="pay-summary" aria-label="Сводка">
-          <div className="pay-summary__card">
-            <p className="pay-summary__label">Счетов</p>
-            <p className="pay-summary__value">{summary.account_count}</p>
-          </div>
-          <div className="pay-summary__card">
-            <p className="pay-summary__label">Суммарный остаток</p>
-            <p className="pay-summary__value">
-              {formatMoney(summary.total_balance, currency)}
+      <section className="pay-salary" aria-label="Зарплата по месяцам">
+        <div className="pay-salary__toolbar">
+          <div>
+            <h2 className="pay-salary__heading">{year} год</h2>
+            <p className="pay-salary__total muted">
+              Итого за год:{' '}
+              <strong className="pay-salary__total-value">
+                {formatMoney(yearTotal, currency)}
+              </strong>
             </p>
           </div>
-        </section>
-      )}
-
-      <section className="pay-accounts" aria-label="Счета">
-        <div className="pay-accounts__toolbar">
-          <h2 className="pay-accounts__heading">Счета</h2>
-        </div>
-
-        {accounts.length === 0 ? (
-          <div className="pay-empty">
-            <p className="pay-empty__text muted">
-              Пока нет счетов. {canManage ? 'Добавьте первый — касса, резерв или личный учёт.' : ''}
-            </p>
-            {canManage && !showForm && (
-              <button type="button" className="btn-primary" onClick={() => setShowForm(true)}>
-                Добавить счёт
-              </button>
-            )}
-          </div>
-        ) : (
-          <table className="pay-table">
-            <thead>
-              <tr>
-                <th scope="col">Название</th>
-                <th scope="col">Примечание</th>
-                <th scope="col">Остаток</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.name}</td>
-                  <td className="muted">{row.note || '—'}</td>
-                  <td className="pay-table__balance">
-                    {formatMoney(row.balance, row.currency)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {canManage && showForm && (
-          <form className="pay-form" onSubmit={onSubmit}>
-            <div className="pay-form__row">
-              <label htmlFor="pay-account-name">Название</label>
-              <input
-                id="pay-account-name"
-                className="input"
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                required
-                maxLength={128}
-                autoFocus
-              />
-            </div>
-            <div className="pay-form__row">
-              <label htmlFor="pay-account-note">Примечание</label>
-              <input
-                id="pay-account-note"
-                className="input"
-                value={form.note}
-                onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-                maxLength={500}
-              />
-            </div>
-            <div className="pay-form__row">
-              <label htmlFor="pay-account-balance">Начальный остаток</label>
-              <input
-                id="pay-account-balance"
-                className="input"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.balance}
-                onChange={(e) => setForm((f) => ({ ...f, balance: e.target.value }))}
-              />
-            </div>
-            <div className="pay-form__actions">
-              <button type="submit" className="btn-primary" disabled={saving}>
-                {saving ? 'Сохранение…' : 'Создать'}
-              </button>
+          {canManage && (
+            <div className="pay-salary__actions">
+              {savedHint && <span className="pay-salary__saved muted">{savedHint}</span>}
               <button
                 type="button"
-                className="btn-secondary"
+                className="btn-primary"
                 disabled={saving}
-                onClick={() => {
-                  setShowForm(false)
-                  setForm(EMPTY_FORM)
-                }}
+                onClick={onSave}
               >
-                Отмена
+                {saving ? 'Сохранение…' : 'Сохранить'}
               </button>
             </div>
-          </form>
-        )}
+          )}
+        </div>
+
+        <div className="pay-salary__grid">
+          {months.map((row, index) => (
+            <PayMonthCell
+              key={row.month}
+              label={MONTH_NAMES[index]}
+              amounts={row.amounts}
+              canManage={canManage}
+              currency={currency}
+              onChange={(amounts) => onAmountsChange(row.month, amounts)}
+              onAddLine={() => onAddLine(row.month)}
+              onRemoveLine={(lineIndex) => onRemoveLine(row.month, lineIndex)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="pay-chart" aria-label="График зарплаты по месяцам">
+        <h2 className="pay-chart__heading">Динамика по месяцам</h2>
+        <PayMonthlyChart data={chartData} currency={currency} />
       </section>
     </div>
   )

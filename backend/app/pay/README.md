@@ -1,9 +1,7 @@
 # RosterPay (backend)
 
-Домен финансового учёта. Отдельный роутер и таблицы, **не** в `medicines` / `users` (кроме FK на `users`).
+Учёт зарплаты по месяцам: несколько сумм на календарный месяц (итог — сумма строк).
 
-- `permissions.py` — коды `pay:view`, `pay:manage`
-- API: `app/api/pay.py` → префикс `/pay`
-- Модель: `app/models/pay.py` → таблица `pay_accounts`
-
-Миграции: `alembic/versions/*pay*`.
+- API: `app/api/pay.py` — `GET /pay/monthly?year=`, `PUT /pay/monthly`
+- Модель: `app/models/pay.py` → `pay_monthly_entries`
+- Права: `app/pay/permissions.py` — `pay:view`, `pay:manage`
