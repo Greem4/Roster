@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import ConfirmDialog from '../components/ConfirmDialog'
-import ResetUserPasswordDialog from '../components/cabinet/ResetUserPasswordDialog'
-import UserAssignmentPopover from '../components/cabinet/UserAssignmentPopover'
+import UserRoleSelect from '../components/cabinet/UserRoleSelect'
+import { IconSave, IconTrash } from '../components/Icons'
 import { useAuth } from '../context/AuthContext'
+import { assignableRoles, userEffectiveRole } from '../utils/userRole'
 
 function isEditableByCurrent(current, target) {
   if (current.id === target.id) return true
@@ -23,7 +24,43 @@ function matchesQuery(user, query) {
   )
 }
 
-/** Управление пользователями: таблица, роли во всплывающей строке. */
+function userInitials(username) {
+  const parts = (username || '?').trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  const s = parts[0] || '?'
+  return s.slice(0, 2).toUpperCase()
+}
+
+function usersCountLabel(n) {
+  const mod10 = n % 10
+  const mod100 = n % 100
+  if (mod10 === 1 && mod100 !== 11) return `${n} пользователь`
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} пользователя`
+  return `${n} пользователей`
+}
+
+function UserAvatar({ user }) {
+  if (user.avatar_url) {
+    return (
+      <img
+        className="users-table__avatar-img"
+        src={user.avatar_url}
+        alt=""
+        width={32}
+        height={32}
+      />
+    )
+  }
+  return (
+    <span className="users-table__avatar-fallback" aria-hidden>
+      {userInitials(user.username)}
+    </span>
+  )
+}
+
+/** Список пользователей — часть страницы кабинета, без отдельной «карточки». */
 export default function AdminUsersPanel() {
   const { user: current } = useAuth()
   const [users, setUsers] = useState([])
@@ -33,7 +70,6 @@ export default function AdminUsersPanel() {
   const [savingId, setSavingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
-  const [passwordTarget, setPasswordTarget] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -58,15 +94,41 @@ export default function AdminUsersPanel() {
     setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...patch } : u)))
   }
 
-  const togglePermission = (userId, code) => {
+  const setRole = (userId, role) => {
     setUsers((prev) =>
       prev.map((u) => {
         if (u.id !== userId) return u
-        const has = u.permissions.includes(code)
-        return {
-          ...u,
-          permissions: has ? u.permissions.filter((p) => p !== code) : [...u.permissions, code],
+        if (role === 'superadmin') {
+          return {
+            ...u,
+            is_founder: false,
+            is_superadmin: true,
+            permissions: [],
+            role: 'superadmin',
+          }
         }
+        if (role === 'admin') {
+          const perms = u.permissions.includes('users:manage')
+            ? u.permissions
+            : [...u.permissions, 'users:manage']
+          return {
+            ...u,
+            is_founder: false,
+            is_superadmin: false,
+            permissions: perms,
+            role: 'admin',
+          }
+        }
+        if (role === 'user') {
+          return {
+            ...u,
+            is_founder: false,
+            is_superadmin: false,
+            permissions: u.permissions.filter((p) => p !== 'users:manage'),
+            role: 'user',
+          }
+        }
+        return u
       }),
     )
   }
@@ -75,11 +137,14 @@ export default function AdminUsersPanel() {
     setSavingId(user.id)
     setError('')
     try {
-      await api.users.update(user.id, {
-        is_active: user.is_active,
-        permissions: user.permissions,
-        email: user.email || undefined,
-      })
+      const payload = { is_active: user.is_active }
+      const roleOptions = assignableRoles(current, user)
+      if (roleOptions.length > 0) {
+        payload.role = userEffectiveRole(user)
+      } else {
+        payload.permissions = user.permissions
+      }
+      await api.users.update(user.id, payload)
       load()
     } catch (e) {
       setError(e.message)
@@ -103,38 +168,25 @@ export default function AdminUsersPanel() {
     }
   }
 
-  const confirmPasswordReset = async (password) => {
-    if (!passwordTarget) return
-    setSavingId(passwordTarget.id)
-    setError('')
-    try {
-      await api.users.update(passwordTarget.id, { password })
-      setPasswordTarget(null)
-      load()
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setSavingId(null)
-    }
-  }
-
   return (
-    <div className="cabinet-panel admin-users-panel">
-      <div className="admin-users-panel__toolbar">
-        <p className="muted admin-users-panel__lead">
-          Учётные записи, активация и права. Удаление — только у основателя.
+    <div className="cabinet-panel admin-users-page">
+      <div className="admin-users-page__bar">
+        <p className="muted admin-users-page__hint">
+          Роли и активация. Супер-админа назначает основатель. Удаление — у основателя.
         </p>
         {!loading && users.length > 0 && (
-          <label className="admin-users-panel__search">
-            <span className="visually-hidden">Поиск</span>
+          <div className="admin-users-page__tools">
+            <span className="admin-users-page__count">{usersCountLabel(users.length)}</span>
             <input
               type="search"
+              className="admin-users-page__search"
               placeholder="Поиск…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoComplete="off"
+              aria-label="Поиск по имени или email"
             />
-          </label>
+          </div>
         )}
       </div>
 
@@ -148,89 +200,80 @@ export default function AdminUsersPanel() {
       )}
 
       {!loading && filteredUsers.length > 0 && (
-        <div className="users-table-wrap">
+        <>
           <table className="users-table">
-            <colgroup>
-              <col className="users-table__col-name" />
-              <col className="users-table__col-email" />
-              <col className="users-table__col-active" />
-              <col className="users-table__col-assign" />
-              <col className="users-table__col-actions" />
-            </colgroup>
             <thead>
               <tr>
                 <th>Пользователь</th>
                 <th>Email</th>
-                <th>Активен</th>
-                <th>Назначение</th>
-                <th>Действия</th>
+                <th className="users-table__th-center">Активен</th>
+                <th>Роль</th>
+                <th className="users-table__th-actions" />
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((u) => {
                 const editable = current && isEditableByCurrent(current, u)
-                const canEditPerms = editable && (u.role === 'user' || u.role === 'admin')
                 const canDelete = current?.is_founder && u.id !== current.id && !u.is_founder
-                const canPassword = editable && u.role !== 'founder'
                 const busy = savingId === u.id || deletingId === u.id
+                const saving = savingId === u.id
 
                 return (
                   <tr
                     key={u.id}
                     className={!u.is_active ? 'users-table__row--inactive' : undefined}
                   >
-                    <td className="users-table__name">{u.username}</td>
+                    <td className="users-table__user">
+                      <UserAvatar user={u} />
+                      <span className="users-table__name">{u.username}</span>
+                    </td>
                     <td className="users-table__email">
-                      <input
-                        type="email"
-                        value={u.email || ''}
-                        disabled={!editable}
-                        placeholder="—"
-                        onChange={(e) => updateLocal(u.id, { email: e.target.value })}
-                      />
+                      {u.email ? (
+                        <a className="users-table__email-link" href={`mailto:${u.email}`}>
+                          {u.email}
+                        </a>
+                      ) : (
+                        <span className="users-table__email-empty">—</span>
+                      )}
                     </td>
                     <td className="users-table__active">
-                      <label className="users-table__active-check">
+                      <label
+                        className={`users-table__toggle${u.is_active ? ' users-table__toggle--on' : ''}`}
+                        title={u.is_active ? 'Активен' : 'Неактивен'}
+                      >
                         <input
                           type="checkbox"
+                          className="users-table__toggle-input"
                           checked={u.is_active}
                           disabled={!editable || u.is_founder}
                           onChange={(e) => updateLocal(u.id, { is_active: e.target.checked })}
                         />
-                        <span className="visually-hidden">Активен</span>
+                        <span className="users-table__toggle-track" aria-hidden />
                       </label>
                     </td>
-                    <td className="users-table__assign">
-                      <UserAssignmentPopover
-                        user={u}
-                        canEditPermissions={canEditPerms}
-                        onTogglePermission={togglePermission}
-                      />
+                    <td className="users-table__role">
+                      <UserRoleSelect user={u} current={current} onSetRole={setRole} />
                     </td>
                     <td className="users-table__actions">
                       <button
                         type="button"
-                        className="users-table__btn"
+                        className="btn-icon btn-icon--save"
                         disabled={!editable || busy}
                         onClick={() => saveUser(u)}
+                        aria-label={saving ? 'Сохранение…' : 'Сохранить'}
+                        title="Сохранить"
                       >
-                        {savingId === u.id ? '…' : 'Сохранить'}
+                        <IconSave />
                       </button>
                       <button
                         type="button"
-                        className="users-table__btn"
-                        disabled={!canPassword || busy}
-                        onClick={() => setPasswordTarget(u)}
-                      >
-                        Пароль
-                      </button>
-                      <button
-                        type="button"
-                        className="users-table__btn users-table__btn--danger"
+                        className="btn-icon btn-icon--danger"
                         disabled={!canDelete || busy}
                         onClick={() => setDeleteTarget(u)}
+                        aria-label="Удалить"
+                        title="Удалить"
                       >
-                        Удалить
+                        <IconTrash />
                       </button>
                     </td>
                   </tr>
@@ -238,12 +281,12 @@ export default function AdminUsersPanel() {
               })}
             </tbody>
           </table>
-          <p className="muted users-table__count">
-            {filteredUsers.length === users.length
-              ? `Всего: ${users.length}`
-              : `${filteredUsers.length} из ${users.length}`}
-          </p>
-        </div>
+          {filteredUsers.length !== users.length && (
+            <p className="muted users-table__hint">
+              Показано {filteredUsers.length} из {users.length}
+            </p>
+          )}
+        </>
       )}
 
       {deleteTarget && (
@@ -258,15 +301,6 @@ export default function AdminUsersPanel() {
           confirming={deletingId === deleteTarget.id}
           onConfirm={confirmDelete}
           onClose={() => !deletingId && setDeleteTarget(null)}
-        />
-      )}
-
-      {passwordTarget && (
-        <ResetUserPasswordDialog
-          username={passwordTarget.username}
-          saving={savingId === passwordTarget.id}
-          onConfirm={confirmPasswordReset}
-          onClose={() => !savingId && setPasswordTarget(null)}
         />
       )}
     </div>

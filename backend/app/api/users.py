@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import require_active_user, require_founder
 from app.models import Permission, User
-from app.roles import can_manage_user, user_role
+from app.roles import apply_role, can_assign_role, can_manage_user, user_role
 from app.schemas.user import UserListItem, UserUpdateRequest
 from app.security import hash_password
 
@@ -20,6 +20,7 @@ def _user_item(user: User) -> UserListItem:
         id=user.id,
         username=user.username,
         email=user.email,
+        avatar_url=user.avatar_url,
         is_superadmin=user.is_superadmin,
         is_founder=user.is_founder,
         role=user_role(user),
@@ -57,6 +58,11 @@ def update_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     if not can_manage_user(current, user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot modify this user")
+    if body.role is not None and body.permissions is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Specify either role or permissions, not both",
+        )
     if body.permissions is not None and (user.is_founder or user.is_superadmin):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -69,7 +75,14 @@ def update_user(
         user.email = body.email
     if body.password:
         user.password_hash = hash_password(body.password)
-    if body.permissions is not None:
+    if body.role is not None:
+        if not can_assign_role(current, user, body.role):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Cannot assign this role",
+            )
+        apply_role(db, user, body.role)
+    elif body.permissions is not None:
         perms = db.query(Permission).filter(Permission.code.in_(body.permissions)).all()
         user.permissions = perms
 
