@@ -197,6 +197,26 @@ a:hover {
   color: var(--module-rx-text);
 }
 
+/* Заголовок на странице раздела — тот же цвет суффикса, что в шапке */
+.roster-module-title {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.roster-module-title__suffix--duty {
+  color: var(--module-duty-text);
+}
+
+.roster-module-title__suffix--pay {
+  color: var(--module-pay-text);
+}
+
+.roster-module-title__suffix--rx {
+  color: var(--module-rx-text);
+}
+
 /* Профиль в шапке — аватар и выпадающее меню */
 .user-menu {
   display: flex;

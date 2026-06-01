@@ -3,6 +3,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { payApi } from '../api'
 import { PERM_PAY_MANAGE } from '../constants'
 import { formatMoney } from '../utils/formatMoney'
+import RosterModuleTitle from '../../../components/RosterModuleTitle'
 import '../pay.css'
 
 const EMPTY_FORM = { name: '', note: '', balance: '0' }
@@ -73,7 +74,7 @@ export default function PayPage() {
     <div className="pay-page">
       <header className="pay-page__header">
         <div>
-          <h1 className="pay-page__title">RosterPay</h1>
+          <RosterModuleTitle moduleKey="pay" as="h1" className="pay-page__title" />
           <p className="pay-page__subtitle muted">Учёт счетов и остатков в кабинете</p>
         </div>
         {canManage && !showForm && (
