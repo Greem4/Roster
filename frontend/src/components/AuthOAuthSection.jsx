@@ -20,8 +20,8 @@ export default function AuthOAuthSection({
       />
       <p className="muted auth-oauth-hint">
         {mode === 'register'
-          ? 'Новый аккаунт через Яндекс ID ждёт одобрения администратора.'
-          : 'Вход через Яндекс ID для уже привязанного аккаунта.'}
+          ? 'Новый аккаунт ждёт одобрения администратора.'
+          : 'Для аккаунта, уже привязанного к Яндекс ID.'}
       </p>
       <div className="auth-oauth-divider" role="presentation">
         <span>или</span>

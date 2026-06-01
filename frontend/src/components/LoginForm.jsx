@@ -29,7 +29,7 @@ export default function LoginForm({ onSuccess, showRegisterLink = true }) {
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form className="login-form auth-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
       <AuthOAuthSection disabled={submitting} mode="login" onOAuthSuccess={onSuccess} />
       <label>

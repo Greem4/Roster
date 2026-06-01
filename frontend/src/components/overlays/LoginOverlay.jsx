@@ -15,7 +15,7 @@ export default function LoginOverlay() {
   }
 
   return (
-    <RouteModal title="Вход">
+    <RouteModal title="Вход" size="auth">
       <LoginForm onSuccess={handleSuccess} />
     </RouteModal>
   )

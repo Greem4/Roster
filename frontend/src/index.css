@@ -173,7 +173,7 @@ a:hover {
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -661,6 +661,11 @@ input[type='date']:focus {
   overflow-y: auto;
 }
 
+.modal-backdrop--auth {
+  align-items: center;
+  padding: 1.25rem 1rem;
+}
+
 .modal-panel {
   width: 100%;
   max-width: 420px;
@@ -669,6 +674,22 @@ input[type='date']:focus {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-modal);
   animation: modal-in 0.2s ease-out;
+}
+
+.modal-panel--auth {
+  max-width: 352px;
+}
+
+.modal-panel--auth .modal-header {
+  padding: 0.75rem 1rem;
+}
+
+.modal-panel--auth .modal-title {
+  font-size: 1.05rem;
+}
+
+.modal-panel--auth .modal-body {
+  padding: 0.9rem 1rem 1rem;
 }
 
 .modal-panel--wide {
@@ -745,16 +766,45 @@ input[type='date']:focus {
   font-size: 0.9rem;
 }
 
+.login-form.auth-form {
+  gap: 0.65rem;
+}
+
+.login-form.auth-form label {
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.login-form.auth-form input[type='text'],
+.login-form.auth-form input[type='password'],
+.login-form.auth-form input[type='email'] {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.9375rem;
+}
+
+.login-form.auth-form .btn-primary {
+  margin-top: 0.15rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.9375rem;
+}
+
 .login-form-footer {
   margin: 0;
   text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.45;
 }
 
 .auth-oauth {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  margin-bottom: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.modal-panel--auth .auth-oauth {
+  gap: 0.45rem;
 }
 
 .auth-oauth-divider {
@@ -775,154 +825,155 @@ input[type='date']:focus {
 
 .auth-oauth-hint {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.75rem;
+  line-height: 1.35;
   text-align: center;
 }
 
-/* Плашка Яндекс ID — одна кнопка, OAuth в popup */
+/* Плашка Яндекс ID: компактная капсула по ширине контента, элементы вплотную к тексту */
 .yandex-plaque {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 
 .yandex-plaque__btn {
-  position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  width: 100%;
-  min-height: 48px;
-  padding: 0.55rem 1rem;
-  border: 1px solid #3a3a3a;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #2a2a2e 0%, #121214 100%);
+  gap: 0.4rem;
+  width: max-content;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0.35rem 0.6rem;
+  border: none;
+  border-radius: 22px;
+  background: #000;
   color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: clamp(0.8125rem, 2.6vw, 0.9375rem);
+  font-weight: 500;
   font-family: inherit;
+  line-height: 1.25;
   cursor: pointer;
-  overflow: hidden;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.25s ease,
-    transform 0.15s ease;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.06) inset,
-    0 8px 22px rgba(0, 0, 0, 0.35);
-}
-
-.yandex-plaque__glow {
-  position: absolute;
-  inset: -50% auto auto -25%;
-  width: 60%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(252, 63, 29, 0.2) 0%, transparent 70%);
-  pointer-events: none;
-  animation: yandex-glow-drift 4.5s ease-in-out infinite alternate;
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.45);
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .yandex-plaque__btn:hover:not(:disabled) {
-  border-color: rgba(252, 63, 29, 0.5);
+  background: #141414;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 10px 28px rgba(252, 63, 29, 0.18);
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 6px 20px rgba(0, 0, 0, 0.5);
 }
 
 .yandex-plaque__btn:active:not(:disabled) {
-  transform: scale(0.99);
+  background: #0a0a0a;
 }
 
 .yandex-plaque__btn:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: wait;
 }
 
-.yandex-plaque__avatar {
-  position: relative;
-  display: inline-flex;
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-}
-
-.yandex-plaque__avatar-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(from 90deg, #fc3f1d, #ffcc00, #fc3f1d);
-  animation: yandex-ring-spin 5s linear infinite;
-}
-
-.yandex-plaque--pending .yandex-plaque__avatar-ring {
-  animation-duration: 1s;
-}
-
-.yandex-plaque__avatar-face {
-  position: relative;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  margin: 2px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #ffe8d8 0%, #e8a88e 55%, #c97862 100%);
-}
-
-.yandex-plaque__avatar-img {
-  position: relative;
-  z-index: 1;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  margin: 2px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-
-.yandex-plaque__avatar--photo .yandex-plaque__avatar-ring {
-  animation: none;
-}
-
-.yandex-plaque__label {
-  letter-spacing: 0.01em;
+.yandex-plaque--pending .yandex-plaque__label {
+  opacity: 0.75;
 }
 
 .yandex-plaque__logo {
-  display: inline-flex;
+  display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: 6px;
+}
+
+.yandex-plaque__logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
   background: #fc3f1d;
+  color: #fff;
+  font-size: 0.875rem;
   font-weight: 700;
-  font-size: 1rem;
   line-height: 1;
-  box-shadow: 0 4px 12px rgba(252, 63, 29, 0.4);
+}
+
+.yandex-plaque__label {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(16rem, calc(100vw - 7rem));
+  padding: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yandex-plaque__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.yandex-plaque__avatar-img,
+.yandex-plaque__avatar-placeholder {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+.yandex-plaque__avatar-img {
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.yandex-plaque__avatar-placeholder {
+  background:
+    radial-gradient(circle at 50% 38%, #6b6b70 0%, #6b6b70 18%, transparent 19%),
+    linear-gradient(180deg, #4a4a4f 0%, #3a3a3f 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .yandex-plaque__error {
   margin: 0.5rem 0 0;
+  max-width: 100%;
   font-size: 0.8rem;
   text-align: center;
   color: var(--color-error);
 }
 
-@keyframes yandex-glow-drift {
-  to {
-    transform: translateX(15%);
+@media (max-width: 360px) {
+  .yandex-plaque__btn {
+    gap: 0.35rem;
+    padding: 0.35rem 0.5rem;
   }
-}
 
-@keyframes yandex-ring-spin {
-  to {
-    transform: rotate(360deg);
+  .yandex-plaque__avatar,
+  .yandex-plaque__avatar-img,
+  .yandex-plaque__avatar-placeholder {
+    width: 1.75rem;
+    height: 1.75rem;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .yandex-plaque__glow,
-  .yandex-plaque__avatar-ring {
-    animation: none;
+  .yandex-plaque__logo,
+  .yandex-plaque__logo-mark {
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 0.8rem;
   }
 }
 

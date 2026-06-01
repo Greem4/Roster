@@ -6,14 +6,14 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
 const LABELS = {
   login: 'Войти с Яндекс ID',
-  register: 'Зарегистрироваться через Яндекс ID',
+  register: 'Регистрация с Яндекс ID',
 }
 
 const POPUP_FEATURES =
   'popup=yes,width=520,height=720,menubar=no,toolbar=no,location=yes,status=no,scrollbars=yes,resizable=yes'
 
 /**
- * Кнопка-плашка Яндекс ID: по клику сразу открывает окно OAuth.
+ * Кнопка Яндекс ID в стиле официальной плашки: логотип слева, подпись по центру, аватар справа.
  * @param {{ disabled?: boolean, mode?: 'login' | 'register', onSuccess?: () => void, onPending?: () => void }} props
  */
 export default function YandexLoginButton({
@@ -139,21 +139,16 @@ export default function YandexLoginButton({
         disabled={disabled || oauthPending}
         onClick={startOAuth}
       >
-        <span className="yandex-plaque__glow" aria-hidden="true" />
-        <span
-          className={`yandex-plaque__avatar${avatarUrl ? ' yandex-plaque__avatar--photo' : ''}`}
-          aria-hidden="true"
-        >
-          <span className="yandex-plaque__avatar-ring" />
+        <span className="yandex-plaque__logo" aria-hidden="true">
+          <span className="yandex-plaque__logo-mark">Я</span>
+        </span>
+        <span className="yandex-plaque__label">{oauthPending ? 'Ожидаем Яндекс…' : label}</span>
+        <span className="yandex-plaque__avatar" aria-hidden="true">
           {avatarUrl ? (
             <img className="yandex-plaque__avatar-img" src={avatarUrl} alt="" />
           ) : (
-            <span className="yandex-plaque__avatar-face" />
+            <span className="yandex-plaque__avatar-placeholder" />
           )}
-        </span>
-        <span className="yandex-plaque__label">{oauthPending ? 'Ожидаем Яндекс…' : label}</span>
-        <span className="yandex-plaque__logo" aria-hidden="true">
-          Я
         </span>
       </button>
       {error && (
