@@ -9,8 +9,8 @@ YANDEX_AUTH_URL = "https://oauth.yandex.ru/authorize"
 YANDEX_TOKEN_URL = "https://oauth.yandex.ru/token"
 YANDEX_USER_URL = "https://login.yandex.ru/info"
 
-# Права, выбранные в кабинете Яндекс OAuth для RosterRx
-YANDEX_SCOPES = "login:email login:info login:avatar login:birthday login:phone"
+# Права из кабинета oauth.yandex.ru (должны совпадать 1:1, иначе invalid_scope)
+YANDEX_SCOPES = "login:email login:info login:avatar login:birthday login:default_phone"
 
 
 def build_authorize_url(*, client_id: str, redirect_uri: str, state: str) -> str:

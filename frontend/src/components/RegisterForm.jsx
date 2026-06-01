@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import AuthOAuthSection from './AuthOAuthSection'
 
@@ -8,6 +8,7 @@ import AuthOAuthSection from './AuthOAuthSection'
  * @param {{ onSuccess?: () => void }} props
  */
 export default function RegisterForm({ onSuccess }) {
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -35,7 +36,12 @@ export default function RegisterForm({ onSuccess }) {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
-      <AuthOAuthSection disabled={submitting} mode="register" />
+      <AuthOAuthSection
+        disabled={submitting}
+        mode="register"
+        onOAuthSuccess={() => navigate('/medicines', { replace: true })}
+        onOAuthPending={onSuccess}
+      />
       <label>
         Логин
         <input

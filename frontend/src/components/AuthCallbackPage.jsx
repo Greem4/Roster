@@ -14,16 +14,37 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const token = searchParams.get('token')
     const oauthError = searchParams.get('oauth_error')
+    const oauthPending = searchParams.get('oauth_pending')
+
+    const notifyOpener = (payload) => {
+      if (!window.opener || window.opener.closed) return false
+      window.opener.postMessage(
+        { type: 'roster-yandex-oauth', ...payload },
+        window.location.origin,
+      )
+      window.close()
+      return true
+    }
+
+    if (oauthPending) {
+      if (notifyOpener({ pending: true })) return
+      setMessage('Заявка отправлена. Дождитесь одобрения администратора.')
+      return
+    }
 
     if (oauthError) {
+      if (notifyOpener({ error: oauthError })) return
       setMessage(oauthError)
       return
     }
 
     if (!token) {
+      if (notifyOpener({ error: 'Не получен токен авторизации' })) return
       setMessage('Не получен токен авторизации')
       return
     }
+
+    if (notifyOpener({ token })) return
 
     let cancelled = false
     ;(async () => {

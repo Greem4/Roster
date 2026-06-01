@@ -1,8 +1,10 @@
+import logging
 from typing import Annotated
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
@@ -20,6 +22,7 @@ from app.security import (
 from app.services import yandex_oauth
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 
 def _is_local_host(host: str) -> bool:
@@ -36,10 +39,26 @@ def _yandex_redirect_uri(request: Request, settings: Settings) -> str:
     return settings.yandex_redirect_uri_prod
 
 
+def _oauth_front_redirect(return_to: str, **query: str) -> RedirectResponse:
+    """Редирект на страницу /auth/callback фронта (return_to — origin или полный URL)."""
+    parsed = urlparse(return_to)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+    path = (parsed.path or "").rstrip("/")
+    if path.endswith("/auth/callback"):
+        base = f"{origin}{path}"
+    else:
+        base = f"{origin}/auth/callback"
+    return RedirectResponse(f"{base}?{urlencode(query)}", status_code=status.HTTP_302_FOUND)
+
+
 def _validate_return_to(return_to: str, settings: Settings) -> str:
-    allowed = {origin.rstrip("/") for origin in settings.cors_origin_list}
-    normalized = return_to.rstrip("/")
-    if normalized not in allowed:
+    """Разрешён только return_to с origin из CORS (путь, например /auth/callback, допустим)."""
+    parsed = urlparse(return_to)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid return URL")
+    origin = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+    allowed = {o.rstrip("/") for o in settings.cors_origin_list}
+    if origin not in allowed:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid return URL")
     return return_to
 
@@ -124,6 +143,14 @@ def register(body: RegisterRequest, db: Annotated[Session, Depends(get_db)]):
     return {"message": "Registration successful. Wait for administrator approval."}
 
 
+@router.get("/yandex/status")
+def yandex_status(settings: Annotated[Settings, Depends(get_settings)]):
+    """Доступен ли OAuth Яндекс на этом API (для подсказки на фронте)."""
+    return {
+        "configured": bool(settings.yandex_client_id and settings.yandex_client_secret),
+    }
+
+
 @router.get("/yandex/start")
 def yandex_start(
     request: Request,
@@ -158,45 +185,60 @@ async def yandex_callback(
     error_description: str | None = None,
 ):
     """Callback Яндекс OAuth: создаёт/находит пользователя и возвращает JWT на фронт."""
-    fallback = settings.cors_origin_list[0] if settings.cors_origin_list else "/"
-
-    if error:
-        params = urlencode({"oauth_error": error_description or error})
-        return RedirectResponse(f"{fallback}/auth/callback?{params}", status_code=status.HTTP_302_FOUND)
-
-    if not code or not state:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing OAuth parameters")
-
-    return_to = decode_oauth_state(state)
-    if not return_to:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OAuth state")
+    fallback = settings.cors_origin_list[0] if settings.cors_origin_list else "http://localhost:5173"
 
     try:
-        return_to = _validate_return_to(return_to, settings)
+        if error:
+            return _oauth_front_redirect(fallback, oauth_error=error_description or error)
+
+        if not code or not state:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing OAuth parameters")
+
+        return_to = decode_oauth_state(state)
+        if not return_to:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired OAuth state")
+
+        try:
+            return_to = _validate_return_to(return_to, settings)
+        except HTTPException:
+            return_to = fallback
+
+        redirect_uri = _yandex_redirect_uri(request, settings)
+        try:
+            token_payload = await yandex_oauth.exchange_code_for_token(
+                client_id=settings.yandex_client_id,
+                client_secret=settings.yandex_client_secret,
+                code=code,
+                redirect_uri=redirect_uri,
+            )
+            profile = await yandex_oauth.fetch_yandex_profile(token_payload["access_token"])
+        except Exception:
+            logger.exception("Yandex token/profile exchange failed")
+            return _oauth_front_redirect(return_to, oauth_error="Не удалось войти через Яндекс")
+
+        try:
+            user = _get_or_create_yandex_user(db, profile)
+        except HTTPException as exc:
+            detail = exc.detail if isinstance(exc.detail, str) else "Ошибка регистрации через Яндекс"
+            return _oauth_front_redirect(return_to, oauth_error=detail)
+        except (ValueError, SQLAlchemyError):
+            db.rollback()
+            logger.exception("Yandex user create failed (DB schema or profile?)")
+            return _oauth_front_redirect(
+                return_to,
+                oauth_error="Ошибка сохранения аккаунта. Сообщите администратору.",
+            )
+
+        if not user.is_active and not user.is_superadmin:
+            return _oauth_front_redirect(return_to, oauth_pending="1")
+
+        access_token = create_access_token(user.username)
+        return _oauth_front_redirect(return_to, token=access_token)
     except HTTPException:
-        return_to = fallback
-
-    redirect_uri = _yandex_redirect_uri(request, settings)
-    try:
-        token_payload = await yandex_oauth.exchange_code_for_token(
-            client_id=settings.yandex_client_id,
-            client_secret=settings.yandex_client_secret,
-            code=code,
-            redirect_uri=redirect_uri,
-        )
-        profile = await yandex_oauth.fetch_yandex_profile(token_payload["access_token"])
-    except Exception as exc:
-        params = urlencode({"oauth_error": "Не удалось войти через Яндекс"})
-        return RedirectResponse(f"{return_to}/auth/callback?{params}", status_code=status.HTTP_302_FOUND)
-
-    user = _get_or_create_yandex_user(db, profile)
-    if not user.is_active and not user.is_superadmin:
-        params = urlencode({"oauth_error": "Аккаунт ожидает подтверждения администратором"})
-        return RedirectResponse(f"{return_to}/auth/callback?{params}", status_code=status.HTTP_302_FOUND)
-
-    access_token = create_access_token(user.username)
-    params = urlencode({"token": access_token})
-    return RedirectResponse(f"{return_to}/auth/callback?{params}", status_code=status.HTTP_302_FOUND)
+        raise
+    except Exception:
+        logger.exception("Yandex callback failed")
+        return _oauth_front_redirect(fallback, oauth_error="Внутренняя ошибка входа через Яндекс")
 
 
 @router.get("/me", response_model=UserMeResponse)
