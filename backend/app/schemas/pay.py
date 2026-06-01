@@ -29,3 +29,22 @@ class PaySummaryResponse(BaseModel):
     account_count: int
     total_balance: Decimal
     currency: str = "RUB"
+
+
+class PayMonthlyUpsert(BaseModel):
+    """Создание или обновление суммы за месяц."""
+
+    year: int = Field(ge=2000, le=2100)
+    month: int = Field(ge=1, le=12)
+    amount: Decimal = Field(ge=0, decimal_places=2, max_digits=14)
+    currency: str = Field(default="RUB", min_length=3, max_length=3)
+
+
+class PayMonthlyResponse(BaseModel):
+    year: int
+    month: int
+    amount: Decimal
+    currency: str = "RUB"
+    updated_at: datetime | None = None
+
+    model_config = {"from_attributes": True}

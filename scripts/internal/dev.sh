@@ -42,5 +42,9 @@ if lan=$(roster_lan_ip); then
 fi
 echo "На сайт: ./scripts/deploy-frontend.sh"
 cd "$ROOT/frontend"
-[ -d node_modules ] || npm ci
+# npm ci, если нет node_modules или package-lock.json новее установленных пакетов
+if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ] \
+  || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+  npm ci
+fi
 exec npm run dev

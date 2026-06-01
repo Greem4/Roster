@@ -153,3 +153,185 @@
   margin: 3rem 0;
   text-align: center;
 }
+
+.pay-page--wide {
+  max-width: 56rem;
+}
+
+.pay-nav {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding: 0.25rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: fit-content;
+}
+
+.pay-nav__link {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: color 0.15s, background 0.15s;
+}
+
+.pay-nav__link:hover {
+  color: var(--color-text-secondary);
+}
+
+.pay-nav__link--active {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+
+.pay-year-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-year-picker__btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.pay-year-picker__btn:hover {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+
+.pay-year-picker__value {
+  min-width: 3.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-analytics {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem 1.15rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-analytics__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pay-analytics__heading {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.pay-analytics__total {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.pay-analytics__total-value {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.pay-analytics__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pay-analytics__saved {
+  font-size: 0.85rem;
+  color: var(--color-success);
+}
+
+.pay-analytics__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.65rem;
+}
+
+.pay-analytics__cell {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.pay-analytics__cell-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.pay-analytics__input {
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-analytics__readonly {
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  padding: 0.5rem 0;
+}
+
+.pay-analytics__chart-section {
+  padding: 1rem 1.1rem 1.25rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-analytics__chart-section .pay-analytics__heading {
+  margin-bottom: 0.75rem;
+}
+
+.pay-analytics__chart-wrap {
+  margin: 0 -0.25rem;
+}
+
+.pay-analytics__chart-empty {
+  margin: 2rem 0 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.pay-analytics__tooltip {
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pay-analytics__tooltip-month {
+  margin: 0 0 0.2rem;
+  color: var(--color-text-muted);
+}
+
+.pay-analytics__tooltip-value {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-accent-text);
+}

@@ -8,4 +8,7 @@ export const payApi = {
   listAccounts: () => apiRequest('/pay/accounts'),
   createAccount: (body) =>
     apiRequest('/pay/accounts', { method: 'POST', body: JSON.stringify(body) }),
+  listMonthly: (year) => apiRequest(`/pay/monthly?year=${encodeURIComponent(year)}`),
+  upsertMonthly: (body) =>
+    apiRequest('/pay/monthly', { method: 'PUT', body: JSON.stringify(body) }),
 }

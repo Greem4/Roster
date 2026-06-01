@@ -4,6 +4,7 @@ import { payApi } from '../api'
 import { PERM_PAY_MANAGE } from '../constants'
 import { formatMoney } from '../utils/formatMoney'
 import RosterModuleTitle from '../../../components/RosterModuleTitle'
+import PayNav from '../components/PayNav'
 import '../pay.css'
 
 const EMPTY_FORM = { name: '', note: '', balance: '0' }
@@ -83,6 +84,8 @@ export default function PayPage() {
           </button>
         )}
       </header>
+
+      <PayNav />
 
       {error && <p className="pay-error">{error}</p>}
 
