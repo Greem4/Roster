@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import AuthOAuthSection from './AuthOAuthSection'
 import { useAuth } from '../context/AuthContext'
+import { formatAuthError } from '../utils/authErrors'
 
 /**
- * Форма входа: логин и пароль. Используется в модальном окне и на отдельной странице.
+ * Форма входа: логин или почта и пароль. Используется в модальном окне и на отдельной странице.
  * @param {{ onSuccess?: () => void, showRegisterLink?: boolean }} props
  */
 export default function LoginForm({ onSuccess, showRegisterLink = true }) {
@@ -21,23 +23,31 @@ export default function LoginForm({ onSuccess, showRegisterLink = true }) {
       await login(username, password)
       onSuccess?.()
     } catch (err) {
-      setError(err.message || 'Ошибка входа')
+      setError(formatAuthError(err.message) || 'Ошибка входа')
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form className="login-form auth-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
+      <AuthOAuthSection
+        disabled={submitting}
+        mode="login"
+        onOAuthSuccess={onSuccess}
+        onOAuthError={setError}
+      />
       <label>
-        Логин
+        Логин или почта
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
+          placeholder="логин или name@example.ru"
           required
         />
+        <span className="muted auth-field-hint">Можно ввести логин или адрес почты, привязанный к аккаунту.</span>
       </label>
       <label>
         Пароль

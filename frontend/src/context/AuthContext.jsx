@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api, setToken } from '../api/client'
+import { setCachedYandexAvatar } from '../utils/yandexAvatar'
 
 const AuthContext = createContext(null)
 
@@ -17,6 +18,9 @@ export function AuthProvider({ children }) {
     try {
       const me = await api.me()
       setUser(me)
+      if (me.avatar_url) {
+        setCachedYandexAvatar(me.avatar_url)
+      }
     } catch {
       setToken(null)
       setUser(null)
@@ -35,6 +39,11 @@ export function AuthProvider({ children }) {
     await refresh()
   }
 
+  const loginWithToken = async (accessToken) => {
+    setToken(accessToken)
+    await refresh()
+  }
+
   const logout = () => {
     setToken(null)
     setUser(null)
@@ -42,25 +51,34 @@ export function AuthProvider({ children }) {
 
   const hasPermission = (code) => {
     if (!user) return false
-    if (user.is_superadmin) return true
+    if (user.is_founder || user.is_superadmin) return true
     return user.permissions.includes(code)
   }
 
-  const isAdmin = !!user && (user.is_superadmin || user.permissions.includes('users:manage'))
+  const isFounder = !!user?.is_founder
+  const isSuperadmin = !!user?.is_superadmin && !user?.is_founder
+  const isAdmin =
+    !!user &&
+    (user.is_founder || user.is_superadmin || user.permissions.includes('users:manage'))
+  const canManageUsers = isAdmin
 
   const value = useMemo(
     () => ({
       user,
       loading,
       login,
+      loginWithToken,
       logout,
       refresh,
       hasPermission,
+      isFounder,
+      isSuperadmin,
       isAdmin,
+      canManageUsers,
       isAuthenticated: !!user,
-      isActive: user?.is_active || user?.is_superadmin,
+      isActive: user?.is_active || user?.is_superadmin || user?.is_founder,
     }),
-    [user, loading, refresh, isAdmin],
+    [user, loading, refresh, isAdmin, canManageUsers, isFounder, isSuperadmin],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

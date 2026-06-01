@@ -1,7 +1,7 @@
 #!/bin/sh
-# Caddy + proxy /api на B3 (~/server)
+# Один раз дома (или после смены Caddyfile): Caddy + proxy /api на Pi.
 set -e
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 PI_SSH="${PI_SSH:-greem4@192.168.31.96}"
 
 echo "Копирование Caddyfile и docker-compose.yml -> ${PI_SSH}:~/server/"

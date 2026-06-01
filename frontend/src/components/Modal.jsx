@@ -14,10 +14,22 @@ export default function Modal({ title, onClose, children, size }) {
     }
   }, [onClose])
 
+  const panelClass = [
+    'modal-panel',
+    size === 'wide' && 'modal-panel--wide',
+    size === 'auth' && 'modal-panel--auth',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div className="modal-backdrop" onClick={onClose} role="presentation">
+    <div
+      className={`modal-backdrop${size === 'auth' ? ' modal-backdrop--auth' : ''}`}
+      onClick={onClose}
+      role="presentation"
+    >
       <div
-        className={`modal-panel${size === 'wide' ? ' modal-panel--wide' : ''}`}
+        className={panelClass}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import AuthOAuthSection from './AuthOAuthSection'
 
 /**
  * Форма регистрации нового пользователя.
  * @param {{ onSuccess?: () => void }} props
  */
 export default function RegisterForm({ onSuccess }) {
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,8 +34,15 @@ export default function RegisterForm({ onSuccess }) {
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form className="login-form auth-form" onSubmit={handleSubmit}>
       {error && <p className="error">{error}</p>}
+      <AuthOAuthSection
+        disabled={submitting}
+        mode="register"
+        onOAuthSuccess={() => navigate('/medicines', { replace: true })}
+        onOAuthPending={onSuccess}
+        onOAuthError={setError}
+      />
       <label>
         Логин
         <input

@@ -5,26 +5,9 @@ import MedicineForm from '../components/MedicineForm'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
 import { IconEdit, IconTrash } from '../components/Icons'
+import { expiryTier } from '../utils/expiryTier'
+import { formatDate } from '../utils/formatDate'
 import { shortMedicineName } from '../utils/medicineName'
-
-const MONTH_DAYS = 30
-const TWO_MONTHS_DAYS = 60
-
-/** Цвет всей строки: ok / warn / danger по сроку годности. */
-function expiryTier(days) {
-  if (days < MONTH_DAYS) return 'danger'
-  if (days <= TWO_MONTHS_DAYS) return 'warn'
-  return 'ok'
-}
-
-/** Срок годности в виде ДД.ММ.ГГ (например 01.01.26). */
-function formatDate(iso) {
-  const d = new Date(iso + 'T12:00:00')
-  const day = String(d.getDate()).padStart(2, '0')
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const year = String(d.getFullYear() % 100).padStart(2, '0')
-  return `${day}.${month}.${year}`
-}
 
 const SORT_OPTIONS = [
   { key: 'name', label: 'Название' },

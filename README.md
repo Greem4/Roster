@@ -7,13 +7,11 @@
 | Часть | Где живёт | Как проверять | Как выкатить |
 |-------|-----------|---------------|--------------|
 | **API** | только B3 | уже на сервере после деплоя | `./scripts/deploy-backend.sh` |
-| **Фронт** | сначала Mac | `./scripts/dev-ui.sh` → http://localhost:5173 (с телефона в той же Wi‑Fi — `http://<IP-Mac>:5173`) | `./scripts/deploy-frontend.sh` |
-
-**Один терминал для UI** (API с Pi по туннелю, React с hot-reload):
+| **Фронт** | сначала Mac | `./scripts/dev.sh` → http://localhost:5173 | `./scripts/deploy-frontend.sh` |
 
 ```bash
-chmod +x scripts/dev-ui.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/setup-docker-autostart.sh
-./scripts/dev-ui.sh
+chmod +x scripts/dev.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh
+./scripts/dev.sh
 ```
 
 Когда UI устраивает:
@@ -24,8 +22,48 @@ chmod +x scripts/dev-ui.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh 
 
 Cursor-агент после правок **API** сам запускает `deploy-backend.sh`; **фронт на сайт** — только если вы попросите.
 
-SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.env` можно `PI_SSH=roster-b3`.  
-Автозапуск Docker на Pi после перезагрузки: `./scripts/setup-docker-autostart.sh` (один раз).
+**Один раз дома** (`scripts/setup/`):
+
+```bash
+./scripts/setup/ssh-key.sh           # SSH без пароля
+./scripts/setup/vps-dev-ssh.sh      # деплой/import из интернета
+./scripts/setup/vps-ssh-config.sh   # Host roster-pi-remote в ~/.ssh/config
+./scripts/setup/docker-autostart.sh # Docker после reboot
+./scripts/setup/caddy.sh            # Caddy на Pi
+```
+
+### Разработка вне дома
+
+С интернета к Pi **напрямую не зайти** (CGNAT). Доступ только через **ваш** VPS и SSH-ключи:
+
+| Что | Как | Кто может |
+|-----|-----|-----------|
+| Сайт / prod API | `https://medicine.greemlab.ru` | все с URL |
+| SSH на Pi | `ProxyJump` → VPS → `127.0.0.1:22022` (туннель с Pi) | только ключи в `authorized_keys` на VPS и Pi |
+| PostgreSQL | `127.0.0.1:5432` на Pi, с Mac — `./scripts/internal/tunnel-db.sh` | тот же SSH |
+| Деплой API | `./scripts/deploy-backend.sh` | тот же SSH (auto: LAN или VPS hop) |
+
+**Один раз дома** (Pi в LAN):
+
+1. `./scripts/setup/ssh-key.sh` — ключ на Pi, без пароля SSH.
+2. `./scripts/setup/vps-dev-ssh.sh` — Pi пробрасывает `127.0.0.1:22022` на VPS (не в интернет, только localhost VPS).
+3. `./scripts/setup/vps-ssh-config.sh` — удобные Host `roster-vps` / `roster-pi-remote`.
+
+**Вне дома** (кафе, LTE):
+
+```bash
+./scripts/deploy-backend.sh              # обновить API на Pi
+./scripts/internal/tunnel-db.sh          # БД на localhost:5432 (в другом терминале)
+./scripts/dev.sh                         # UI локально; API — prod, если Pi недоступна
+```
+
+Проверка доступа к Pi:
+
+```bash
+ssh roster-pi-remote 'hostname'
+```
+
+Безопасность: пароль SSH на Pi отключён; порты API/БД на Pi — `127.0.0.1`; порт `22022` на VPS слушает только `127.0.0.1` — сначала нужен SSH на VPS под **вашим** `root` (или другим пользователем с ключом), затем hop на Pi.
 
 ---
 
@@ -57,7 +95,7 @@ SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.en
 │  ~/RosterRx: postgres + FastAPI     │
 └─────────────────────────────────────┘
          ▲
-         │  dev-ui.sh: SSH :8000 → API (разработка с Mac)
+         │  dev.sh: SSH :8000 → API (разработка с Mac)
     Mac (Vite :5173)
 ```
 
@@ -81,7 +119,7 @@ SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.en
 - База **только на Pi**; на VPS данных нет.
 - PostgreSQL и API на Pi слушают **127.0.0.1** ([docker-compose.yml](docker-compose.yml)).
 - С LTE сайт открывается **не из‑за проброса портов на роутере**, а потому что Pi **сама** держит исходящий туннель на VPS.
-- С Mac: `dev-ui.sh` — отдельный SSH-туннель к API на Pi (для разработки, не путать с VPS-туннелем).
+- С Mac: `dev.sh` — туннель к API на Pi или prod API вне дома.
 
 Переменные на Pi: [.env.example](.env.example) (`POSTGRES_*`, `JWT_SECRET`, `CORS_ORIGINS`).
 
@@ -114,11 +152,11 @@ SSH без пароля (один раз): `./scripts/setup-ssh-key.sh`, в `.en
 | Что | Путь / команда |
 |-----|----------------|
 | `docker.service` | `systemctl enable docker` — уже в автозагрузке |
-| Скрипт стеков | `/home/greem4/bin/docker-stacks-up.sh` (из репозитория: `scripts/docker-stacks-up.sh`) |
+| Скрипт стеков | `/home/greem4/bin/docker-stacks-up.sh` (из `scripts/internal/`) |
 | Лог | `/home/greem4/docker-stacks.log` |
 | Автозапуск | `crontab`: `@reboot sleep 45 && /home/greem4/bin/docker-stacks-up.sh` |
-| Установка с Mac | `./scripts/setup-docker-autostart.sh` |
-| Опционально systemd | `scripts/docker-stacks.service` → `/etc/systemd/system/` (нужен `sudo` на Pi) |
+| Установка с Mac | `./scripts/setup/docker-autostart.sh` |
+| Опционально systemd | `scripts/internal/docker-stacks.service` |
 
 После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/RosterRx`, `~/server`, `~/singbox`.
 
@@ -159,7 +197,7 @@ ssh greem4@192.168.31.96 "tail -20 ~/docker-stacks.log"
 
 5. Лог: `ssh greem4@192.168.31.96 "tail -80 /home/greem4/.config/vps-tunnel/tunnel.log"`
 6. На Pi: `docker compose -f ~/RosterRx/docker-compose.yml ps` и Caddy в `~/server`.
-7. Если после отключения света контейнеры не поднялись: `ssh greem4@192.168.31.96 "/home/greem4/bin/docker-stacks-up.sh"` или переустановить автозапуск: `./scripts/setup-docker-autostart.sh`.
+7. Если после отключения света контейнеры не поднялись: `ssh greem4@192.168.31.96 "/home/greem4/bin/docker-stacks-up.sh"` или `./scripts/setup/docker-autostart.sh`.
 
 ---
 
@@ -167,7 +205,7 @@ ssh greem4@192.168.31.96 "tail -20 ~/docker-stacks.log"
 
 | Что | Как настроено |
 |-----|----------------|
-| **SSH по ключу** | `~/.ssh/authorized_keys` на Pi; с Mac — `~/.ssh/id_ed25519` или отдельный ключ через `./scripts/setup-ssh-key.sh` → Host `roster-b3` |
+| **SSH по ключу** | `./scripts/setup/ssh-key.sh` → Host `roster-b3` |
 | **Пароль SSH** | отключён на Pi (`PasswordAuthentication no`) — без ключа не войти |
 | **`sudo` на Pi** | **отдельно** от SSH-ключа; для systemd/Cursor-агента нужен пароль или `NOPASSWD` в `/etc/sudoers.d/` |
 
@@ -193,12 +231,12 @@ docker compose up -d --build
 curl http://127.0.0.1:8000/health
 ```
 
-С Mac (после `./scripts/setup-ssh-key.sh`):
+С Mac (после `./scripts/setup/ssh-key.sh`):
 
 ```bash
-./scripts/setup-docker-autostart.sh   # один раз: crontab + скрипт автозапуска стеков
-./scripts/deploy-caddy.sh             # один раз или после смены Caddyfile
-./scripts/deploy-frontend.sh          # сборка React → ~/server/www на Pi
+./scripts/setup/docker-autostart.sh
+./scripts/setup/caddy.sh
+./scripts/deploy-frontend.sh
 ```
 
 Проверка снаружи: `curl -s https://medicine.greemlab.ru/api/health`
@@ -227,7 +265,9 @@ docker compose exec -T db pg_dump -U roster roster > backup-$(date +%Y%m%d).sql
 scp roster-b3:~/RosterRx/backup-*.sql ./
 ```
 
-С Mac, пока открыт `./scripts/db-tunnel.sh`, можно и так:
+Импорт лекарств: `./scripts/internal/import.sh` (туннель к БД сам).
+
+Для ручного `pg_dump` (порт 5432 должен быть открыт, например после import):
 
 ```bash
 pg_dump -h 127.0.0.1 -U roster roster > backup.sql
@@ -257,7 +297,7 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
    curl http://127.0.0.1:8000/health
    ```
 
-6. На новой Pi: `~/server` + `./scripts/deploy-caddy.sh` + `./scripts/deploy-frontend.sh`, **заново поднять reverse-туннель на VPS** (`start-vps-tunnel.sh`, crontab) и **автозапуск Docker** (`./scripts/setup-docker-autostart.sh`).
+6. На новой Pi: `~/server` + `./scripts/setup/caddy.sh` + `./scripts/deploy-frontend.sh`, туннель Pi→VPS, `./scripts/setup/docker-autostart.sh`.
 7. **VPS не переезжает** — DNS по-прежнему на `176.12.65.86`; nginx всё так же на `127.0.0.1:18080`.
 8. Проверка: блок «Быстрые проверки» выше + вход на сайт.
 
@@ -298,39 +338,27 @@ docker compose up -d
 
 ---
 
-## Mac: разработка
+## Mac: команды
 
-| Режим | Команда | Когда |
-|-------|---------|--------|
-| UI, API как на проде | `./scripts/dev-ui.sh` | обычная работа над фронтом |
-| Backend на Mac | `./scripts/dev-local.sh` | правки Python, hot-reload; БД на Pi через туннель :5432 |
-| Только туннель к БД | `./scripts/db-tunnel.sh` | `psql`, ручные миграции, `pg_dump` с Mac |
-| API-туннель + Vite вручную | `api-tunnel.sh` + `dev-frontend.sh` | то же, что dev-ui, но два терминала |
+| Команда | Назначение |
+|---------|------------|
+| `./scripts/dev.sh` | UI локально (дома — API с Pi, вне дома — prod) |
+| `./scripts/deploy-backend.sh` | API на малинку (дома и вне дома) |
+| `./scripts/deploy-frontend.sh` | Фронт на сайт |
 
-Для `dev-local.sh`: в `.env` раскомментировать `DATABASE_URL=postgresql://roster:ПАРОЛЬ@127.0.0.1:5432/roster` (пароль как на Pi). Нужен Python 3.12.
+**Редко (`scripts/internal/`):** `tunnel-db.sh` — PostgreSQL → `127.0.0.1:5432`; `import.sh` — перезаливка лекарств из JSON.
 
-Данные, созданные локально через API на Pi или через `dev-local.sh`, сразу видны на проде — одна БД.
-
----
-
-## Скрипты
+**Один раз дома** — каталог `scripts/setup/`:
 
 | Скрипт | Назначение |
 |--------|------------|
-| `dev-ui.sh` | Фронт локально + туннель API на B3 |
-| `dev-local.sh` | API на Mac + туннель БД на B3 |
-| `db-tunnel.sh` | PostgreSQL Pi → `localhost:5432` |
-| `api-tunnel.sh` | API Pi → `localhost:8000` |
-| `deploy-backend.sh` | rsync backend + `docker compose up -d --build api` на Pi |
-| `deploy-frontend.sh` | `npm run build` → `~/server/www` |
-| `deploy-caddy.sh` | Caddyfile и compose в `~/server` |
-| `deploy-all.sh` | `git push` → на Pi `git pull` + API + фронт (`--no-push`, `--no-backend`, `--no-frontend`) |
-| `setup-ssh-key.sh` | SSH-ключ, Host `roster-b3` |
-| `setup-docker-autostart.sh` | crontab + `docker-stacks-up.sh` на Pi (автозапуск после reboot) |
-| `docker-stacks-up.sh` | поднимает `~/RosterRx`, `~/server`, `~/singbox` (запускается на Pi) |
-| `docker-stacks.service` | опциональный systemd unit для Pi (копировать вручную с `sudo`) |
-| `reload-medicines.sh` | **одна команда:** туннель к БД (если нет) + полная перезаливка из `scripts/data/medicines-invoices.json` |
-| `import-medicines-invoices.py` | то же вручную (`--replace`); обычно вызывается из `reload-medicines.sh` |
+| `setup/ssh-key.sh` | SSH-ключ на Pi |
+| `setup/vps-dev-ssh.sh` | проброс SSH Pi→VPS (`:22022`, деплой вне дома) |
+| `setup/vps-ssh-config.sh` | `~/.ssh/config`: `roster-pi-remote` |
+| `setup/docker-autostart.sh` | Docker после reboot |
+| `setup/caddy.sh` | Caddy на Pi |
+
+Внутренние (`scripts/internal/`) — не запускать вручную, кроме import.
 
 ---
 

@@ -53,6 +53,13 @@ export const api = {
       body: JSON.stringify(body),
     }),
   me: () => apiRequest('/auth/me'),
+  auth: {
+    changePassword: (body) =>
+      apiRequest('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+  },
   medicines: {
     list: (params = {}) => {
       const q = new URLSearchParams(params).toString()
@@ -75,5 +82,7 @@ export const api = {
     list: () => apiRequest('/users'),
     update: (id, body) =>
       apiRequest(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    makeFounder: (id) => apiRequest(`/users/${id}/founder`, { method: 'POST' }),
+    delete: (id) => apiRequest(`/users/${id}`, { method: 'DELETE' }),
   },
 }

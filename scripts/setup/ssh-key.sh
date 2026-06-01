@@ -1,9 +1,8 @@
 #!/bin/sh
-# Один раз: ключ SSH → B3, дальше dev-local и deploy без пароля.
-# SSH-ключ не даёт sudo без пароля на Pi — это отдельная настройка (см. README, «B3: SSH и sudo»).
+# Один раз дома: SSH-ключ на малинку, дальше deploy без пароля.
 set -e
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-. "$ROOT/scripts/_ssh-b3.sh"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+. "$ROOT/scripts/internal/_ssh-b3.sh"
 
 KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
 
@@ -45,4 +44,3 @@ ssh -i "$KEY" -o BatchMode=yes "$PI_SSH" 'echo OK'
 
 echo ""
 echo "В .env можно указать:  PI_SSH=roster-b3"
-echo "Запуск: ./scripts/dev-local.sh"

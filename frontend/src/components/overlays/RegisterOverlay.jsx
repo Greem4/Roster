@@ -8,8 +8,8 @@ export default function RegisterOverlay() {
 
   if (success) {
     return (
-      <RouteModal title="Заявка отправлена">
-        <p>Дождитесь одобрения администратора, затем войдите в систему.</p>
+      <RouteModal title="Заявка отправлена" size="auth">
+        <p className="muted">Дождитесь одобрения администратора, затем войдите в систему.</p>
         <Link to="/login" className="btn-primary link-btn">
           Войти
         </Link>
@@ -18,7 +18,7 @@ export default function RegisterOverlay() {
   }
 
   return (
-    <RouteModal title="Регистрация">
+    <RouteModal title="Регистрация" size="auth">
       <RegisterForm onSuccess={() => setSuccess(true)} />
     </RouteModal>
   )
