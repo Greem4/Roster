@@ -25,6 +25,14 @@
   --color-link: #5eead4;
   --color-brand: var(--color-text);
 
+  /* Суффиксы разделов в шапке: Duty / Pay / RX */
+  --module-duty-text: #93c5fd;
+  --module-duty-muted: rgba(147, 197, 253, 0.55);
+  --module-pay-text: #fcd34d;
+  --module-pay-muted: rgba(252, 211, 77, 0.55);
+  --module-rx-text: var(--color-accent-text);
+  --module-rx-muted: rgba(94, 234, 212, 0.55);
+
   --color-error: #fca5a5;
   --color-success: #6ee7b7;
   --color-danger: #f87171;
@@ -110,44 +118,150 @@ a:hover {
 .app-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 0.85rem 1.25rem;
-  background: rgba(9, 9, 11, 0.85);
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  background: rgba(9, 9, 11, 0.88);
   border-bottom: 1px solid var(--color-border-subtle);
   backdrop-filter: blur(12px);
 }
 
-.brand {
-  font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.02em;
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.brand:hover {
-  color: var(--color-accent-text);
-}
-
-.nav {
+.app-header__start {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  min-width: 0;
   flex: 1;
 }
 
-.user-bar {
+.app-header__user {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
-.user-bar__avatar {
-  width: 2rem;
-  height: 2rem;
+/* RosterDuty · RosterPay · RosterRX — в ряд слева */
+.roster-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.1rem;
+}
+
+.roster-nav__brand {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.03em;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.roster-nav__brand:hover {
+  color: var(--color-text);
+}
+
+.roster-nav__brand--active {
+  color: var(--color-text);
+}
+
+.roster-nav__suffix--duty {
+  color: var(--module-duty-muted);
+  transition: color 0.15s ease;
+}
+
+.roster-nav__suffix--pay {
+  color: var(--module-pay-muted);
+  transition: color 0.15s ease;
+}
+
+.roster-nav__suffix--rx {
+  color: var(--module-rx-muted);
+  transition: color 0.15s ease;
+}
+
+.roster-nav__brand:hover .roster-nav__suffix--duty,
+.roster-nav__brand--active .roster-nav__suffix--duty {
+  color: var(--module-duty-text);
+}
+
+.roster-nav__brand:hover .roster-nav__suffix--pay,
+.roster-nav__brand--active .roster-nav__suffix--pay {
+  color: var(--module-pay-text);
+}
+
+.roster-nav__brand:hover .roster-nav__suffix--rx,
+.roster-nav__brand--active .roster-nav__suffix--rx {
+  color: var(--module-rx-text);
+}
+
+/* Профиль в шапке — только аватар */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.user-menu__auth {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.user-menu__auth--ghost {
+  color: var(--color-text-secondary);
+}
+
+.user-menu__auth--ghost:hover {
+  color: var(--color-text);
+}
+
+.user-menu__auth--accent {
+  color: var(--color-bg);
+  background: var(--color-accent);
+}
+
+.user-menu__auth--accent:hover {
+  filter: brightness(1.06);
+  color: var(--color-bg);
+}
+
+.user-menu__profile {
+  display: flex;
+  border-radius: 50%;
+  line-height: 0;
+  text-decoration: none;
+}
+
+.user-menu__profile--active .user-menu__avatar {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 3px var(--color-accent-text);
+}
+
+.user-menu__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(252, 63, 29, 0.45);
+  border: 2px solid rgba(252, 63, 29, 0.4);
   flex-shrink: 0;
+}
+
+.user-menu__avatar--initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-accent-text);
+  background: rgba(252, 63, 29, 0.12);
+  border-color: rgba(252, 63, 29, 0.35);
 }
 
 .app-main {
@@ -396,19 +510,37 @@ input[type='date']:focus {
 
 /* ——— Лекарства: название, серия, срок ——— */
 
-.medicines-page-header {
+.medicines-page-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
 }
 
-.medicines-page-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
+.medicines-page-toolbar__add {
+  margin-left: auto;
+}
+
+.module-placeholder {
+  margin: 2.5rem auto;
+  max-width: 22rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: var(--color-surface-raised);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.module-placeholder__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+}
+
+.module-placeholder__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .medicines-loading {
@@ -1650,24 +1782,22 @@ input[type='date']:focus {
   }
 
   .app-header {
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
-    padding: 0.65rem max(1rem, env(safe-area-inset-right, 0px)) 0.65rem
-      max(1rem, env(safe-area-inset-left, 0px));
+    gap: 0.5rem 0.65rem;
+    padding: 0.55rem max(0.75rem, env(safe-area-inset-right, 0px)) 0.55rem
+      max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
-  .nav {
-    order: 3;
-    flex: 1 1 100%;
-    gap: 1rem;
+  .roster-nav {
+    gap: 0.3rem 0.65rem;
   }
 
-  .user-bar {
-    margin-left: auto;
+  .roster-nav__brand {
+    font-size: 0.9375rem;
   }
 
-  .medicines-page-header h1 {
-    font-size: 1.25rem;
+  .user-menu__auth {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
   }
 
   .medicines-sort-bar {

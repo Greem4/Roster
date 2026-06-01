@@ -1,11 +1,18 @@
+import { useNavigate } from 'react-router-dom'
 import ChangePasswordForm from '../components/cabinet/ChangePasswordForm'
 import PromoteFounderBlock from '../components/cabinet/PromoteFounderBlock'
 import YandexLoginButton from '../components/YandexLoginButton'
 import { useAuth } from '../context/AuthContext'
 
-/** Настройки аккаунта: пароль, привязка Яндекс ID, назначение основателя. */
+/** Настройки аккаунта: пароль, привязка Яндекс ID, выход, назначение основателя. */
 export default function CabinetSettingsPanel() {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/medicines')
+  }
 
   return (
     <div className="cabinet-panel">
@@ -31,6 +38,13 @@ export default function CabinetSettingsPanel() {
             <YandexLoginButton mode="login" onSuccess={() => window.location.reload()} />
           )}
         </div>
+      </section>
+
+      <section className="cabinet-section cabinet-section--danger">
+        <h2 className="cabinet-section__title">Сеанс</h2>
+        <button type="button" className="btn-secondary" onClick={handleLogout}>
+          Выйти из аккаунта
+        </button>
       </section>
 
       <PromoteFounderBlock />

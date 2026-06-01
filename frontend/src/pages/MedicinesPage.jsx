@@ -215,14 +215,13 @@ export default function MedicinesPage() {
 
   return (
     <div className="medicines-page">
-      <header className="medicines-page-header">
-        <h1>Лекарства</h1>
-        {isAdmin && (
-          <button type="button" className="btn-primary" onClick={openCreate}>
+      {isAdmin && (
+        <header className="medicines-page-toolbar">
+          <button type="button" className="btn-primary medicines-page-toolbar__add" onClick={openCreate}>
             Добавить
           </button>
-        )}
-      </header>
+        </header>
+      )}
 
       {error && <p className="error">{error}</p>}
       {loading && <p className="medicines-loading muted">Загрузка…</p>}

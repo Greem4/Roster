@@ -5,6 +5,7 @@ import MedicineEditRedirect from './components/MedicineEditRedirect'
 import MedicinesLayout from './components/MedicinesLayout'
 import LoginOverlay from './components/overlays/LoginOverlay'
 import CabinetPage from './pages/CabinetPage'
+import ModulePlaceholderPage from './pages/ModulePlaceholderPage'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
 import AuthCallbackPage from './components/AuthCallbackPage'
 import { AuthProvider } from './context/AuthContext'
@@ -19,6 +20,8 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/cabinet/*" element={<CabinetPage />} />
             </Route>
+            <Route path="/duty" element={<ModulePlaceholderPage moduleKey="duty" />} />
+            <Route path="/pay" element={<ModulePlaceholderPage moduleKey="pay" />} />
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />
               <Route path="/" element={<Navigate to="/medicines" replace />} />
