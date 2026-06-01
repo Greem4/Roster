@@ -197,11 +197,15 @@ a:hover {
   color: var(--module-rx-text);
 }
 
-/* Профиль в шапке — только аватар */
+/* Профиль в шапке — аватар и выпадающее меню */
 .user-menu {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.user-menu--profile {
+  position: relative;
 }
 
 .user-menu__auth {
@@ -235,13 +239,66 @@ a:hover {
   display: flex;
   border-radius: 50%;
   line-height: 0;
-  text-decoration: none;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
 
-.user-menu__profile--active .user-menu__avatar {
+.user-menu__profile--active .user-menu__avatar,
+.user-menu__profile--open .user-menu__avatar {
   box-shadow:
     0 0 0 2px var(--color-bg),
     0 0 0 3px var(--color-accent-text);
+}
+
+.user-menu__dropdown {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 200;
+  min-width: 11.5rem;
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-modal);
+}
+
+.user-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.user-menu__item:hover {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+.user-menu__item--active {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+
+.user-menu__item--logout {
+  color: var(--color-danger);
+}
+
+.user-menu__item--logout:hover {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.1);
 }
 
 .user-menu__avatar {
