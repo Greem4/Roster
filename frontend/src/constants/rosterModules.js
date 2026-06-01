@@ -15,7 +15,7 @@ export const ROSTER_MODULES = {
     path: '/pay',
     suffix: 'Pay',
     title: 'RosterPay',
-    description: 'Учёт денег и выплат — в разработке.',
+    description: 'Учёт счетов и остатков в кабинете.',
   },
   rx: {
     key: 'rx',

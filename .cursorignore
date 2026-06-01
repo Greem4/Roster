@@ -1,0 +1,22 @@
+# Снижение шума для индекса Cursor (не влияет на git)
+node_modules/
+frontend/dist/
+frontend/node_modules/
+backend/.venv/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+
+# Секреты и локальные env
+.env
+.env.*
+
+# Сборки и кэши IDE
+.idea/
+*.iml
+build/
+.gradle/
