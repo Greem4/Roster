@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getCachedYandexAvatar, YANDEX_AVATAR_EVENT } from '../utils/yandexAvatar'
+import { formatAuthError } from '../utils/authErrors'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api'
 
@@ -14,18 +15,32 @@ const POPUP_FEATURES =
 
 /**
  * Кнопка Яндекс ID в стиле официальной плашки: логотип слева, подпись по центру, аватар справа.
- * @param {{ disabled?: boolean, mode?: 'login' | 'register', onSuccess?: () => void, onPending?: () => void }} props
+ * @param {{ disabled?: boolean, mode?: 'login' | 'register', onSuccess?: () => void, onPending?: () => void, onError?: (message: string) => void }} props
  */
 export default function YandexLoginButton({
   disabled = false,
   mode = 'login',
   onSuccess,
   onPending,
+  onError,
 }) {
   const { loginWithToken, user } = useAuth()
   const [oauthPending, setOauthPending] = useState(false)
-  const [error, setError] = useState('')
+  const [localError, setLocalError] = useState('')
   const [cachedAvatar, setCachedAvatar] = useState(() => getCachedYandexAvatar())
+
+  const reportError = useCallback(
+    (message) => {
+      const text = formatAuthError(message)
+      if (onError) {
+        onError(text)
+        setLocalError('')
+      } else {
+        setLocalError(text)
+      }
+    },
+    [onError],
+  )
 
   const avatarUrl = user?.avatar_url || cachedAvatar
 
@@ -45,17 +60,17 @@ export default function YandexLoginButton({
       setOauthPending(false)
 
       if (data.pending) {
-        setError('')
+        reportError('')
         if (mode === 'register') {
           onPending?.()
         } else {
-          setError('Аккаунт ожидает подтверждения администратором')
+          reportError('Аккаунт ожидает подтверждения администратором')
         }
         return
       }
 
       if (data.error) {
-        setError(data.error)
+        reportError(data.error)
         return
       }
 
@@ -65,13 +80,13 @@ export default function YandexLoginButton({
         await loginWithToken(data.token)
         const fresh = getCachedYandexAvatar()
         if (fresh) setCachedAvatar(fresh)
-        setError('')
+        reportError('')
         onSuccess?.()
       } catch (err) {
-        setError(err.message || 'Ошибка входа')
+        reportError(err.message || 'Ошибка входа')
       }
     },
-    [loginWithToken, mode, onPending, onSuccess],
+    [loginWithToken, mode, onPending, onSuccess, reportError],
   )
 
   useEffect(() => {
@@ -97,19 +112,19 @@ export default function YandexLoginButton({
 
   const startOAuth = async () => {
     if (disabled || oauthPending) return
-    setError('')
+    reportError('')
 
     try {
       const res = await fetch(`${API_BASE}/auth/yandex/status`)
       const data = await res.json()
       if (!data.configured) {
-        setError(
+        reportError(
           'Яндекс OAuth не настроен на сервере. Заполните YANDEX_CLIENT_ID и YANDEX_CLIENT_SECRET в .env и выполните ./scripts/deploy-backend.sh --with-env',
         )
         return
       }
     } catch {
-      setError('Не удалось проверить настройки Яндекс OAuth')
+      reportError('Не удалось проверить настройки Яндекс OAuth')
       return
     }
 
@@ -117,7 +132,7 @@ export default function YandexLoginButton({
     const popup = window.open(url, 'roster_yandex_oauth', POPUP_FEATURES)
 
     if (!popup) {
-      setError('Разрешите всплывающие окна для этого сайта и нажмите снова')
+      reportError('Разрешите всплывающие окна для этого сайта и нажмите снова')
       return
     }
 
@@ -151,9 +166,9 @@ export default function YandexLoginButton({
           )}
         </span>
       </button>
-      {error && (
+      {localError && (
         <p className="yandex-plaque__error" role="alert">
-          {error}
+          {localError}
         </p>
       )}
     </div>

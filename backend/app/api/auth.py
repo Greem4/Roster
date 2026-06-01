@@ -131,13 +131,32 @@ def _get_or_create_yandex_user(db: Session, profile: dict) -> User:
     return user
 
 
+def _find_user_for_login(db: Session, login: str) -> User | None:
+    """Пользователь по логину или по email, если в поле введён адрес почты."""
+    user = db.query(User).filter(User.username == login).first()
+    if user or "@" not in login:
+        return user
+    return db.query(User).filter(User.email == login).first()
+
+
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Annotated[Session, Depends(get_db)]):
-    user = db.query(User).filter(User.username == body.username).first()
+    user = _find_user_for_login(db, body.username)
+    if user and user.yandex_id and not user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Этот аккаунт привязан к Яндекс ID. Войдите через кнопку «Войти с Яндекс ID».",
+        )
     if not user or not user.password_hash:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный логин или пароль",
+        )
     if not verify_password(body.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверный логин или пароль",
+        )
     if not user.is_active and not user.is_superadmin and not user.is_founder:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account pending approval")
     token = create_access_token(user.username)
@@ -207,7 +226,8 @@ async def yandex_callback(
 
     try:
         if error:
-            return _oauth_front_redirect(fallback, oauth_error=error_description or error)
+            message = yandex_oauth.oauth_user_error_message(error=error, error_description=error_description)
+            return _oauth_front_redirect(fallback, oauth_error=message)
 
         if not code or not state:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing OAuth parameters")
@@ -230,6 +250,8 @@ async def yandex_callback(
                 redirect_uri=redirect_uri,
             )
             profile = await yandex_oauth.fetch_yandex_profile(token_payload["access_token"])
+        except ValueError as exc:
+            return _oauth_front_redirect(return_to, oauth_error=str(exc))
         except Exception:
             logger.exception("Yandex token/profile exchange failed")
             return _oauth_front_redirect(return_to, oauth_error="Не удалось войти через Яндекс")

@@ -2,13 +2,14 @@ import YandexLoginButton from './YandexLoginButton'
 
 /**
  * Кнопка входа/регистрации через Яндекс и разделитель «или» для форм логина/регистрации.
- * @param {{ disabled?: boolean, mode?: 'login' | 'register', onOAuthSuccess?: () => void, onOAuthPending?: () => void }} props
+ * @param {{ disabled?: boolean, mode?: 'login' | 'register', onOAuthSuccess?: () => void, onOAuthPending?: () => void, onOAuthError?: (message: string) => void }} props
  */
 export default function AuthOAuthSection({
   disabled = false,
   mode = 'login',
   onOAuthSuccess,
   onOAuthPending,
+  onOAuthError,
 }) {
   return (
     <div className="auth-oauth">
@@ -17,6 +18,7 @@ export default function AuthOAuthSection({
         mode={mode}
         onSuccess={onOAuthSuccess}
         onPending={onOAuthPending}
+        onError={onOAuthError}
       />
       <p className="muted auth-oauth-hint">
         {mode === 'register'

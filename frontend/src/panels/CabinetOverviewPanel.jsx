@@ -3,12 +3,36 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import RoleBadge from '../components/cabinet/RoleBadge'
 import { useAuth } from '../context/AuthContext'
+import { expiryTier } from '../utils/expiryTier'
+import { formatDate } from '../utils/formatDate'
+import { shortMedicineName } from '../utils/medicineName'
 
 function urgencyClass(days) {
   if (days < 0) return 'badge-danger'
   if (days <= 7) return 'badge-danger'
   if (days <= 14) return 'badge-warn'
   return 'badge-ok'
+}
+
+/** Позиция в блоке предупреждений: название и серия слева, срок и «дн.» — одной колонкой справа. */
+function AlertMedicineItem({ item }) {
+  const tier = expiryTier(item.days_until_expiry)
+  return (
+    <li className={`medicine-item medicine-item--${tier}`}>
+      <span className="medicine-item-name" title={item.name}>
+        {shortMedicineName(item.name)}
+      </span>
+      <span className="medicine-item-series">{item.series}</span>
+      <div className="medicine-item-expiry">
+        <time className="medicine-item-date" dateTime={item.expiry_date}>
+          {formatDate(item.expiry_date)}
+        </time>
+        <span className={`badge medicine-item-badge ${urgencyClass(item.days_until_expiry)}`}>
+          {item.days_until_expiry} дн.
+        </span>
+      </div>
+    </li>
+  )
 }
 
 /** Обзор кабинета: профиль и предупреждения по срокам годности. */
@@ -68,14 +92,9 @@ export default function CabinetOverviewPanel() {
           <p className="muted">Нет позиций в зоне предупреждения.</p>
         )}
         {alerts && alerts.total > 0 && (
-          <ul className="alert-list">
+          <ul className="medicines-list" aria-label="Скоро истекает срок годности">
             {alerts.items.slice(0, 10).map((item) => (
-              <li key={item.id} className="alert-item">
-                <strong>{item.name}</strong> — серия {item.series}, срок {item.expiry_date}
-                <span className={`badge ${urgencyClass(item.days_until_expiry)}`}>
-                  {item.days_until_expiry} дн.
-                </span>
-              </li>
+              <AlertMedicineItem key={item.id} item={item} />
             ))}
           </ul>
         )}

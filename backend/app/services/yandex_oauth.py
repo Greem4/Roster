@@ -13,6 +13,37 @@ YANDEX_USER_URL = "https://login.yandex.ru/info"
 YANDEX_SCOPES = "login:email login:info login:avatar login:birthday login:default_phone"
 
 
+def oauth_user_error_message(*, error: str | None = None, error_description: str | None = None) -> str:
+    """
+    Понятное сообщение для пользователя после отказа или сбоя OAuth Яндекс.
+    Не возвращаем сырой английский error_description с экрана Яндекса.
+    """
+    code = (error or "").strip().lower()
+    if code == "access_denied":
+        return (
+            "Доступ не предоставлен: вы отменили вход или не выдали нужные права. "
+            "Нажмите «Войти с Яндекс ID» ещё раз и подтвердите доступ для приложения."
+        )
+    if code == "invalid_scope":
+        return (
+            "Яндекс не выдал запрошенные права доступа. "
+            "Попробуйте войти снова; если ошибка повторяется — сообщите администратору."
+        )
+    if code in {"invalid_request", "invalid_grant"}:
+        return "Сессия входа через Яндекс устарела. Закройте окно и нажмите «Войти с Яндекс ID» снова."
+    if code == "unauthorized_client":
+        return "Вход через Яндекс временно недоступен. Сообщите администратору сайта."
+    if code == "server_error":
+        return "Сервис Яндекса временно недоступен. Попробуйте позже."
+    if code == "temporarily_unavailable":
+        return "Сервис Яндекса перегружен. Попробуйте войти через несколько минут."
+    if error_description and any("\u0400" <= ch <= "\u04FF" for ch in error_description):
+        return error_description
+    if code:
+        return "Не удалось войти через Яндекс. Попробуйте снова."
+    return "Не удалось войти через Яндекс. Попробуйте снова."
+
+
 def build_authorize_url(*, client_id: str, redirect_uri: str, state: str) -> str:
     """URL страницы согласия Яндекс ID."""
     params = {
@@ -45,8 +76,18 @@ async def exchange_code_for_token(
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-        response.raise_for_status()
-        return response.json()
+        if response.is_success:
+            return response.json()
+        try:
+            payload = response.json()
+        except ValueError:
+            payload = {}
+        raise ValueError(
+            oauth_user_error_message(
+                error=payload.get("error"),
+                error_description=payload.get("error_description"),
+            )
+        )
 
 
 async def fetch_yandex_profile(access_token: str) -> dict:

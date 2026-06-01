@@ -41,6 +41,7 @@ export default function RegisterForm({ onSuccess }) {
         mode="register"
         onOAuthSuccess={() => navigate('/medicines', { replace: true })}
         onOAuthPending={onSuccess}
+        onOAuthError={setError}
       />
       <label>
         Логин

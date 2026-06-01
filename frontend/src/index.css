@@ -363,21 +363,6 @@ input[type='date']:focus {
   box-shadow: inset 0 0 0 1px var(--pill-danger-ring);
 }
 
-.alert-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
-}
-
-.alert-item {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
 .table-wrap {
   overflow-x: auto;
 }
@@ -561,6 +546,28 @@ input[type='date']:focus {
   white-space: nowrap;
 }
 
+.medicine-item-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Срок и остаток дней — одна колонка (блок предупреждений в кабинете, мобильная вёрстка). */
+.medicine-item-expiry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.medicine-item-expiry .medicine-item-badge {
+  margin-left: 0;
+}
+
 .medicine-actions {
   display: flex;
   flex-shrink: 0;
@@ -652,25 +659,73 @@ input[type='date']:focus {
   border-color: rgba(239, 68, 68, 0.35);
 }
 
-@media (min-width: 640px) {
+/*
+ * Десктоп: одна строка, фиксированные колонки (имя · серия · срок · дни).
+ * min-width 641px — не пересекается с мобильным блоком max-width 640px.
+ */
+@media (min-width: 641px) {
   .medicine-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem 4.5rem;
+    align-items: center;
+    column-gap: 1.25rem;
+    row-gap: 0;
     padding: 0.7rem 1rem;
-    gap: 1rem 1.25rem;
+  }
+
+  .medicine-item:not(:has(.medicine-item-expiry)) {
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem;
+  }
+
+  .medicine-item:has(.medicine-actions):not(:has(.medicine-item-expiry)) {
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem auto;
   }
 
   .medicine-item-name {
+    grid-column: 1;
+    flex: unset;
     font-size: 0.9375rem;
   }
 
   .medicine-item-series {
-    max-width: 8rem;
+    grid-column: 2;
+    flex: unset;
+    max-width: none;
+    width: 100%;
     font-size: 0.875rem;
+    text-align: left;
+    justify-self: start;
   }
 
   .medicine-item-date {
+    grid-column: 3;
+    flex: unset;
     font-size: 0.875rem;
-    min-width: 6.5rem;
+    min-width: 0;
     text-align: right;
+    justify-self: end;
+  }
+
+  .medicine-item-expiry {
+    display: contents;
+    margin-left: 0;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-date {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-badge {
+    grid-column: 4;
+    margin-left: 0;
+    justify-self: end;
+  }
+
+  .medicine-actions {
+    grid-column: -1;
+    margin-left: 0;
+    justify-self: end;
   }
 }
 
@@ -853,6 +908,12 @@ input[type='date']:focus {
   font-size: 0.75rem;
   line-height: 1.35;
   text-align: center;
+}
+
+.auth-field-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 /* Плашка Яндекс ID: компактная капсула по ширине контента, элементы вплотную к тексту */
@@ -1680,5 +1741,42 @@ input[type='date']:focus {
     grid-row: 1 / span 2;
     -webkit-line-clamp: 3;
     line-clamp: 3;
+  }
+
+  /*
+   * Предупреждения в кабинете: слева название и серия, справа колонка «срок + дн.»
+   * на одной высоте с названием.
+   */
+  .medicine-item:has(.medicine-item-expiry) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: start;
+    row-gap: 0.2rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-name {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    padding-right: 0.35rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-expiry {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-left: 0;
+    gap: 0.25rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-series {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-date {
+    justify-self: end;
+    line-height: 1.2;
   }
 }
