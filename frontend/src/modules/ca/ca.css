@@ -115,6 +115,7 @@
 
 .ca-month__schedule-fill {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.3rem;
 }
@@ -144,6 +145,15 @@
 
 .ca-month__fill-btn--all {
   font-weight: 500;
+}
+
+.ca-month__fill-btn--copy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ca-month__fill-btn--copy:not(:disabled):hover {
+  color: var(--module-ca-text);
 }
 
 .ca-month__reset-btn {

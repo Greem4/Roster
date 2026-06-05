@@ -45,14 +45,26 @@ export function dateKey(year, month, day) {
 
 /** Сколько выделенных дней в указанном месяце. */
 export function countSelectedInMonth(selectedDates, year, month) {
-  let count = 0
+  return getSelectedDaysInMonth(selectedDates, year, month).length
+}
+
+/** Номера выделенных дней месяца по возрастанию. */
+export function getSelectedDaysInMonth(selectedDates, year, month) {
+  const days = []
+
   for (const key of selectedDates) {
-    const [y, m] = key.split('-').map(Number)
+    const [y, m, d] = key.split('-').map(Number)
     if (y === year && m === month) {
-      count += 1
+      days.push(d)
     }
   }
-  return count
+
+  return days.sort((a, b) => a - b)
+}
+
+/** Строка чисел смен для копирования: «2 - 7 - 12». */
+export function formatShiftDaysList(days) {
+  return days.join(' - ')
 }
 
 /** Смен «сутки» в месяце по быстрому графику. */

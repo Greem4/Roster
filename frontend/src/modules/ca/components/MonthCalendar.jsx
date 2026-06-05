@@ -1,16 +1,19 @@
+import { useCallback, useState } from 'react'
 import { MONTH_NAMES, WEEKDAY_LABELS } from '../constants/months'
 import {
   MONTHLY_SHIFT_COUNT,
   buildMonthGrid,
   countSelectedInMonth,
   dateKey,
+  formatShiftDaysList,
+  getSelectedDaysInMonth,
   isToday,
   isWeekendCell,
   isWeekendColumn,
 } from '../utils/calendarDays'
 
 /**
- * Мини-календарь месяца: быстрый график 7 смен, автозаполнение и сброс.
+ * Мини-календарь месяца: быстрый график 7 смен, все пн/ср/сб, копирование чисел и сброс.
  */
 export default function MonthCalendar({
   year,
@@ -22,9 +25,25 @@ export default function MonthCalendar({
   onFillAllShiftDays,
   onResetMonth,
 }) {
+  const [copied, setCopied] = useState(false)
   const cells = buildMonthGrid(year, month)
   const monthLabel = MONTH_NAMES[month - 1]
   const selectedCount = countSelectedInMonth(selectedDates, year, month)
+  const shiftDaysText = formatShiftDaysList(
+    getSelectedDaysInMonth(selectedDates, year, month),
+  )
+
+  const onCopyShiftDays = useCallback(async () => {
+    if (!shiftDaysText) return
+
+    try {
+      await navigator.clipboard.writeText(shiftDaysText)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch {
+      setCopied(false)
+    }
+  }, [shiftDaysText])
 
   return (
     <article className="ca-month" aria-label={`${monthLabel} ${year}`}>
@@ -61,6 +80,20 @@ export default function MonthCalendar({
             onClick={() => onFillAllShiftDays(year, month)}
           >
             Все
+          </button>
+          <button
+            type="button"
+            className="ca-month__fill-btn ca-month__fill-btn--copy"
+            aria-label={
+              shiftDaysText
+                ? `Скопировать дни: ${shiftDaysText}`
+                : 'Нет выделенных дней'
+            }
+            title={shiftDaysText || undefined}
+            disabled={selectedCount === 0}
+            onClick={onCopyShiftDays}
+          >
+            {copied ? 'Ок' : 'cv'}
           </button>
         </div>
         <button
