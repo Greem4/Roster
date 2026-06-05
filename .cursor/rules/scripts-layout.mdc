@@ -3,7 +3,7 @@ description: Структура scripts/ — только 3 обёртки в к
 alwaysApply: true
 ---
 
-# Скрипты RosterRx
+# Скрипты Roster
 
 ## Корень `scripts/` — ровно 3 файла
 

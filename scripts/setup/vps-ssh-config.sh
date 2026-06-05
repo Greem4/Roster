@@ -24,7 +24,7 @@ if [ ! -f "$KEY" ] && [ -f "$HOME/.ssh/id_ed25519" ]; then
 fi
 
 CFG="$HOME/.ssh/config"
-MARKER="# RosterRx VPS hop"
+MARKER="# Roster VPS hop"
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 

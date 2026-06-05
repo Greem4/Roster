@@ -1,3 +1,5 @@
+name: roster
+
 # Запускать на B3 (Pi): одна PostgreSQL + API.
 # Локально на Mac БД не поднимаем — только туннель к этому postgres (см. README).
 
@@ -40,3 +42,4 @@ services:
 
 volumes:
   pgdata:
+    name: roster_pgdata

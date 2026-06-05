@@ -28,7 +28,7 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 stacks=(
-  "${HOME}/RosterRx"
+  "${HOME}/Roster"
   "${HOME}/server"
   "${HOME}/singbox"
 )

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import alerts, auth, health, medicines, pay, users
 from app.config import get_settings
 
-app = FastAPI(title="RosterRx API")
+app = FastAPI(title="Roster API")
 
 settings = get_settings()
 app.add_middleware(
