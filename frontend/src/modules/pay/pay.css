@@ -284,3 +284,20 @@
   font-weight: 600;
   color: var(--color-accent-text);
 }
+
+@media (max-width: 640px) {
+  .pay-page__header.roster-page-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .pay-page__intro {
+    display: none;
+  }
+
+  .pay-page__header .pay-year-picker {
+    margin-left: auto;
+  }
+}

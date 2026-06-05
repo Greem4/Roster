@@ -182,14 +182,14 @@ export default function PayPage() {
 
   return (
     <div className="pay-page">
-      <header className="pay-page__header">
-        <div>
+      <header className="pay-page__header roster-page-toolbar">
+        <div className="pay-page__intro">
           <RosterModuleTitle moduleKey="pay" as="h1" className="pay-page__title" />
           <p className="pay-page__subtitle muted">
             Зарплата по месяцам — несколько сумм в месяце, итог за год
           </p>
         </div>
-        <div className="pay-year-picker" aria-label="Год">
+        <div className="pay-year-picker roster-page-toolbar__action" aria-label="Год">
           <button
             type="button"
             className="pay-year-picker__btn"

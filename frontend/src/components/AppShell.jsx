@@ -1,9 +1,10 @@
 import { Outlet } from 'react-router-dom'
-import RosterModuleNav from './RosterModuleNav'
+import RosterModuleNav, { RosterModulePicker } from './RosterModuleNav'
 import UserMenuButton from './UserMenuButton'
 
 /**
- * Оболочка: слева RosterDuty · RosterCA · RosterPay · RosterRX, справа профиль.
+ * Оболочка: слева модули Roster, справа профиль.
+ * На мобилке переключатель — в шапке, в один ряд с аватаром.
  */
 export default function AppShell() {
   return (
@@ -11,6 +12,7 @@ export default function AppShell() {
       <header className="app-header">
         <div className="app-header__start">
           <RosterModuleNav />
+          <RosterModulePicker />
         </div>
         <div className="app-header__user">
           <UserMenuButton />

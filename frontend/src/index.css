@@ -149,6 +149,103 @@ a:hover {
   gap: 0.35rem 1.1rem;
 }
 
+.roster-nav--desktop {
+  display: flex;
+}
+
+.roster-nav--mobile {
+  display: none;
+  position: relative;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.roster-nav__trigger {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+}
+
+.roster-nav__chevron {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-left: 0.2rem;
+  align-self: center;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-0.1rem);
+  opacity: 0.55;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.roster-nav--open .roster-nav__chevron {
+  transform: rotate(-135deg) translateY(0.05rem);
+  opacity: 0.85;
+}
+
+.roster-nav__dropdown {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 200;
+  min-width: 9.5rem;
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-modal);
+}
+
+.roster-nav__dropdown-item {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.roster-nav__dropdown-item:hover {
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+}
+
+.roster-nav__dropdown-item--active {
+  color: var(--color-text);
+  background: var(--color-accent-soft);
+}
+
+/* Панель страницы: модуль + сортировка/фильтры в один ряд (мобилка). */
+.roster-page-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-width: 0;
+}
+
+.roster-page-toolbar .sort-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.roster-page-toolbar__action {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .roster-nav__brand {
   display: inline-flex;
   align-items: baseline;
@@ -603,14 +700,8 @@ input[type='date']:focus {
 
 /* ——— Лекарства: название, серия, срок ——— */
 
-.medicines-page-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.75rem;
-}
-
-.medicines-page-toolbar__add {
-  margin-left: auto;
+.module-placeholder-page .module-placeholder {
+  margin-top: 0;
 }
 
 .module-placeholder {
@@ -653,12 +744,6 @@ input[type='date']:focus {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.medicines-sort-bar {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
 .sort-field {
@@ -1880,8 +1965,32 @@ input[type='date']:focus {
       max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
-  .roster-nav {
-    gap: 0.3rem 0.65rem;
+  .roster-nav--desktop {
+    display: none;
+  }
+
+  .app-header__start {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+  }
+
+  .app-header {
+    justify-content: space-between;
+  }
+
+  .app-header__start .roster-nav--mobile {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  .app-header__start .roster-nav__trigger {
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-size: 0.9375rem;
   }
 
   .roster-nav__brand {
@@ -1893,7 +2002,7 @@ input[type='date']:focus {
     font-size: 0.75rem;
   }
 
-  .medicines-sort-bar {
+  .roster-page-toolbar {
     margin-bottom: 0.5rem;
   }
 
