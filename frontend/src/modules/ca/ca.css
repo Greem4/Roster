@@ -1,6 +1,17 @@
 /* Стили только модуля RosterCA (префикс ca-). */
 
 .ca-page {
+  --ca-primary: var(--module-ca-text);
+  --ca-primary-deep: #7c3aed;
+  --ca-primary-soft: color-mix(in srgb, var(--ca-primary) 14%, transparent);
+  --ca-primary-softer: color-mix(in srgb, var(--ca-primary) 7%, transparent);
+  --ca-surface: color-mix(in srgb, var(--ca-primary) 5%, var(--color-surface-raised));
+  --ca-surface-hover: color-mix(in srgb, var(--ca-primary) 9%, var(--color-surface-raised));
+  --ca-border: color-mix(in srgb, var(--ca-primary) 18%, var(--color-border));
+  --ca-border-strong: color-mix(in srgb, var(--ca-primary) 38%, var(--color-border));
+  --ca-selected-text: #f5f3ff;
+  --ca-glow: color-mix(in srgb, var(--ca-primary-deep) 22%, transparent);
+
   max-width: 72rem;
   margin: 0 auto;
   padding: 1.25rem 1rem 2.5rem;
@@ -30,9 +41,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.35rem;
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  background: var(--ca-surface);
+  border: 1px solid var(--ca-border);
   border-radius: var(--radius-lg);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ca-primary) 10%, transparent);
 }
 
 .ca-year-picker__btn {
@@ -46,11 +58,14 @@
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
 .ca-year-picker__btn:hover {
-  color: var(--module-ca-text);
-  background: color-mix(in srgb, var(--module-ca-text) 12%, transparent);
+  color: var(--ca-primary);
+  background: var(--ca-primary-soft);
 }
 
 .ca-year-picker__value {
@@ -59,7 +74,7 @@
   font-weight: 600;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  color: var(--module-ca-text);
+  color: var(--ca-primary);
 }
 
 .ca-year-calendar__grid {
@@ -85,18 +100,28 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.85rem 0.9rem 1rem;
-  background: var(--color-surface-raised);
-  border: 1px solid var(--color-border);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ca-primary) 8%, var(--color-surface-raised)) 0%,
+    var(--ca-surface) 42%,
+    var(--color-surface-raised) 100%
+  );
+  border: 1px solid var(--ca-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text) 4%, transparent);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-text) 4%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ca-primary) 12%, transparent);
   transition:
     border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
 .ca-month:hover {
-  border-color: color-mix(in srgb, var(--module-ca-text) 35%, var(--color-border));
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--module-ca-text) 8%, transparent);
+  border-color: var(--ca-border-strong);
+  box-shadow:
+    0 6px 18px var(--ca-glow),
+    inset 0 1px 0 color-mix(in srgb, var(--ca-primary) 16%, transparent);
 }
 
 .ca-month__header {
@@ -127,20 +152,27 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--ca-primary) 4%, var(--color-surface));
+  border: 1px solid var(--ca-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .ca-month__fill-btn:hover {
-  border-color: color-mix(in srgb, var(--module-ca-text) 40%, var(--color-border));
+  color: var(--ca-primary);
+  border-color: var(--ca-border-strong);
+  background: var(--ca-primary-softer);
 }
 
 .ca-month__fill-btn--active {
-  color: var(--color-surface);
-  background: var(--module-ca-text);
-  border-color: var(--module-ca-text);
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+  border-color: color-mix(in srgb, var(--ca-primary-deep) 80%, var(--color-border));
+  box-shadow: 0 1px 4px var(--ca-glow);
 }
 
 .ca-month__fill-btn--all {
@@ -153,7 +185,7 @@
 }
 
 .ca-month__fill-btn--copy:not(:disabled):hover {
-  color: var(--module-ca-text);
+  color: var(--ca-primary);
 }
 
 .ca-month__reset-btn {
@@ -162,21 +194,24 @@
   font-weight: 500;
   color: var(--color-text-muted);
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--ca-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .ca-month__reset-btn:hover {
-  color: var(--module-ca-text);
-  border-color: color-mix(in srgb, var(--module-ca-text) 35%, var(--color-border));
+  color: var(--ca-primary);
+  border-color: var(--ca-border-strong);
 }
 
 .ca-month__title {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--module-ca-text);
+  color: var(--ca-primary);
   letter-spacing: 0.01em;
 }
 
@@ -188,8 +223,9 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  color: var(--module-ca-text);
-  background: color-mix(in srgb, var(--module-ca-text) 14%, transparent);
+  color: var(--ca-primary);
+  background: var(--ca-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--ca-primary) 22%, transparent);
   border-radius: var(--radius-md);
 }
 
@@ -210,8 +246,8 @@
 }
 
 .ca-month__weekday--weekend {
-  color: color-mix(in srgb, var(--module-ca-text) 55%, var(--color-text-muted));
-  background: color-mix(in srgb, var(--module-ca-text) 8%, transparent);
+  color: color-mix(in srgb, var(--ca-primary) 65%, var(--color-text-muted));
+  background: var(--ca-primary-softer);
 }
 
 .ca-month__grid {
@@ -234,10 +270,14 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 .ca-month__day:hover:not(.ca-month__day--empty) {
-  background: color-mix(in srgb, var(--module-ca-text) 10%, transparent);
+  background: var(--ca-primary-soft);
 }
 
 .ca-month__day--empty {
@@ -245,28 +285,37 @@
 }
 
 .ca-month__day--weekend {
-  color: color-mix(in srgb, var(--module-ca-text) 40%, var(--color-text-muted));
-  background: color-mix(in srgb, var(--module-ca-text) 8%, transparent);
+  color: color-mix(in srgb, var(--ca-primary) 50%, var(--color-text-muted));
+  background: var(--ca-primary-softer);
 }
 
 .ca-month__day--today {
   font-weight: 700;
-  color: var(--module-ca-text);
-  background: color-mix(in srgb, var(--module-ca-text) 18%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--module-ca-text) 45%, transparent);
+  color: var(--ca-primary);
+  background: color-mix(in srgb, var(--ca-primary) 20%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ca-primary) 50%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ca-primary-deep) 25%, transparent);
 }
 
 .ca-month__day--selected {
   font-weight: 600;
-  color: var(--color-surface);
-  background: var(--module-ca-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--module-ca-text) 80%, var(--color-text));
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 1px 3px var(--ca-glow);
 }
 
 .ca-month__day--selected.ca-month__day--today {
-  color: var(--color-surface);
-  background: var(--module-ca-text);
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--color-surface) 35%, transparent),
-    0 0 0 2px color-mix(in srgb, var(--module-ca-text) 35%, transparent);
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--ca-primary) 45%, transparent),
+    0 2px 6px var(--ca-glow);
+}
+
+.ca-month__day--selected.ca-month__day--weekend {
+  color: var(--ca-selected-text);
 }

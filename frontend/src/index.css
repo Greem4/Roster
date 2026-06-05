@@ -28,8 +28,8 @@
   /* Суффиксы разделов в шапке: Duty / CA / Pay / RX */
   --module-duty-text: #93c5fd;
   --module-duty-muted: rgba(147, 197, 253, 0.55);
-  --module-ca-text: #c4b5fd;
-  --module-ca-muted: rgba(196, 181, 253, 0.55);
+  --module-ca-text: #a78bfa;
+  --module-ca-muted: rgba(167, 139, 250, 0.55);
   --module-pay-text: #fcd34d;
   --module-pay-muted: rgba(252, 211, 77, 0.55);
   --module-rx-text: var(--color-accent-text);
