@@ -3,6 +3,7 @@ import RosterModuleTitle from '../../../components/RosterModuleTitle'
 import YearCalendar from '../components/YearCalendar'
 import YearPicker from '../components/YearPicker'
 import {
+  buildAllShiftWeekdayKeys,
   buildMonthShiftKeys,
   dateKey,
   withoutMonthKeys,
@@ -51,6 +52,17 @@ export default function CaPage() {
     ))
   }, [])
 
+  /** Выделяет все пн/ср/сб месяца с учётом соседних месяцев. */
+  const onFillAllShiftDays = useCallback((y, month) => {
+    const monthKey = filledMonthKey(y, month)
+
+    setSelectedDates((prev) => {
+      const shiftKeys = buildAllShiftWeekdayKeys(y, month, prev)
+      return [...withoutMonthKeys(prev, y, month), ...shiftKeys]
+    })
+    setFilledMonths((prev) => prev.filter((item) => item !== monthKey))
+  }, [])
+
   /** Сброс смен только в выбранном месяце. */
   const onResetMonth = useCallback((y, month) => {
     const monthKey = filledMonthKey(y, month)
@@ -77,6 +89,7 @@ export default function CaPage() {
         filledMonths={filledMonths}
         onToggleDay={onToggleDay}
         onFillMonth={onFillMonth}
+        onFillAllShiftDays={onFillAllShiftDays}
         onResetMonth={onResetMonth}
       />
     </div>

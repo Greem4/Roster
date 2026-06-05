@@ -113,6 +113,12 @@
   gap: 0.4rem;
 }
 
+.ca-month__schedule-fill {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .ca-month__fill-btn {
   min-width: 1.65rem;
   padding: 0.2rem 0.45rem;
@@ -134,6 +140,10 @@
   color: var(--color-surface);
   background: var(--module-ca-text);
   border-color: var(--module-ca-text);
+}
+
+.ca-month__fill-btn--all {
+  font-weight: 500;
 }
 
 .ca-month__reset-btn {

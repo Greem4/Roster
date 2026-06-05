@@ -246,6 +246,28 @@ export function buildMonthShiftKeys(year, month, selectedDates = []) {
   return days.map((day) => dateKey(year, month, day))
 }
 
+/**
+ * Ключи всех сменных дней месяца (пн / ср / сб) без ограничения в 7 смен.
+ * Учитывает стык с соседними месяцами: после смены в конце прошлого месяца
+ * ранние пн/ср/сб текущего месяца пропускаются.
+ * @param {number} year
+ * @param {number} month 1–12
+ * @param {string[]} [selectedDates] уже выделенные даты (для стыка месяцев)
+ * @returns {string[]}
+ */
+export function buildAllShiftWeekdayKeys(year, month, selectedDates = []) {
+  const minFirstDay = getMinFirstShiftDay(year, month, selectedDates)
+  const maxLastDay = getMaxLastShiftDay(year, month, selectedDates)
+
+  if (minFirstDay == null) return []
+
+  const days = getAllowedShiftDays(year, month).filter((day) => (
+    day >= minFirstDay && (maxLastDay == null || day <= maxLastDay)
+  ))
+
+  return days.map((day) => dateKey(year, month, day))
+}
+
 /** Убирает из списка все даты указанного месяца. */
 export function withoutMonthKeys(dates, year, month) {
   return dates.filter((key) => {

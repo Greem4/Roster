@@ -19,6 +19,7 @@ export default function MonthCalendar({
   isFilled,
   onToggleDay,
   onFillMonth,
+  onFillAllShiftDays,
   onResetMonth,
 }) {
   const cells = buildMonthGrid(year, month)
@@ -38,19 +39,30 @@ export default function MonthCalendar({
       </div>
 
       <div className="ca-month__schedule" aria-label={`График ${monthLabel}`}>
-        <button
-          type="button"
-          className={[
-            'ca-month__fill-btn',
-            isFilled && 'ca-month__fill-btn--active',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          aria-pressed={isFilled}
-          onClick={() => onFillMonth(year, month)}
-        >
-          {MONTHLY_SHIFT_COUNT}
-        </button>
+        <div className="ca-month__schedule-fill">
+          <button
+            type="button"
+            className={[
+              'ca-month__fill-btn',
+              isFilled && 'ca-month__fill-btn--active',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-pressed={isFilled}
+            aria-label={`${MONTHLY_SHIFT_COUNT} смен в месяце`}
+            onClick={() => onFillMonth(year, month)}
+          >
+            {MONTHLY_SHIFT_COUNT}
+          </button>
+          <button
+            type="button"
+            className="ca-month__fill-btn ca-month__fill-btn--all"
+            aria-label="Все сменные дни: пн, ср, сб"
+            onClick={() => onFillAllShiftDays(year, month)}
+          >
+            Все
+          </button>
+        </div>
         <button
           type="button"
           className="ca-month__reset-btn"

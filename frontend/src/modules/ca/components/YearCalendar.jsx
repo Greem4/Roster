@@ -9,6 +9,7 @@ export default function YearCalendar({
   filledMonths,
   onToggleDay,
   onFillMonth,
+  onFillAllShiftDays,
   onResetMonth,
 }) {
   const months = Array.from({ length: 12 }, (_, index) => index + 1)
@@ -25,6 +26,7 @@ export default function YearCalendar({
             isFilled={filledMonths.includes(`${year}-${month}`)}
             onToggleDay={onToggleDay}
             onFillMonth={onFillMonth}
+            onFillAllShiftDays={onFillAllShiftDays}
             onResetMonth={onResetMonth}
           />
         ))}
