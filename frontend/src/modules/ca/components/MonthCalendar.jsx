@@ -1,5 +1,6 @@
 import { MONTH_NAMES, WEEKDAY_LABELS } from '../constants/months'
 import {
+  MONTHLY_SHIFT_COUNT,
   buildMonthGrid,
   countSelectedInMonth,
   dateKey,
@@ -9,9 +10,17 @@ import {
 } from '../utils/calendarDays'
 
 /**
- * Мини-календарь одного месяца: заголовок со счётчиком, дни недели и сетка дат с выделением.
+ * Мини-календарь месяца: быстрый график 7 смен, автозаполнение и сброс.
  */
-export default function MonthCalendar({ year, month, selectedDates, onToggleDay }) {
+export default function MonthCalendar({
+  year,
+  month,
+  selectedDates,
+  isFilled,
+  onToggleDay,
+  onFillMonth,
+  onResetMonth,
+}) {
   const cells = buildMonthGrid(year, month)
   const monthLabel = MONTH_NAMES[month - 1]
   const selectedCount = countSelectedInMonth(selectedDates, year, month)
@@ -27,6 +36,30 @@ export default function MonthCalendar({ year, month, selectedDates, onToggleDay 
           {selectedCount}
         </span>
       </div>
+
+      <div className="ca-month__schedule" aria-label={`График ${monthLabel}`}>
+        <button
+          type="button"
+          className={[
+            'ca-month__fill-btn',
+            isFilled && 'ca-month__fill-btn--active',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          aria-pressed={isFilled}
+          onClick={() => onFillMonth(year, month)}
+        >
+          {MONTHLY_SHIFT_COUNT}
+        </button>
+        <button
+          type="button"
+          className="ca-month__reset-btn"
+          onClick={() => onResetMonth(year, month)}
+        >
+          Сброс
+        </button>
+      </div>
+
       <div className="ca-month__weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((label, index) => (
           <span
@@ -57,7 +90,7 @@ export default function MonthCalendar({ year, month, selectedDates, onToggleDay 
 
           const today = isToday(year, month, day)
           const weekend = isWeekendCell(index)
-          const selected = selectedDates.has(dateKey(year, month, day))
+          const selected = selectedDates.includes(dateKey(year, month, day))
           const className = [
             'ca-month__day',
             weekend && 'ca-month__day--weekend',

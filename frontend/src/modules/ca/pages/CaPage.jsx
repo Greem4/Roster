@@ -2,17 +2,27 @@ import { useCallback, useState } from 'react'
 import RosterModuleTitle from '../../../components/RosterModuleTitle'
 import YearCalendar from '../components/YearCalendar'
 import YearPicker from '../components/YearPicker'
-import { dateKey } from '../utils/calendarDays'
+import {
+  buildMonthShiftKeys,
+  dateKey,
+  withoutMonthKeys,
+} from '../utils/calendarDays'
 import '../ca.css'
 
 const currentYear = () => new Date().getFullYear()
 
+/** Ключ заполненного месяца: YYYY-M. */
+function filledMonthKey(year, month) {
+  return `${year}-${month}`
+}
+
 /**
- * RosterCA: годовой календарь с выбором года, выделением дней и сеткой из 12 месяцев.
+ * RosterCA: годовой календарь с быстрым графиком 7 смен на каждом месяце.
  */
 export default function CaPage() {
   const [year, setYear] = useState(currentYear)
-  const [selectedDates, setSelectedDates] = useState(() => new Set())
+  const [selectedDates, setSelectedDates] = useState([])
+  const [filledMonths, setFilledMonths] = useState([])
 
   const onYearChange = (delta) => {
     setYear((value) => value + delta)
@@ -20,15 +30,33 @@ export default function CaPage() {
 
   const onToggleDay = useCallback((y, month, day) => {
     const key = dateKey(y, month, day)
+    setSelectedDates((prev) => (
+      prev.includes(key)
+        ? prev.filter((item) => item !== key)
+        : [...prev, key]
+    ))
+    setFilledMonths((prev) => prev.filter((item) => item !== filledMonthKey(y, month)))
+  }, [])
+
+  /** Заполняет 7 смен в месяце по пн/ср/сб с учётом соседних месяцев. */
+  const onFillMonth = useCallback((y, month) => {
+    const monthKey = filledMonthKey(y, month)
+
     setSelectedDates((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) {
-        next.delete(key)
-      } else {
-        next.add(key)
-      }
-      return next
+      const shiftKeys = buildMonthShiftKeys(y, month, prev)
+      return [...withoutMonthKeys(prev, y, month), ...shiftKeys]
     })
+    setFilledMonths((prev) => (
+      prev.includes(monthKey) ? prev : [...prev, monthKey]
+    ))
+  }, [])
+
+  /** Сброс смен только в выбранном месяце. */
+  const onResetMonth = useCallback((y, month) => {
+    const monthKey = filledMonthKey(y, month)
+
+    setSelectedDates((prev) => withoutMonthKeys(prev, y, month))
+    setFilledMonths((prev) => prev.filter((item) => item !== monthKey))
   }, [])
 
   return (
@@ -36,12 +64,21 @@ export default function CaPage() {
       <header className="ca-page__header roster-page-toolbar">
         <div className="ca-page__intro">
           <RosterModuleTitle moduleKey="ca" as="h1" className="ca-page__title" />
-          <p className="ca-page__subtitle muted">Календарь на год — все месяцы на одном экране</p>
+          <p className="ca-page__subtitle muted">
+            Сутки — пн, ср, сб. 7 смен в месяце, между сменами 2–5 выходных
+          </p>
         </div>
         <YearPicker year={year} onChange={onYearChange} />
       </header>
 
-      <YearCalendar year={year} selectedDates={selectedDates} onToggleDay={onToggleDay} />
+      <YearCalendar
+        year={year}
+        selectedDates={selectedDates}
+        filledMonths={filledMonths}
+        onToggleDay={onToggleDay}
+        onFillMonth={onFillMonth}
+        onResetMonth={onResetMonth}
+      />
     </div>
   )
 }

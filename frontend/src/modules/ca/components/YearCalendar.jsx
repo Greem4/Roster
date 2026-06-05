@@ -3,7 +3,14 @@ import MonthCalendar from './MonthCalendar'
 /**
  * Годовой календарь: сетка из 12 мини-календарей по месяцам.
  */
-export default function YearCalendar({ year, selectedDates, onToggleDay }) {
+export default function YearCalendar({
+  year,
+  selectedDates,
+  filledMonths,
+  onToggleDay,
+  onFillMonth,
+  onResetMonth,
+}) {
   const months = Array.from({ length: 12 }, (_, index) => index + 1)
 
   return (
@@ -15,7 +22,10 @@ export default function YearCalendar({ year, selectedDates, onToggleDay }) {
             year={year}
             month={month}
             selectedDates={selectedDates}
+            isFilled={filledMonths.includes(`${year}-${month}`)}
             onToggleDay={onToggleDay}
+            onFillMonth={onFillMonth}
+            onResetMonth={onResetMonth}
           />
         ))}
       </div>
