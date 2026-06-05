@@ -1,0 +1,45 @@
+---
+description: Изоляция модулей Roster (Duty, CA, Pay, RX) — границы кода и поиска для агента
+alwaysApply: true
+---
+
+# Модули Roster: Duty · CA · Pay · RX
+
+Один репозиторий, **логически раздельные** продукты. Не смешивать домены без явной задачи пользователя.
+
+## Карта путей
+
+| Модуль | Frontend | Backend API | Модели / схемы |
+|--------|----------|-------------|----------------|
+| **RosterRX** | `frontend/src/pages/MedicinesPage.jsx`, `components/Medicines*`, `MedicineForm` | `backend/app/api/medicines.py` | `models/medicine.py`, `schemas/medicine.py` |
+| **RosterPay** | `frontend/src/modules/pay/**` | `backend/app/api/pay.py` (`/pay`) | `models/pay.py`, `schemas/pay.py`, `pay/permissions.py` |
+| **RosterDuty** | заглушка `/duty` → `ModulePlaceholderPage` | пока нет | пока нет |
+| **RosterCA** | заглушка `/ca` → `ModulePlaceholderPage` | пока нет | пока нет |
+| **Общее** | `AppShell`, `AuthContext`, `ProtectedRoute`, `App.jsx` | `auth`, `users`, `health` | `models/user.py` |
+
+## Правила для агента
+
+### Задача только про RosterPay
+
+1. **Сначала** читать/править только пути из колонки Pay (+ миграция `alembic/versions/*pay*` при схеме БД).
+2. **Не** менять `MedicinesPage`, `api/client.js` (кроме общего `apiRequest`), роутеры RX, стили `.medicines-*` без запроса.
+3. HTTP Pay — только `frontend/src/modules/pay/api.js`, не добавлять `api.pay` в общий `api` object.
+4. Стили Pay — `frontend/src/modules/pay/pay.css`, классы с префиксом `pay-`.
+5. Права: `pay:view`, `pay:manage` — см. `backend/app/pay/permissions.py` и `modules/pay/constants.js`.
+
+### Задача только про RosterRX
+
+Обратное: не трогать `frontend/src/modules/pay/**` и `backend/app/api/pay.py`.
+
+### Сквозные изменения (auth, шапка, деплой)
+
+Допустимы точечно; после правок проверить, что маршруты `/pay/*`, `/medicines`, `/duty`, `/ca` не сломаны.
+
+## Деплой
+
+- Pay на backend = тот же контейнер `api` → после правок `backend/` запускать `./scripts/deploy-backend.sh`.
+- Фронт на B3 — только по явной просьбе пользователя.
+
+## Документация модуля Pay
+
+`frontend/src/modules/pay/README.md`

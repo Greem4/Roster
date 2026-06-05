@@ -213,29 +213,14 @@ export default function MedicinesPage() {
     }
   }
 
+  const showToolbar = isAdmin || (!loading && items.length > 0)
+
   return (
     <div className="medicines-page">
-      <header className="medicines-page-header">
-        <h1>Лекарства</h1>
-        {isAdmin && (
-          <button type="button" className="btn-primary" onClick={openCreate}>
-            Добавить
-          </button>
-        )}
-      </header>
-
-      {error && <p className="error">{error}</p>}
-      {loading && <p className="medicines-loading muted">Загрузка…</p>}
-
-      {!loading && items.length === 0 && (
-        <div className="medicines-empty">
-          <p className="medicines-empty-title">Пока пусто</p>
-        </div>
-      )}
-
-      {!loading && items.length > 0 && (
-        <>
-          <div className="medicines-sort-bar">
+      {showToolbar && (
+      <header className="roster-page-toolbar">
+        {!loading && items.length > 0 && (
+          <>
             <label className="sort-field">
               <span className="visually-hidden">Сортировка</span>
               <select
@@ -261,8 +246,27 @@ export default function MedicinesPage() {
             >
               {sortDir === 'asc' ? '↑' : '↓'}
             </button>
-          </div>
+          </>
+        )}
+        {isAdmin && (
+          <button type="button" className="btn-primary roster-page-toolbar__action" onClick={openCreate}>
+            Добавить
+          </button>
+        )}
+      </header>
+      )}
 
+      {error && <p className="error">{error}</p>}
+      {loading && <p className="medicines-loading muted">Загрузка…</p>}
+
+      {!loading && items.length === 0 && (
+        <div className="medicines-empty">
+          <p className="medicines-empty-title">Пока пусто</p>
+        </div>
+      )}
+
+      {!loading && items.length > 0 && (
+        <>
           <ul className="medicines-list" aria-label="Список лекарств">
             {sortedItems.map((m) => (
               <MedicineItem

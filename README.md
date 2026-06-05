@@ -1,6 +1,15 @@
-# RosterRx
+# Roster
 
-Учёт лекарств с личным кабинетом и правами доступа.
+Единая платформа с общим кабинетом и правами доступа. Четыре модуля:
+
+| Модуль | Назначение |
+|--------|------------|
+| **RosterDuty** | график дежурств (в разработке) |
+| **RosterCA** | календарь (в разработке) |
+| **RosterPay** | учёт счетов и остатков |
+| **RosterRX** | реестр и сводка по средствам |
+
+Каталог проекта на Pi: `~/Roster`; локальная копия — `AndroidStudioProjects/Roster`.
 
 ## Как работаем (основной процесс)
 
@@ -92,7 +101,7 @@ ssh roster-pi-remote 'hostname'
 │  Caddy :80  ← туннель сюда          │
 │    /      → ~/server/www            │
 │    /api/* → контейнер api:8000      │
-│  ~/RosterRx: postgres + FastAPI     │
+│  ~/Roster: postgres + FastAPI     │
 └─────────────────────────────────────┘
          ▲
          │  dev.sh: SSH :8000 → API (разработка с Mac)
@@ -110,7 +119,7 @@ ssh roster-pi-remote 'hostname'
 
 | Каталог | Сервисы |
 |---------|---------|
-| `~/RosterRx` | `db`, `api` |
+| `~/Roster` | `db`, `api` |
 | `~/server` | `caddy` (:80 — то, что видит туннель) |
 | `~/singbox` | `sing-box` (VPN, `network_mode: host`) |
 
@@ -158,9 +167,9 @@ ssh roster-pi-remote 'hostname'
 | Установка с Mac | `./scripts/setup/docker-autostart.sh` |
 | Опционально systemd | `scripts/internal/docker-stacks.service` |
 
-После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/RosterRx`, `~/server`, `~/singbox`.
+После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/Roster`, `~/server`, `~/singbox`.
 
-Конфиги туннеля и nginx на VPS **вне этого git-репозитория** — на машинах; здесь только приложение RosterRx.
+Конфиги туннеля и nginx на VPS **вне этого git-репозитория** — на машинах; здесь только приложение Roster.
 
 ### Быстрые проверки
 
@@ -196,7 +205,7 @@ ssh greem4@192.168.31.96 "tail -20 ~/docker-stacks.log"
    ```
 
 5. Лог: `ssh greem4@192.168.31.96 "tail -80 /home/greem4/.config/vps-tunnel/tunnel.log"`
-6. На Pi: `docker compose -f ~/RosterRx/docker-compose.yml ps` и Caddy в `~/server`.
+6. На Pi: `docker compose -f ~/Roster/docker-compose.yml ps` и Caddy в `~/server`.
 7. Если после отключения света контейнеры не поднялись: `ssh greem4@192.168.31.96 "/home/greem4/bin/docker-stacks-up.sh"` или `./scripts/setup/docker-autostart.sh`.
 
 ---
@@ -221,7 +230,7 @@ ssh -o BatchMode=yes greem4@192.168.31.96 'echo OK'
 
 ## B3: первый запуск
 
-На Pi в каталоге проекта (обычно `~/RosterRx`, клон репозитория):
+На Pi в каталоге проекта (обычно `~/Roster`, клон репозитория):
 
 ```bash
 cp .env.example .env
@@ -243,7 +252,7 @@ curl http://127.0.0.1:8000/health
 
 Первый вход: `admin` / `admin` — сразу сменить пароль.
 
-**Не выполняйте** `docker compose down -v` в `~/RosterRx` — удалит том `pgdata` и все данные.
+**Не выполняйте** `docker compose down -v` в `~/Roster` — удалит том `pgdata` и все данные.
 
 ---
 
@@ -253,7 +262,7 @@ curl http://127.0.0.1:8000/health
 
 ### 1. Бэкап на текущем B3
 
-На Pi в `~/RosterRx`:
+На Pi в `~/Roster`:
 
 ```bash
 docker compose exec -T db pg_dump -U roster roster > backup-$(date +%Y%m%d).sql
@@ -262,7 +271,7 @@ docker compose exec -T db pg_dump -U roster roster > backup-$(date +%Y%m%d).sql
 Скопировать файл на Mac (подставьте свой `PI_SSH`):
 
 ```bash
-scp roster-b3:~/RosterRx/backup-*.sql ./
+scp roster-b3:~/Roster/backup-*.sql ./
 ```
 
 Импорт лекарств: `./scripts/internal/import.sh` (туннель к БД сам).
@@ -275,12 +284,12 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
 
 ### 2. Новый сервер (новая Pi, VPS, облако)
 
-1. Установить Docker, склонировать репозиторий в `~/RosterRx`.
+1. Установить Docker, склонировать репозиторий в `~/Roster`.
 2. Скопировать **старый** `.env` (те же `POSTGRES_PASSWORD` и `JWT_SECRET`, иначе пользователи с существующими JWT не войдут; пароли в БД сохранятся из дампа).
 3. Поднять только БД и дождаться healthcheck:
 
    ```bash
-   cd ~/RosterRx
+   cd ~/Roster
    docker compose up -d db
    ```
 
@@ -305,7 +314,7 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
 
 | Что | Где | Зачем |
 |-----|-----|--------|
-| `.env` | `~/RosterRx/.env` | пароль БД, JWT, CORS |
+| `.env` | `~/Roster/.env` | пароль БД, JWT, CORS |
 | `backup-*.sql` | дамп | лекарства, пользователи, alembic_version |
 | `~/server/www` | статика фронта | можно пересобрать `deploy-frontend.sh` |
 | `~/server/caddy/` | Caddyfile | есть в репозитории `server/` |
@@ -318,18 +327,18 @@ pg_dump -h 127.0.0.1 -U roster roster > backup.sql
 Если нужна побайтовая копия диска БД (редко):
 
 ```bash
-cd ~/RosterRx
+cd ~/Roster
 docker compose stop api
 docker compose exec db pg_dump -U roster roster > backup.sql   # страховка
 docker compose stop db
 
-# имя тома: обычно rosterrx_pgdata или <имя_проекта>_pgdata — смотреть: docker volume ls
-docker run --rm -v rosterrx_pgdata:/data -v "$PWD":/backup alpine \
+# имя тома: обычно roster_pgdata или <имя_проекта>_pgdata — смотреть: docker volume ls
+docker run --rm -v roster_pgdata:/data -v "$PWD":/backup alpine \
   tar czf /backup/pgdata.tar.gz -C /data .
 
 # на новой машине — после первого docker compose up -d db (пустой том):
 docker compose stop db
-docker run --rm -v rosterrx_pgdata:/data -v "$PWD":/backup alpine \
+docker run --rm -v roster_pgdata:/data -v "$PWD":/backup alpine \
   sh -c "cd /data && tar xzf /backup/pgdata.tar.gz"
 docker compose up -d
 ```

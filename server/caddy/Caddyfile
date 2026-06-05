@@ -1,5 +1,5 @@
 # Caddy на B3 (~/server). Статика: /srv/www ← ./www
-# API RosterRx: контейнер api в сети rosterrx_default
+# API Roster: контейнер api в сети roster_default
 
 {
 	admin off

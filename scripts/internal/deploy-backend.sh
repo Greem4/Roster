@@ -6,7 +6,7 @@ roster_load_env
 . "$INTERNAL/_ssh-b3.sh"
 . "$INTERNAL/_pi-route.sh"
 
-PI_PROJECT_DIR="${PI_PROJECT_DIR:-RosterRx}"
+PI_PROJECT_DIR="${PI_PROJECT_DIR:-Roster}"
 ROUTE_VIA=auto
 SYNC_ENV=false
 START_DEV=false
@@ -44,6 +44,16 @@ done
 pi_route_pick "$ROUTE_VIA" || exit 1
 
 echo "=== Деплой API (${PI_ROUTE_MODE}: ${PI_ROUTE_TARGET}) ==="
+
+echo "→ server/docker-compose.yml, caddy/Caddyfile"
+pi_rsync -avz "$ROOT/server/docker-compose.yml" "${PI_ROUTE_TARGET}:~/server/docker-compose.yml"
+pi_rsync -avz "$ROOT/server/caddy/Caddyfile" "${PI_ROUTE_TARGET}:~/server/caddy/Caddyfile"
+
+if pi_ssh "[ ! -d ~/${PI_PROJECT_DIR} ] && [ -d ~/RosterRx ]"; then
+  echo "=== Миграция RosterRx → Roster на Pi ==="
+  pi_rsync -avz "$INTERNAL/migrate-pi-roster-name.sh" "${PI_ROUTE_TARGET}:/tmp/migrate-pi-roster-name.sh"
+  pi_ssh "sh /tmp/migrate-pi-roster-name.sh"
+fi
 
 echo "→ backend/"
 pi_rsync -avz \

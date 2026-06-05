@@ -1,0 +1,303 @@
+/* Стили только модуля RosterPay (префикс pay-). */
+
+.pay-page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.pay-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pay-page__title {
+  font-size: 1.25rem;
+}
+
+.pay-page__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.pay-error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--color-danger, #b42318);
+  background: color-mix(in srgb, var(--color-danger, #b42318) 8%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.pay-loading {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.pay-year-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-year-picker__btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.pay-year-picker__btn:hover {
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+}
+
+.pay-year-picker__value {
+  min-width: 3.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-salary {
+  padding: 1rem 1.1rem 1.15rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-salary__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pay-salary__heading {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.pay-salary__total {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.pay-salary__total-value {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.pay-salary__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pay-salary__saved {
+  font-size: 0.85rem;
+  color: var(--color-success);
+}
+
+.pay-salary__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.pay-month-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.55rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pay-month-cell__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.pay-month-cell__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pay-month-cell__line {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pay-month-cell__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-month-cell__remove {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.pay-month-cell__remove:hover {
+  color: var(--color-danger, #b42318);
+  background: color-mix(in srgb, var(--color-danger, #b42318) 10%, transparent);
+}
+
+.pay-month-cell__add {
+  align-self: flex-start;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-accent-text);
+  background: var(--color-accent-soft);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.pay-month-cell__add:hover {
+  filter: brightness(1.08);
+}
+
+.pay-month-cell__sum {
+  margin: 0;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-month-cell--readonly .pay-month-cell__total {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-month-cell__breakdown {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.pay-month-cell__breakdown li::before {
+  content: '+ ';
+  opacity: 0.6;
+}
+
+.pay-month-cell__empty {
+  font-size: 0.9rem;
+}
+
+.pay-chart {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem 1.25rem;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.pay-chart__heading {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.pay-chart__wrap {
+  position: relative;
+  margin: 0 -0.25rem;
+}
+
+.pay-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.pay-chart__tooltip--floating {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.pay-chart__empty {
+  margin: 2rem 0 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.pay-chart__tooltip {
+  padding: 0.5rem 0.65rem;
+  font-size: 0.8rem;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pay-chart__tooltip-month {
+  margin: 0 0 0.2rem;
+  color: var(--color-text-muted);
+}
+
+.pay-chart__tooltip-value {
+  margin: 0;
+  font-weight: 600;
+  color: var(--color-accent-text);
+}
+
+@media (max-width: 640px) {
+  .pay-page__header.roster-page-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .pay-page__intro {
+    display: none;
+  }
+
+  .pay-page__header .pay-year-picker {
+    margin-left: auto;
+  }
+}

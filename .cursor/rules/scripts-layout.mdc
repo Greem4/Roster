@@ -1,0 +1,34 @@
+---
+description: Структура scripts/ — только 3 обёртки в корне, остальное в internal/ и setup/
+alwaysApply: true
+---
+
+# Скрипты Roster
+
+## Корень `scripts/` — ровно 3 файла
+
+Только обёртки на `scripts/internal/`:
+
+| Скрипт | Назначение |
+|--------|------------|
+| `./scripts/deploy-backend.sh` | Деплой API на Pi |
+| `./scripts/deploy-frontend.sh` | Деплой фронта на сайт |
+| `./scripts/dev.sh` | Локальный UI (Vite) |
+
+**Не создавать** в `scripts/` новые `.sh` (ни `tunnel-db.sh`, ни `dev-ui.sh`, ни другие обёртки).
+
+## `scripts/internal/` — реализация и утилиты
+
+- `dev.sh`, `deploy-backend.sh`, `deploy-frontend.sh` — тело команд из корня
+- `tunnel-db.sh` — туннель PostgreSQL (вызывать `./scripts/internal/tunnel-db.sh`)
+- `import.sh`, `_ssh-b3.sh`, `_pi-route.sh` и прочие вспомогательные скрипты
+
+## `scripts/setup/` — одноразовая настройка машин
+
+SSH-ключ, VPS-туннель, Caddy, docker-autostart и т.п. Не дублировать в корень `scripts/`.
+
+## Агент
+
+- Новый скрипт по умолчанию — в `internal/` или `setup/`, не в корень.
+- В подсказках пользователю для UI — `./scripts/dev.sh`, не несуществующий `dev-ui.sh`.
+- Туннель БД — `./scripts/internal/tunnel-db.sh` (или `import.sh`, если туннель поднимается сам).

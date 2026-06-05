@@ -1,0 +1,42 @@
+---
+description: Рабочий процесс — API на B3 сразу, фронт сначала локально
+alwaysApply: true
+---
+
+# Рабочий процесс Roster
+
+## API (backend) — только на B3
+
+После правок в `backend/`, Alembic, `docker-compose.yml` (api):
+
+```bash
+./scripts/deploy-backend.sh
+```
+
+Запускать **в конце задачи** с `required_permissions: ["all"]`. Коммит — только если пользователь просил.
+
+**Не деплоить фронт** вместе с API, если пользователь не просил явно выложить UI на сайт.
+
+## Frontend — сначала локально, потом B3
+
+После правок в `frontend/`:
+
+1. **Не** запускать `deploy-frontend.sh` автоматически.
+2. Напомнить проверку: `./scripts/dev.sh` → http://localhost:5173 (API уже на B3 через туннель).
+3. Деплой на прод **только** если пользователь просит («выложи», «на б3», «деплой фронта») — тогда `./scripts/deploy-frontend.sh`.
+
+## Оба слоя
+
+| Что меняли | Действие агента |
+|------------|-----------------|
+| Только backend | `deploy-backend.sh` |
+| Только frontend | подсказать `dev.sh`; деплой фронта — по запросу |
+| Backend + frontend | `deploy-backend.sh` + подсказать `dev.sh`; фронт на B3 — по запросу |
+
+## Пользователь
+
+В корне `scripts/` только три команды — см. `.cursor/rules/scripts-layout.mdc`:
+
+- Локальный UI: `./scripts/dev.sh`
+- Деплой API: `./scripts/deploy-backend.sh`
+- Деплой фронта: `./scripts/deploy-frontend.sh`

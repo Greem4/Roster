@@ -13,14 +13,14 @@ services:
       - caddy_config:/config
     networks:
       - web
-      - rosterrx
+      - roster
 
 networks:
   web:
     name: server_web
-  rosterrx:
+  roster:
     external: true
-    name: rosterrx_default
+    name: roster_default
 
 volumes:
   caddy_data:

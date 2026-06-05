@@ -1,0 +1,21 @@
+---
+description: После правок backend/API — автоматический деплой на B3 (не трогать фронт)
+globs: backend/**/*
+alwaysApply: true
+---
+
+# API: автодеплой на B3
+
+Если в **этой задаче** менялся `backend/` (Python, Alembic, Dockerfile, requirements) или `docker-compose.yml` для `api` — **перед концом ответа**:
+
+```bash
+./scripts/deploy-backend.sh
+```
+
+`required_permissions: ["all"]` при блокировке SSH.
+
+**Фронт на B3 не выкатывать** без явной просьбы пользователя. См. `.cursor/rules/workflow-b3.mdc`.
+
+Коммит/`git push` — только по запросу пользователя.
+
+После деплоя — кратко: успех или ошибка из вывода.
