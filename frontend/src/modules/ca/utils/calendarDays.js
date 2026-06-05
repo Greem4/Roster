@@ -37,3 +37,20 @@ export function isWeekendColumn(columnIndex) {
 export function isWeekendCell(cellIndex) {
   return isWeekendColumn(cellIndex)
 }
+
+/** Ключ даты для хранения выделения: YYYY-M-D. */
+export function dateKey(year, month, day) {
+  return `${year}-${month}-${day}`
+}
+
+/** Сколько выделенных дней в указанном месяце. */
+export function countSelectedInMonth(selectedDates, year, month) {
+  let count = 0
+  for (const key of selectedDates) {
+    const [y, m] = key.split('-').map(Number)
+    if (y === year && m === month) {
+      count += 1
+    }
+  }
+  return count
+}

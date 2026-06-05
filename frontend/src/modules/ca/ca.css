@@ -99,12 +99,32 @@
   box-shadow: 0 4px 14px color-mix(in srgb, var(--module-ca-text) 8%, transparent);
 }
 
+.ca-month__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .ca-month__title {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--module-ca-text);
   letter-spacing: 0.01em;
+}
+
+.ca-month__counter {
+  flex-shrink: 0;
+  min-width: 1.5rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--module-ca-text);
+  background: color-mix(in srgb, var(--module-ca-text) 14%, transparent);
+  border-radius: var(--radius-md);
 }
 
 .ca-month__weekdays {
@@ -140,10 +160,18 @@
   justify-content: center;
   aspect-ratio: 1;
   min-height: 1.65rem;
+  padding: 0;
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.ca-month__day:hover:not(.ca-month__day--empty) {
+  background: color-mix(in srgb, var(--module-ca-text) 10%, transparent);
 }
 
 .ca-month__day--empty {
@@ -160,4 +188,19 @@
   color: var(--module-ca-text);
   background: color-mix(in srgb, var(--module-ca-text) 18%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--module-ca-text) 45%, transparent);
+}
+
+.ca-month__day--selected {
+  font-weight: 600;
+  color: var(--color-surface);
+  background: var(--module-ca-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--module-ca-text) 80%, var(--color-text));
+}
+
+.ca-month__day--selected.ca-month__day--today {
+  color: var(--color-surface);
+  background: var(--module-ca-text);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-surface) 35%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--module-ca-text) 35%, transparent);
 }
