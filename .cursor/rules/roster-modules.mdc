@@ -1,9 +1,9 @@
 ---
-description: Изоляция модулей Roster (Duty, Pay, RX) — границы кода и поиска для агента
+description: Изоляция модулей Roster (Duty, CA, Pay, RX) — границы кода и поиска для агента
 alwaysApply: true
 ---
 
-# Модули Roster: Duty · Pay · RX
+# Модули Roster: Duty · CA · Pay · RX
 
 Один репозиторий, **логически раздельные** продукты. Не смешивать домены без явной задачи пользователя.
 
@@ -14,6 +14,7 @@ alwaysApply: true
 | **RosterRX** | `frontend/src/pages/MedicinesPage.jsx`, `components/Medicines*`, `MedicineForm` | `backend/app/api/medicines.py` | `models/medicine.py`, `schemas/medicine.py` |
 | **RosterPay** | `frontend/src/modules/pay/**` | `backend/app/api/pay.py` (`/pay`) | `models/pay.py`, `schemas/pay.py`, `pay/permissions.py` |
 | **RosterDuty** | заглушка `/duty` → `ModulePlaceholderPage` | пока нет | пока нет |
+| **RosterCA** | заглушка `/ca` → `ModulePlaceholderPage` | пока нет | пока нет |
 | **Общее** | `AppShell`, `AuthContext`, `ProtectedRoute`, `App.jsx` | `auth`, `users`, `health` | `models/user.py` |
 
 ## Правила для агента
@@ -32,7 +33,7 @@ alwaysApply: true
 
 ### Сквозные изменения (auth, шапка, деплой)
 
-Допустимы точечно; после правок проверить, что маршруты `/pay/*`, `/medicines`, `/duty` не сломаны.
+Допустимы точечно; после правок проверить, что маршруты `/pay/*`, `/medicines`, `/duty`, `/ca` не сломаны.
 
 ## Деплой
 

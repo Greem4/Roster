@@ -1,6 +1,6 @@
 /**
- * Разделы приложения в шапке: дежурства, финансы, средства (RX).
- * Переключаются маршрутами /duty, /pay, /medicines.
+ * Разделы приложения в шапке: дежурства, календарь (CA), финансы, средства (RX).
+ * Переключаются маршрутами /duty, /ca, /pay, /medicines.
  */
 export const ROSTER_MODULES = {
   duty: {
@@ -9,6 +9,13 @@ export const ROSTER_MODULES = {
     suffix: 'Duty',
     title: 'RosterDuty',
     description: 'График дежурств и смен — в разработке.',
+  },
+  ca: {
+    key: 'ca',
+    path: '/ca',
+    suffix: 'CA',
+    title: 'RosterCA',
+    description: 'Календарь — в разработке.',
   },
   pay: {
     key: 'pay',
@@ -27,4 +34,4 @@ export const ROSTER_MODULES = {
 }
 
 /** Порядок вкладок слева направо в шапке. */
-export const ROSTER_MODULE_ORDER = ['duty', 'pay', 'rx']
+export const ROSTER_MODULE_ORDER = ['duty', 'ca', 'pay', 'rx']

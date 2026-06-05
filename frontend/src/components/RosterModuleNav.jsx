@@ -16,7 +16,7 @@ function isModuleActive(key, pathname) {
 }
 
 /**
- * Слева в шапке: RosterDuty · RosterPay · RosterRX — переключение разделов.
+ * Слева в шапке: RosterDuty · RosterCA · RosterPay · RosterRX — переключение разделов.
  */
 export default function RosterModuleNav() {
   const { pathname } = useLocation()

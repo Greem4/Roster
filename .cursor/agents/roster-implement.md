@@ -15,7 +15,7 @@ description: >-
 
 ## Правила проекта
 
-- Границы модулей Duty / Pay / RX — `.cursor/rules/roster-modules.mdc`; Pay: `frontend/src/modules/pay/`, `backend/app/api/pay.py`.
+- Границы модулей Duty / CA / Pay / RX — `.cursor/rules/roster-modules.mdc`; Pay: `frontend/src/modules/pay/`, `backend/app/api/pay.py`.
 - Документация к коду — **на русском** (JSDoc, docstring, комментарии к нетривиальной логике).
 - `backend/` или `docker-compose` (api) → в конце `./scripts/deploy-backend.sh` (`required_permissions: ["all"]`).
 - `frontend/` → не деплоить на B3 без явной просьбы; напомнить `./scripts/dev.sh`.

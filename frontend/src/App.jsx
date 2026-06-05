@@ -22,6 +22,7 @@ export default function App() {
               <Route path="/cabinet/*" element={<CabinetPage />} />
             </Route>
             <Route path="/duty" element={<ModulePlaceholderPage moduleKey="duty" />} />
+            <Route path="/ca" element={<ModulePlaceholderPage moduleKey="ca" />} />
             <Route path="/pay/*" element={<PayRoutes />} />
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />

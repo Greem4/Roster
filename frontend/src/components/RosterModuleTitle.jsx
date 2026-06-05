@@ -1,7 +1,7 @@
 import { ROSTER_MODULES } from '../constants/rosterModules'
 
 /**
- * Заголовок раздела: «Roster» + цветной суффикс (Duty / Pay / RX), как в шапке.
+ * Заголовок раздела: «Roster» + цветной суффикс (Duty / CA / Pay / RX), как в шапке.
  *
  * @param {'h1'|'h2'|'p'|'span'} [as] — HTML-тег обёртки
  * @param {keyof typeof ROSTER_MODULES} moduleKey

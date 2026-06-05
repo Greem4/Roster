@@ -9,7 +9,7 @@ function profileInitial(username) {
 
 /**
  * Профиль в шапке: по клику на аватар — меню «Кабинет», «Настройки», «Выйти».
- * Общий для всех модулей Roster (Duty · Pay · RX).
+ * Общий для всех модулей Roster (Duty · CA · Pay · RX).
  */
 export default function UserMenuButton() {
   const { user, isAuthenticated, logout } = useAuth()

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://roster:roster@localhost:5432/roster"
     jwt_secret: str = "dev-secret-change-in-production"
-    jwt_expire_minutes: int = 480
+    jwt_expire_minutes: int = 43_200  # 30 суток
     cors_origins: str = "http://localhost:5173"
     expiry_warn_days: str = "30,14,7"
 

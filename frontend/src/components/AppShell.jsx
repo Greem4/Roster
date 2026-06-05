@@ -3,7 +3,7 @@ import RosterModuleNav from './RosterModuleNav'
 import UserMenuButton from './UserMenuButton'
 
 /**
- * Оболочка: слева RosterDuty · RosterPay · RosterRX, справа профиль.
+ * Оболочка: слева RosterDuty · RosterCA · RosterPay · RosterRX, справа профиль.
  */
 export default function AppShell() {
   return (

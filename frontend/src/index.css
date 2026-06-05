@@ -25,9 +25,11 @@
   --color-link: #5eead4;
   --color-brand: var(--color-text);
 
-  /* Суффиксы разделов в шапке: Duty / Pay / RX */
+  /* Суффиксы разделов в шапке: Duty / CA / Pay / RX */
   --module-duty-text: #93c5fd;
   --module-duty-muted: rgba(147, 197, 253, 0.55);
+  --module-ca-text: #c4b5fd;
+  --module-ca-muted: rgba(196, 181, 253, 0.55);
   --module-pay-text: #fcd34d;
   --module-pay-muted: rgba(252, 211, 77, 0.55);
   --module-rx-text: var(--color-accent-text);
@@ -139,7 +141,7 @@ a:hover {
   flex-shrink: 0;
 }
 
-/* RosterDuty · RosterPay · RosterRX — в ряд слева */
+/* RosterDuty · RosterCA · RosterPay · RosterRX — в ряд слева */
 .roster-nav {
   display: flex;
   align-items: center;
@@ -172,6 +174,11 @@ a:hover {
   transition: color 0.15s ease;
 }
 
+.roster-nav__suffix--ca {
+  color: var(--module-ca-muted);
+  transition: color 0.15s ease;
+}
+
 .roster-nav__suffix--pay {
   color: var(--module-pay-muted);
   transition: color 0.15s ease;
@@ -185,6 +192,11 @@ a:hover {
 .roster-nav__brand:hover .roster-nav__suffix--duty,
 .roster-nav__brand--active .roster-nav__suffix--duty {
   color: var(--module-duty-text);
+}
+
+.roster-nav__brand:hover .roster-nav__suffix--ca,
+.roster-nav__brand--active .roster-nav__suffix--ca {
+  color: var(--module-ca-text);
 }
 
 .roster-nav__brand:hover .roster-nav__suffix--pay,
@@ -207,6 +219,10 @@ a:hover {
 
 .roster-module-title__suffix--duty {
   color: var(--module-duty-text);
+}
+
+.roster-module-title__suffix--ca {
+  color: var(--module-ca-text);
 }
 
 .roster-module-title__suffix--pay {
