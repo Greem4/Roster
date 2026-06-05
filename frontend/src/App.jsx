@@ -6,6 +6,7 @@ import MedicinesLayout from './components/MedicinesLayout'
 import LoginOverlay from './components/overlays/LoginOverlay'
 import CabinetPage from './pages/CabinetPage'
 import ModulePlaceholderPage from './pages/ModulePlaceholderPage'
+import CaRoutes from './modules/ca/CaRoutes'
 import PayRoutes from './modules/pay/PayRoutes'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
 import AuthCallbackPage from './components/AuthCallbackPage'
@@ -22,7 +23,7 @@ export default function App() {
               <Route path="/cabinet/*" element={<CabinetPage />} />
             </Route>
             <Route path="/duty" element={<ModulePlaceholderPage moduleKey="duty" />} />
-            <Route path="/ca" element={<ModulePlaceholderPage moduleKey="ca" />} />
+            <Route path="/ca/*" element={<CaRoutes />} />
             <Route path="/pay/*" element={<PayRoutes />} />
             <Route element={<MedicinesLayout />}>
               <Route path="/medicines" />

@@ -15,7 +15,7 @@ export const ROSTER_MODULES = {
     path: '/ca',
     suffix: 'CA',
     title: 'RosterCA',
-    description: 'Календарь — в разработке.',
+    description: 'Годовой календарь с сеткой из 12 месяцев.',
   },
   pay: {
     key: 'pay',
