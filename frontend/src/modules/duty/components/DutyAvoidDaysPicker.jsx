@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { WEEKDAY_LABELS } from '../constants/months'
-import { daysInMonth, isNonWorkingDay, weekdayIndex } from '../utils/scheduleDays'
+import { daysInMonth, isNonWorkingDay, isWeekend, weekdayIndex } from '../utils/scheduleDays'
 import {
   formatAvoidDaysLabel,
   normalizeAvoidDays,
@@ -9,21 +9,29 @@ import {
 } from '../utils/monthPreferences'
 
 /**
- * Выбор чисел месяца, когда сотрудника не ставить: сетка + быстрый ввод «3, 5, 10-12».
+ * Выбор чисел месяца для правил «ставить» или «не ставить»: сетка + быстрый ввод «3, 5, 10-12».
+ * @param {'can'|'avoid'} [variant='avoid']
  */
 export default function DutyAvoidDaysPicker({
   year,
   month,
   value,
-  avoidWeekdays = [],
+  linkedWeekdays = [],
+  avoidWeekdays,
   onChange,
+  variant = 'avoid',
 }) {
+  const blockedWeekdays = normalizeAvoidWeekdays(
+    avoidWeekdays !== undefined ? avoidWeekdays : linkedWeekdays,
+  )
+  const groupLabel = variant === 'can'
+    ? 'Числа месяца, когда ставить смены'
+    : 'Числа месяца, когда не ставить смены'
   const dayCount = daysInMonth(year, month)
   const [textDraft, setTextDraft] = useState('')
   const [textError, setTextError] = useState('')
 
   const selected = normalizeAvoidDays(value, dayCount)
-  const blockedWeekdays = normalizeAvoidWeekdays(avoidWeekdays)
   const summary = formatAvoidDaysLabel(selected)
   const leadingBlanks = weekdayIndex(year, month, 1)
 
@@ -61,13 +69,21 @@ export default function DutyAvoidDaysPicker({
     <div className="duty-avoid-days">
       <span className="duty-avoid-days__section-label">Числа месяца</span>
       <div className="duty-avoid-days__weekdays" aria-hidden>
-        {WEEKDAY_LABELS.map((label) => (
-          <span key={label} className="duty-avoid-days__weekday">
+        {WEEKDAY_LABELS.map((label, weekday) => (
+          <span
+            key={label}
+            className={[
+              'duty-avoid-days__weekday',
+              weekday >= 5 && 'duty-avoid-days__weekday--weekend',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          >
             {label}
           </span>
         ))}
       </div>
-      <div className="duty-avoid-days__grid" role="group" aria-label="Числа месяца, когда не ставить">
+      <div className="duty-avoid-days__grid" role="group" aria-label={groupLabel}>
         {Array.from({ length: leadingBlanks }, (_, index) => (
           <span key={`blank-${index}`} className="duty-avoid-days__spacer" aria-hidden />
         ))}
@@ -75,7 +91,8 @@ export default function DutyAvoidDaysPicker({
           const day = index + 1
           const active = selected.includes(day)
           const byWeekday = blockedWeekdays.includes(weekdayIndex(year, month, day))
-          const off = isNonWorkingDay(year, month, day)
+          const weekend = isWeekend(year, month, day)
+          const holiday = isNonWorkingDay(year, month, day) && !weekend
           return (
             <button
               key={day}
@@ -84,7 +101,8 @@ export default function DutyAvoidDaysPicker({
                 'duty-avoid-days__day',
                 active && 'duty-avoid-days__day--active',
                 byWeekday && !active && 'duty-avoid-days__day--weekday',
-                off && 'duty-avoid-days__day--off',
+                weekend && !active && 'duty-avoid-days__day--weekend',
+                holiday && !active && 'duty-avoid-days__day--holiday',
               ]
                 .filter(Boolean)
                 .join(' ')}

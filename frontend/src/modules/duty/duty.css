@@ -373,20 +373,30 @@
 }
 
 .duty-employee-card {
+  --duty-primary: var(--module-duty-text);
+  --duty-primary-soft: color-mix(in srgb, var(--duty-primary) 14%, transparent);
+  --duty-primary-softer: color-mix(in srgb, var(--duty-primary) 7%, transparent);
+  --duty-surface: color-mix(in srgb, var(--duty-primary) 5%, var(--color-surface-raised));
+  --duty-border: color-mix(in srgb, var(--duty-primary) 18%, var(--color-border));
+  --duty-weekend: color-mix(in srgb, #22c55e 12%, transparent);
+  --duty-holiday: color-mix(in srgb, #f59e0b 14%, transparent);
+  --duty-rules-can: #059669;
+  --duty-rules-can-soft: color-mix(in srgb, var(--duty-rules-can) 16%, transparent);
+  --duty-rules-can-softer: color-mix(in srgb, var(--duty-rules-can) 9%, transparent);
+  --duty-rules-avoid: #dc2626;
+  --duty-rules-avoid-soft: color-mix(in srgb, var(--duty-rules-avoid) 16%, transparent);
+  --duty-rules-avoid-softer: color-mix(in srgb, var(--duty-rules-avoid) 9%, transparent);
+
   display: flex;
   flex-direction: column;
-  max-height: min(86vh, 100%);
   margin: -1.25rem;
 }
 
 .duty-employee-card__scroll {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 1rem 1.25rem;
+  gap: 0.55rem;
+  padding: 0.85rem 1.25rem 0.5rem;
 }
 
 .duty-employee-card__badges {
@@ -603,15 +613,15 @@
 }
 
 .duty-employee-card__section--primary {
-  padding: 0.65rem 0.75rem;
+  padding: 0.45rem 0.55rem;
   background: var(--duty-surface);
   border: 1px solid var(--duty-border);
   border-radius: var(--radius-md);
 }
 
 .duty-employee-card__section-title {
-  margin: 0;
-  font-size: 0.86rem;
+  margin: 0 0 0.15rem;
+  font-size: 0.82rem;
   font-weight: 600;
   line-height: 1.25;
 }
@@ -626,6 +636,200 @@
   margin: 0;
   font-size: 0.72rem;
   line-height: 1.35;
+}
+
+.duty-month-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.duty-month-rules__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+}
+
+.duty-month-rules__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.42rem 0.5rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.25;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.duty-month-rules__tab-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.duty-month-rules__tab--can {
+  color: color-mix(in srgb, var(--duty-rules-can) 75%, var(--color-text));
+  background: var(--duty-rules-can-softer);
+  border-color: color-mix(in srgb, var(--duty-rules-can) 28%, var(--color-border));
+}
+
+.duty-month-rules__tab--can .duty-month-rules__tab-dot {
+  background: var(--duty-rules-can);
+}
+
+.duty-month-rules__tab--avoid {
+  color: color-mix(in srgb, var(--duty-rules-avoid) 75%, var(--color-text));
+  background: var(--duty-rules-avoid-softer);
+  border-color: color-mix(in srgb, var(--duty-rules-avoid) 28%, var(--color-border));
+}
+
+.duty-month-rules__tab--avoid .duty-month-rules__tab-dot {
+  background: var(--duty-rules-avoid);
+}
+
+.duty-month-rules__tab--can.duty-month-rules__tab--active {
+  color: #fff;
+  background: var(--duty-rules-can);
+  border-color: color-mix(in srgb, var(--duty-rules-can) 80%, #000);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--duty-rules-can) 35%, transparent);
+}
+
+.duty-month-rules__tab--can.duty-month-rules__tab--active .duty-month-rules__tab-dot {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--duty-rules-can) 35%, #fff);
+}
+
+.duty-month-rules__tab--avoid.duty-month-rules__tab--active {
+  color: #fff;
+  background: var(--duty-rules-avoid);
+  border-color: color-mix(in srgb, var(--duty-rules-avoid) 80%, #000);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--duty-rules-avoid) 35%, transparent);
+}
+
+.duty-month-rules__tab--avoid.duty-month-rules__tab--active .duty-month-rules__tab-dot {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--duty-rules-avoid) 35%, #fff);
+}
+
+.duty-month-rules__tab:not(.duty-month-rules__tab--active):hover {
+  filter: brightness(1.06);
+}
+
+.duty-month-rules__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 0.5rem 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.duty-month-rules__panel--can {
+  background: var(--duty-rules-can-softer);
+  border-color: color-mix(in srgb, var(--duty-rules-can) 35%, var(--color-border));
+  box-shadow: inset 3px 0 0 var(--duty-rules-can);
+}
+
+.duty-month-rules__panel--avoid {
+  background: var(--duty-rules-avoid-softer);
+  border-color: color-mix(in srgb, var(--duty-rules-avoid) 35%, var(--color-border));
+  box-shadow: inset 3px 0 0 var(--duty-rules-avoid);
+}
+
+.duty-month-rules__mode-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.duty-month-rules__panel--can .duty-month-rules__mode-hint {
+  color: color-mix(in srgb, var(--duty-rules-can) 82%, var(--color-text));
+}
+
+.duty-month-rules__panel--avoid .duty-month-rules__mode-hint {
+  color: color-mix(in srgb, var(--duty-rules-avoid) 82%, var(--color-text));
+}
+
+.duty-month-rules__mode-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.duty-month-rules__panel--can .duty-month-rules__mode-dot {
+  background: var(--duty-rules-can);
+}
+
+.duty-month-rules__panel--avoid .duty-month-rules__mode-dot {
+  background: var(--duty-rules-avoid);
+}
+
+.duty-month-rules__summaries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.28rem 0.4rem;
+  background: color-mix(in srgb, var(--color-surface-raised) 55%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.duty-month-rules__summary {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.duty-month-rules__summary--can {
+  color: color-mix(in srgb, var(--duty-rules-can) 70%, var(--color-text-secondary));
+}
+
+.duty-month-rules__summary--can::before {
+  content: '● ';
+  color: var(--duty-rules-can);
+}
+
+.duty-month-rules__summary--avoid {
+  color: color-mix(in srgb, var(--duty-rules-avoid) 70%, var(--color-text-secondary));
+}
+
+.duty-month-rules__summary--avoid::before {
+  content: '● ';
+  color: var(--duty-rules-avoid);
+}
+
+.duty-month-rules__panel--can .duty-avoid-weekdays__day--active,
+.duty-month-rules__panel--can .duty-avoid-days__day--active {
+  color: #fff;
+  background: var(--duty-rules-can);
+  border-color: color-mix(in srgb, var(--duty-rules-can) 80%, #000);
+}
+
+.duty-month-rules__panel--can .duty-avoid-days__day--weekday {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--duty-rules-can) 55%, transparent);
+}
+
+.duty-month-rules__panel--avoid .duty-avoid-weekdays__day--active,
+.duty-month-rules__panel--avoid .duty-avoid-days__day--active {
+  color: #fff;
+  background: var(--duty-rules-avoid);
+  border-color: color-mix(in srgb, var(--duty-rules-avoid) 80%, #000);
+}
+
+.duty-month-rules__panel--avoid .duty-avoid-days__day--weekday {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--duty-rules-avoid) 55%, transparent);
 }
 
 .duty-avoid-weekdays {
@@ -661,10 +865,13 @@
   cursor: pointer;
 }
 
+.duty-avoid-weekdays__day--weekend:not(.duty-avoid-weekdays__day--active) {
+  background: var(--duty-weekend);
+  color: color-mix(in srgb, #166534 55%, var(--color-text));
+}
+
 .duty-avoid-weekdays__day--active {
   color: #fff;
-  background: var(--color-danger, #dc2626);
-  border-color: color-mix(in srgb, var(--color-danger, #dc2626) 80%, #000);
 }
 
 .duty-avoid-weekdays__summary {
@@ -776,6 +983,12 @@
   color: var(--color-text-secondary);
 }
 
+.duty-avoid-days__weekday--weekend {
+  color: color-mix(in srgb, #166534 65%, var(--color-text-secondary));
+  background: var(--duty-weekend);
+  border-radius: 3px;
+}
+
 .duty-avoid-days__spacer {
   display: block;
 }
@@ -794,19 +1007,18 @@
   cursor: pointer;
 }
 
-.duty-avoid-days__day--off:not(.duty-avoid-days__day--active) {
-  color: var(--color-text-secondary);
-  background: color-mix(in srgb, var(--color-surface-elevated) 80%, transparent);
+.duty-avoid-days__day--weekend:not(.duty-avoid-days__day--active) {
+  background: var(--duty-weekend);
+  color: color-mix(in srgb, #166534 55%, var(--color-text));
+}
+
+.duty-avoid-days__day--holiday:not(.duty-avoid-days__day--active) {
+  background: var(--duty-holiday);
+  color: color-mix(in srgb, #b45309 55%, var(--color-text));
 }
 
 .duty-avoid-days__day--active {
   color: #fff;
-  background: var(--color-danger, #dc2626);
-  border-color: color-mix(in srgb, var(--color-danger, #dc2626) 80%, #000);
-}
-
-.duty-avoid-days__day--weekday {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger, #dc2626) 55%, transparent);
 }
 
 .duty-avoid-days__quick {
@@ -864,11 +1076,12 @@
 
 .duty-employee-card__actions {
   flex: 0 0 auto;
+  flex-shrink: 0;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-  padding: 0.7rem 1.25rem 1rem;
+  padding: 0.6rem 1.25rem 0.85rem;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface-raised);
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Modal from '../../../components/Modal'
 import { MONTH_NAMES } from '../../../constants/calendar'
 import { formatDate } from '../../../utils/formatDate'
@@ -6,14 +6,11 @@ import { getDutyTitleLabel } from '../constants'
 import { emptyVacation } from '../utils/employeeStorage'
 import {
   emptyMonthPreferences,
-  formatAvoidRulesSummary,
   getMonthPreferences,
-  monthKey,
   patchMonthPreferences,
 } from '../utils/monthPreferences'
 import { daysInMonth } from '../utils/scheduleDays'
-import DutyAvoidDaysPicker from './DutyAvoidDaysPicker'
-import DutyAvoidWeekdaysPicker from './DutyAvoidWeekdaysPicker'
+import DutyMonthRulesPicker from './DutyMonthRulesPicker'
 import DutyVacationDateInput from './DutyVacationDateInput'
 
 /** Краткая подпись интервала для свёрнутого блока отпусков. */
@@ -35,13 +32,11 @@ export default function DutyEmployeeCardModal({
   onClose,
   onSave,
 }) {
-  const canWorkRef = useRef(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [vacations, setVacations] = useState([emptyVacation(), emptyVacation()])
   const [monthPrefs, setMonthPrefs] = useState(emptyMonthPreferences())
 
-  const periodKey = monthKey(year, month)
   const monthLabel = `${MONTH_NAMES[month - 1]} ${year}`
   const maxDay = daysInMonth(year, month)
 
@@ -62,12 +57,6 @@ export default function DutyEmployeeCardModal({
     setMonthPrefs(initialSnapshot.monthPrefs)
     setError('')
   }, [initialSnapshot])
-
-  useEffect(() => {
-    if (!employee) return
-    const timer = window.setTimeout(() => canWorkRef.current?.focus(), 50)
-    return () => window.clearTimeout(timer)
-  }, [employee, periodKey])
 
   const isDirty = useMemo(() => {
     if (!initialSnapshot) return false
@@ -140,75 +129,58 @@ export default function DutyEmployeeCardModal({
         }}
       >
         <div className="duty-employee-card__scroll">
-        <div className="duty-employee-card__profile-bar">
-          <span className="duty-employee-card__role duty-employee-card__role--active">
-            {getDutyTitleLabel(employee.title)}
-          </span>
-          <span className="duty-employee-card__period">{monthLabel}</span>
-        </div>
+          <div className="duty-employee-card__profile-bar">
+            <span className="duty-employee-card__role duty-employee-card__role--active">
+              {getDutyTitleLabel(employee.title)}
+            </span>
+            <span className="duty-employee-card__period">{monthLabel}</span>
+          </div>
 
-        <section className="duty-employee-card__section duty-employee-card__section--primary">
-          <h3 className="duty-employee-card__section-title">Пожелания на {monthLabel.toLowerCase()}</h3>
+          <section className="duty-employee-card__section duty-employee-card__section--primary">
+            <h3 className="duty-employee-card__section-title">
+              Пожелания на {monthLabel.toLowerCase()}
+            </h3>
 
-          <label className="duty-employee-card__field">
-            Когда могу работать
-            <input
-              ref={canWorkRef}
-              type="text"
-              className="duty-employee-card__input"
-              value={monthPrefs.canWork}
-              placeholder="Например: только дневные по будням"
-              onChange={(e) => setMonthPrefs((prev) => ({ ...prev, canWork: e.target.value }))}
-            />
-          </label>
-
-          <div className="duty-employee-card__field">
-            <span>Когда не ставить</span>
-            <DutyAvoidWeekdaysPicker
-              value={monthPrefs.avoidWeekdays}
-              onChange={(avoidWeekdays) => setMonthPrefs((prev) => ({ ...prev, avoidWeekdays }))}
-            />
-            <DutyAvoidDaysPicker
+            <DutyMonthRulesPicker
               year={year}
               month={month}
-              value={monthPrefs.avoidDays}
+              canWorkDays={monthPrefs.canWorkDays}
+              canWorkWeekdays={monthPrefs.canWorkWeekdays}
+              avoidDays={monthPrefs.avoidDays}
               avoidWeekdays={monthPrefs.avoidWeekdays}
-              onChange={(avoidDays) => setMonthPrefs((prev) => ({ ...prev, avoidDays }))}
+              onCanWorkDaysChange={(canWorkDays) => setMonthPrefs((prev) => ({ ...prev, canWorkDays }))}
+              onCanWorkWeekdaysChange={(canWorkWeekdays) => setMonthPrefs((prev) => ({ ...prev, canWorkWeekdays }))}
+              onAvoidDaysChange={(avoidDays) => setMonthPrefs((prev) => ({ ...prev, avoidDays }))}
+              onAvoidWeekdaysChange={(avoidWeekdays) => setMonthPrefs((prev) => ({ ...prev, avoidWeekdays }))}
             />
-            {formatAvoidRulesSummary(monthPrefs.avoidDays, monthPrefs.avoidWeekdays) && (
-              <p className="muted duty-employee-card__avoid-summary">
-                Не ставить: {formatAvoidRulesSummary(monthPrefs.avoidDays, monthPrefs.avoidWeekdays)}
-              </p>
-            )}
-          </div>
-        </section>
+          </section>
 
-        <details className="duty-employee-card__details">
-          <summary className="duty-employee-card__details-summary">
-            <span className="duty-employee-card__details-title">Отпуска</span>
-            <span className="muted duty-employee-card__details-meta">
-              {vacationSummary || 'не указаны'}
-            </span>
-          </summary>
-          <div className="duty-employee-card__details-body">
-            {vacations.map((vacation, index) => (
-              <div key={index} className="duty-employee-card__vacation-row">
-                <span className="duty-employee-card__vacation-label">№{index + 1}</span>
-                <DutyVacationDateInput
-                  label="с"
-                  value={vacation.start}
-                  onChange={(iso) => handleVacationChange(index, 'start', iso)}
-                />
-                <DutyVacationDateInput
-                  label="по"
-                  value={vacation.end}
-                  minIso={vacation.start || null}
-                  onChange={(iso) => handleVacationChange(index, 'end', iso)}
-                />
-              </div>
-            ))}
-          </div>
-        </details>
+          <details className="duty-employee-card__details">
+            <summary className="duty-employee-card__details-summary">
+              <span className="duty-employee-card__details-title">Отпуска</span>
+              <span className="muted duty-employee-card__details-meta">
+                {vacationSummary || 'не указаны'}
+              </span>
+            </summary>
+            <div className="duty-employee-card__details-body">
+              {vacations.map((vacation, index) => (
+                <div key={index} className="duty-employee-card__vacation-row">
+                  <span className="duty-employee-card__vacation-label">№{index + 1}</span>
+                  <DutyVacationDateInput
+                    label="с"
+                    value={vacation.start}
+                    onChange={(iso) => handleVacationChange(index, 'start', iso)}
+                  />
+                  <DutyVacationDateInput
+                    label="по"
+                    value={vacation.end}
+                    minIso={vacation.start || null}
+                    onChange={(iso) => handleVacationChange(index, 'end', iso)}
+                  />
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
 
         <div className="form-actions duty-employee-card__actions">

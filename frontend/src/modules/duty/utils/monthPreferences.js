@@ -8,7 +8,13 @@ export function monthKey(year, month) {
 
 /** Пустые пожелания на один месяц. */
 export function emptyMonthPreferences() {
-  return { canWork: '', avoidDays: [], avoidWeekdays: [] }
+  return {
+    canWork: '',
+    canWorkDays: [],
+    canWorkWeekdays: [],
+    avoidDays: [],
+    avoidWeekdays: [],
+  }
 }
 
 /** Нормализует массив чисел месяца (1–31), убирает дубли. */
@@ -92,14 +98,24 @@ export function formatAvoidWeekdaysLabel(weekdays) {
   return normalizeAvoidWeekdays(weekdays).map((index) => WEEKDAY_LABELS[index]).join(', ')
 }
 
-/** Сводка правил «не ставить» для подсказки в карточке. */
-export function formatAvoidRulesSummary(avoidDays, avoidWeekdays) {
+/** Сводка правил по дням недели и числам месяца. */
+export function formatMonthRulesSummary(days, weekdays) {
   const parts = []
-  const weekdays = formatAvoidWeekdaysLabel(avoidWeekdays)
-  const numbers = formatAvoidDaysLabel(avoidDays)
-  if (weekdays) parts.push(weekdays)
+  const weekdaysLabel = formatAvoidWeekdaysLabel(weekdays)
+  const numbers = formatAvoidDaysLabel(days)
+  if (weekdaysLabel) parts.push(weekdaysLabel)
   if (numbers) parts.push(`числа ${numbers}`)
   return parts.join(' · ')
+}
+
+/** Сводка правил «ставить смены» для подсказки в карточке. */
+export function formatCanWorkRulesSummary(canWorkDays, canWorkWeekdays) {
+  return formatMonthRulesSummary(canWorkDays, canWorkWeekdays)
+}
+
+/** Сводка правил «не ставить» для подсказки в карточке. */
+export function formatAvoidRulesSummary(avoidDays, avoidWeekdays) {
+  return formatMonthRulesSummary(avoidDays, avoidWeekdays)
 }
 
 /** Нормализует JSON пожеланий с API. */
@@ -114,6 +130,8 @@ export function normalizePreferencesStorage(raw) {
     for (const [key, value] of Object.entries(raw.months)) {
       result.months[key] = {
         canWork: value?.canWork || '',
+        canWorkDays: normalizeAvoidDays(value?.canWorkDays),
+        canWorkWeekdays: normalizeAvoidWeekdays(value?.canWorkWeekdays),
         avoidDays: normalizeAvoidDays(value?.avoidDays),
         avoidWeekdays: normalizeAvoidWeekdays(value?.avoidWeekdays),
       }
@@ -131,6 +149,8 @@ export function getMonthPreferences(preferences, year, month, maxDay = 31) {
 
   return {
     canWork: stored.canWork || '',
+    canWorkDays: normalizeAvoidDays(stored.canWorkDays, maxDay),
+    canWorkWeekdays: normalizeAvoidWeekdays(stored.canWorkWeekdays),
     avoidDays: normalizeAvoidDays(stored.avoidDays, maxDay),
     avoidWeekdays: normalizeAvoidWeekdays(stored.avoidWeekdays),
   }
@@ -144,6 +164,8 @@ export function patchMonthPreferences(preferences, year, month, monthPrefs, maxD
       ...(preferences?.months || {}),
       [key]: {
         canWork: monthPrefs.canWork || '',
+        canWorkDays: normalizeAvoidDays(monthPrefs.canWorkDays, maxDay),
+        canWorkWeekdays: normalizeAvoidWeekdays(monthPrefs.canWorkWeekdays),
         avoidDays: normalizeAvoidDays(monthPrefs.avoidDays, maxDay),
         avoidWeekdays: normalizeAvoidWeekdays(monthPrefs.avoidWeekdays),
       },

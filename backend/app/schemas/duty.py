@@ -12,6 +12,8 @@ class DutyMonthPreferences(BaseModel):
     """Пожелания сотрудника на один месяц графика (ключ YYYY-MM)."""
 
     canWork: str = ""
+    canWorkDays: list[int] = Field(default_factory=list)
+    canWorkWeekdays: list[int] = Field(default_factory=list)
     avoidDays: list[int] = Field(default_factory=list)
     avoidWeekdays: list[int] = Field(default_factory=list)
 
