@@ -1,6 +1,6 @@
 import { DUTY_EMPLOYEES, DUTY_MARK_BRIGADE, DUTY_MARK_PHONE } from '../constants'
 import { MONTH_NAMES } from '../constants/months'
-import { cellKey, daysInMonth, isWeekend, weekdayLabel } from '../utils/scheduleDays'
+import { cellKey, daysInMonth, isNonWorkingDay, weekdayLabel } from '../utils/scheduleDays'
 import DutyDayCell from './DutyDayCell'
 
 /**
@@ -34,7 +34,7 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
                 key={day}
                 className={[
                   'duty-schedule__head-day',
-                  isWeekend(year, month, day) && 'duty-schedule__head-day--weekend',
+                  isNonWorkingDay(year, month, day) && 'duty-schedule__head-day--weekend',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -71,7 +71,7 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
                     key={day}
                     className={[
                       'duty-schedule__cell',
-                      isWeekend(year, month, day) && 'duty-schedule__cell--weekend',
+                      isNonWorkingDay(year, month, day) && 'duty-schedule__cell--weekend',
                     ]
                       .filter(Boolean)
                       .join(' ')}
@@ -79,7 +79,7 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
                     <DutyDayCell
                       day={day}
                       mark={mark}
-                      isWeekend={isWeekend(year, month, day)}
+                      isWeekend={isNonWorkingDay(year, month, day)}
                       monthLabel={monthLabel}
                       employeeName={employee.name}
                       onToggle={() => onToggleCell(key)}
