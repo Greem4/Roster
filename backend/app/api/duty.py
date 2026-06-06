@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -19,6 +20,7 @@ from app.schemas.duty import (
 router = APIRouter(prefix="/duty", tags=["duty"])
 
 VALID_TITLES = frozenset({"doctor", "nurse", "medbrother", "paramedic"})
+MIN_BIRTH_DATE = date(1940, 1, 1)
 
 
 def _employee_to_response(row: DutyEmployee) -> DutyEmployeeResponse:
@@ -33,6 +35,23 @@ def _validate_title(title: str) -> str:
 
 def _can_edit_profile(user: User, employee_id: int) -> bool:
     return user.is_founder or user.duty_employee_id == employee_id
+
+
+def _validate_birth_date(value: date | None) -> date | None:
+    """Дата рождения: не раньше 1940 года и не в будущем."""
+    if value is None:
+        return None
+    if value < MIN_BIRTH_DATE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Дата рождения не может быть раньше 1940 года",
+        )
+    if value > date.today():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Дата рождения не может быть в будущем",
+        )
+    return value
 
 
 @router.get("/employees", response_model=list[DutyEmployeeResponse])
@@ -92,13 +111,16 @@ def patch_employee(
     if "name" in payload and not user.is_founder:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only founder can rename")
 
-    if ("title" in payload or "gender" in payload) and not _can_edit_profile(user, employee_id):
+    profile_fields = ("title", "gender", "birth_date")
+    if any(field in payload for field in profile_fields) and not _can_edit_profile(user, employee_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot edit this profile")
 
     if "title" in payload:
         row.title = _validate_title(payload["title"])
     if "gender" in payload:
         row.gender = payload["gender"]
+    if "birth_date" in payload:
+        row.birth_date = _validate_birth_date(payload["birth_date"])
     if "name" in payload:
         row.name = payload["name"].strip()
     if "vacations" in payload:

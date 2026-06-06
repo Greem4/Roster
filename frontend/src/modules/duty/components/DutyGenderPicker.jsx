@@ -1,17 +1,21 @@
-import { DUTY_TITLES, getDutyTitleLabel } from '../constants'
 import { useDutyInlinePicker } from '../hooks/useDutyInlinePicker'
 
+const GENDER_OPTIONS = [
+  { value: 'M', label: 'М' },
+  { value: 'F', label: 'Ж' },
+]
+
 /**
- * Выбор должности: pill с текущей, по клику — четыре варианта во всплывающей панели.
+ * Выбор пола: pill с текущим значением, по клику — два варианта во всплывающей панели.
  */
-export default function DutyTitlePicker({ value, onChange, id = 'duty-title', disabled = false }) {
+export default function DutyGenderPicker({ value, onChange, disabled = false }) {
   const { open, rootRef, close, toggle } = useDutyInlinePicker()
-  const label = getDutyTitleLabel(value)
+  const label = value === 'M' ? 'М' : value === 'F' ? 'Ж' : null
 
   if (disabled) {
     return (
       <span className="duty-inline-pill duty-inline-pill--readonly">
-        {label !== '—' ? label : '—'}
+        {label || '—'}
       </span>
     )
   }
@@ -20,21 +24,16 @@ export default function DutyTitlePicker({ value, onChange, id = 'duty-title', di
     <div className={`duty-inline-picker${open ? ' duty-inline-picker--open' : ''}`} ref={rootRef}>
       <button
         type="button"
-        className={`duty-inline-pill${value ? '' : ' duty-inline-pill--empty'}`}
+        className={`duty-inline-pill${label ? '' : ' duty-inline-pill--empty'}`}
         aria-expanded={open}
         aria-haspopup="listbox"
         onClick={toggle}
       >
-        {label !== '—' ? label : '—'}
+        {label || '—'}
       </button>
       {open && (
-        <div
-          className="duty-inline-picker__popover duty-inline-picker__popover--titles"
-          role="listbox"
-          aria-label="Должность"
-          id={id}
-        >
-          {DUTY_TITLES.map((item) => (
+        <div className="duty-inline-picker__popover" role="listbox" aria-label="Пол">
+          {GENDER_OPTIONS.map((item) => (
             <button
               key={item.value}
               type="button"

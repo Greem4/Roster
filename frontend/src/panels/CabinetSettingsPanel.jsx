@@ -4,15 +4,11 @@ import PromoteFounderBlock from '../components/cabinet/PromoteFounderBlock'
 import YandexLoginButton from '../components/YandexLoginButton'
 import { RX_HOME } from '../constants/routes'
 import { useAuth } from '../context/AuthContext'
-import DutyOsmpSettingsBlock from '../modules/duty/components/DutyOsmpSettingsBlock'
-import { PERM_DUTY_VIEW } from '../modules/duty/constants'
-import '../modules/duty/duty.css'
 
 /** Настройки аккаунта: пароль, привязка Яндекс ID, выход, назначение основателя. */
 export default function CabinetSettingsPanel() {
-  const { user, logout, hasPermission } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const showDutyProfile = hasPermission(PERM_DUTY_VIEW)
 
   const handleLogout = () => {
     logout()
@@ -21,10 +17,6 @@ export default function CabinetSettingsPanel() {
 
   return (
     <div className="cabinet-panel">
-      {showDutyProfile && (
-        <DutyOsmpSettingsBlock />
-      )}
-
       <section className="cabinet-section">
         <h2 className="cabinet-section__title">Пароль</h2>
         <p className="muted cabinet-section__lead">

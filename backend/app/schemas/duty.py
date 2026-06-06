@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel, Field
 
 
@@ -16,6 +18,7 @@ class DutyEmployeeResponse(BaseModel):
     name: str
     title: str
     gender: str | None = None
+    birth_date: date | None = None
     vacations: list[VacationInterval]
     preferences: DutyPreferences
 
@@ -32,6 +35,7 @@ class DutyEmployeePatch(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=128)
     title: str | None = Field(default=None, min_length=1, max_length=16)
     gender: str | None = Field(default=None, pattern="^[MF]$")
+    birth_date: date | None = None
     vacations: list[VacationInterval] | None = None
     preferences: DutyPreferences | None = None
 

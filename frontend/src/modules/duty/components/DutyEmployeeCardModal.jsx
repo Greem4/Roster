@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import Modal from '../../../components/Modal'
 import { formatDate } from '../../../utils/formatDate'
 import { getDutyTitleLabel } from '../constants'
-import { emptyPreferences, emptyVacation } from '../utils/employeeStorage'
+import { emptyPreferences, emptyVacation, formatAgeLabel } from '../utils/employeeStorage'
 
 /** Есть хотя бы один указанный интервал отпуска. */
 function hasVacationDates(vacations) {
@@ -19,7 +18,7 @@ function formatVacationRange(vacation) {
 }
 
 /**
- * Карточка сотрудника на графике: метки должности и пола (только просмотр),
+ * Карточка сотрудника на графике: краткий профиль (только просмотр),
  * пожелания на месяц и отпуска.
  */
 export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
@@ -77,11 +76,12 @@ export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
     .join(' · ')
 
   const genderLabel = employee.gender === 'M' ? 'М' : employee.gender === 'F' ? 'Ж' : null
+  const ageLabel = formatAgeLabel(employee.age)
 
   return (
     <Modal title={employee.name} onClose={onClose} size="wide">
       <form className="duty-employee-card" onSubmit={handleSubmit}>
-        <div className="duty-employee-card__badges">
+        <div className="duty-employee-card__profile-bar">
           <span className="duty-employee-card__role duty-employee-card__role--active">
             {getDutyTitleLabel(employee.title)}
           </span>
@@ -93,14 +93,18 @@ export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
               <span className="duty-employee-card__profile-gender">{genderLabel}</span>
             </>
           )}
+          {employee.birthDate && (
+            <>
+              <span className="duty-employee-card__profile-sep" aria-hidden>
+                ·
+              </span>
+              <span className="duty-employee-card__profile-gender">
+                {formatDate(employee.birthDate)}
+                {ageLabel ? ` (${ageLabel})` : ''}
+              </span>
+            </>
+          )}
         </div>
-        <p className="muted duty-employee-card__badges-hint">
-          Должность и пол — в{' '}
-          <Link to="/cabinet/settings" onClick={onClose}>
-            настройках
-          </Link>
-          .
-        </p>
 
         <section className="duty-employee-card__section duty-employee-card__section--primary">
           <h3 className="duty-employee-card__section-title">Пожелания на месяц</h3>

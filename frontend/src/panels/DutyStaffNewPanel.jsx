@@ -43,7 +43,7 @@ export default function DutyStaffNewPanel() {
       <section className="cabinet-section">
         <h2 className="cabinet-section__title">Новый сотрудник</h2>
         <p className="muted cabinet-section__lead">
-          Добавление в справочник на сервере — редкая операция. Должность сотрудник может уточнить в настройках.
+          Добавление в справочник на сервере — редкая операция. Должность, пол и дату рождения уточняют в справочнике.
         </p>
         <form className="cabinet-form" onSubmit={handleAdd}>
           <label>
