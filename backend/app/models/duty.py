@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
 DEFAULT_VACATIONS = [{"start": "", "end": ""}, {"start": "", "end": ""}]
-DEFAULT_PREFERENCES = {"canWork": "", "avoid": ""}
+DEFAULT_PREFERENCES = {"months": {}}
 
 
 class DutyEmployee(Base):

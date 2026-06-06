@@ -1,13 +1,9 @@
 import { dutyTitleToRole, resolveDutyTitle } from '../constants'
+import { normalizePreferencesStorage } from './monthPreferences'
 
 /** Пустой интервал отпуска. */
 export function emptyVacation() {
   return { start: '', end: '' }
-}
-
-/** Пустой профиль предпочтений. */
-export function emptyPreferences() {
-  return { canWork: '', avoid: '' }
 }
 
 /** Минимально допустимая дата рождения (год). */
@@ -136,9 +132,6 @@ export function normalizeEmployee(raw) {
       vacations[0] ? { start: vacations[0].start || '', end: vacations[0].end || '' } : emptyVacation(),
       vacations[1] ? { start: vacations[1].start || '', end: vacations[1].end || '' } : emptyVacation(),
     ],
-    preferences: {
-      canWork: raw.preferences?.canWork || '',
-      avoid: raw.preferences?.avoid || '',
-    },
+    preferences: normalizePreferencesStorage(raw.preferences),
   }
 }

@@ -98,6 +98,8 @@ export default function DutyPage() {
       {cardEmployee && (
         <DutyEmployeeCardModal
           employee={cardEmployee}
+          year={year}
+          month={month}
           onClose={() => setCardEmployeeId(null)}
           onSave={onSaveEmployee}
         />

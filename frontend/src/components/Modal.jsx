@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 
 export default function Modal({ title, onClose, children, size }) {
   useEffect(() => {
@@ -16,13 +17,14 @@ export default function Modal({ title, onClose, children, size }) {
 
   const panelClass = [
     'modal-panel',
+    size === 'medium' && 'modal-panel--medium',
     size === 'wide' && 'modal-panel--wide',
     size === 'auth' && 'modal-panel--auth',
   ]
     .filter(Boolean)
     .join(' ')
 
-  return (
+  return createPortal(
     <div
       className={`modal-backdrop${size === 'auth' ? ' modal-backdrop--auth' : ''}`}
       onClick={onClose}
@@ -45,6 +47,7 @@ export default function Modal({ title, onClose, children, size }) {
         </div>
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

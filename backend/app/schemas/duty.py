@@ -8,9 +8,20 @@ class VacationInterval(BaseModel):
     end: str = ""
 
 
+class DutyMonthPreferences(BaseModel):
+    """Пожелания сотрудника на один месяц графика (ключ YYYY-MM)."""
+
+    canWork: str = ""
+    avoidDays: list[int] = Field(default_factory=list)
+    avoidWeekdays: list[int] = Field(default_factory=list)
+
+
 class DutyPreferences(BaseModel):
+    """Помесячные пожелания; поля canWork/avoid — устаревший формат."""
+
     canWork: str = ""
     avoid: str = ""
+    months: dict[str, DutyMonthPreferences] = Field(default_factory=dict)
 
 
 class DutyEmployeeResponse(BaseModel):
