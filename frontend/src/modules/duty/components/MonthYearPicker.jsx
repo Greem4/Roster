@@ -1,40 +1,53 @@
 import { MONTH_NAMES } from '../constants/months'
 
+const YEAR_RANGE = 5
+
+/** Годы вокруг текущего для компактного выбора. */
+function yearOptions(centerYear) {
+  const center = Number(centerYear)
+  const start = center - YEAR_RANGE
+  return Array.from({ length: YEAR_RANGE * 2 + 1 }, (_, index) => start + index)
+}
+
 /**
- * Переключатель месяца и года для графика дежурств.
+ * Переключатель периода графика: стрелки по месяцам, год — второстепенный select.
  */
-export default function MonthYearPicker({ year, month, onYearChange, onMonthChange }) {
+export default function MonthYearPicker({ year, month, onMonthStep, onYearChange }) {
+  const monthLabel = MONTH_NAMES[month - 1]
+
   return (
     <div className="duty-period-picker roster-page-toolbar__action" aria-label="Период графика">
-      <button
-        type="button"
-        className="duty-period-picker__btn"
-        onClick={() => onYearChange(-1)}
-        aria-label="Предыдущий год"
-      >
-        ‹
-      </button>
+      <div className="duty-period-picker__month-nav">
+        <button
+          type="button"
+          className="duty-period-picker__btn"
+          onClick={() => onMonthStep(-1)}
+          aria-label="Предыдущий месяц"
+        >
+          ‹
+        </button>
+        <span className="duty-period-picker__month">{monthLabel}</span>
+        <button
+          type="button"
+          className="duty-period-picker__btn"
+          onClick={() => onMonthStep(1)}
+          aria-label="Следующий месяц"
+        >
+          ›
+        </button>
+      </div>
       <select
-        className="duty-period-picker__month"
-        value={month}
-        onChange={(event) => onMonthChange(Number(event.target.value))}
-        aria-label="Месяц"
+        className="duty-period-picker__year"
+        value={Number(year)}
+        onChange={(event) => onYearChange(Number(event.target.value))}
+        aria-label="Год"
       >
-        {MONTH_NAMES.map((name, index) => (
-          <option key={name} value={index + 1}>
-            {name}
+        {yearOptions(year).map((value) => (
+          <option key={value} value={value}>
+            {value}
           </option>
         ))}
       </select>
-      <span className="duty-period-picker__year">{year}</span>
-      <button
-        type="button"
-        className="duty-period-picker__btn"
-        onClick={() => onYearChange(1)}
-        aria-label="Следующий год"
-      >
-        ›
-      </button>
     </div>
   )
 }

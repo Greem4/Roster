@@ -13,16 +13,30 @@ const currentMonth = () => new Date().getMonth() + 1
  * Данные пока только в памяти браузера.
  */
 export default function DutyPage() {
-  const [year, setYear] = useState(currentYear)
-  const [month, setMonth] = useState(currentMonth)
+  const [period, setPeriod] = useState(() => ({
+    year: currentYear(),
+    month: currentMonth(),
+  }))
+  const { year, month } = period
   const [marks, setMarks] = useState({})
 
-  const onYearChange = (delta) => {
-    setYear((value) => value + delta)
+  const onMonthStep = (delta) => {
+    setPeriod(({ year, month }) => {
+      let nextMonth = month + delta
+      let nextYear = year
+      if (nextMonth < 1) {
+        nextMonth = 12
+        nextYear -= 1
+      } else if (nextMonth > 12) {
+        nextMonth = 1
+        nextYear += 1
+      }
+      return { year: nextYear, month: nextMonth }
+    })
   }
 
-  const onMonthChange = (value) => {
-    setMonth(value)
+  const onYearChange = (value) => {
+    setPeriod((prev) => ({ ...prev, year: value }))
   }
 
   const onToggleCell = useCallback((key) => {
@@ -48,8 +62,8 @@ export default function DutyPage() {
         <MonthYearPicker
           year={year}
           month={month}
+          onMonthStep={onMonthStep}
           onYearChange={onYearChange}
-          onMonthChange={onMonthChange}
         />
       </header>
 
