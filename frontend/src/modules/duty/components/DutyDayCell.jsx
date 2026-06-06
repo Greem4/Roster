@@ -7,6 +7,7 @@ export default function DutyDayCell({
   day,
   mark,
   isWeekend,
+  onVacation,
   monthLabel,
   employeeName,
   onToggle,
@@ -24,7 +25,9 @@ export default function DutyDayCell({
     ? 'бригада'
     : mark === DUTY_MARK_PHONE
       ? 'телефоны'
-      : 'выходной'
+      : onVacation
+        ? 'отпуск'
+        : 'выходной'
 
   return (
     <button

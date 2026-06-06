@@ -1263,6 +1263,97 @@ input[type='date']:focus {
   font-size: 0.9rem;
 }
 
+/* Раздел «График ОСМП» в кабинете — справочник сотрудников */
+.duty-staff-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.duty-staff-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.duty-staff-subnav__link {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.duty-staff-subnav__link:hover {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.duty-staff-subnav__link.active {
+  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--module-duty-text) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--module-duty-text) 8%, var(--color-surface));
+}
+
+.duty-staff-subnav__link--muted {
+  margin-left: auto;
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  border-style: dashed;
+}
+
+.duty-staff-subnav__link--muted:hover,
+.duty-staff-subnav__link--muted.active {
+  color: var(--color-text-secondary);
+  border-color: color-mix(in srgb, #f59e0b 35%, var(--color-border));
+  background: color-mix(in srgb, #f59e0b 6%, var(--color-surface));
+}
+
+.duty-staff-remove-btn {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.55rem;
+}
+
+.btn-secondary--danger {
+  color: #b91c1c;
+  border-color: color-mix(in srgb, #b91c1c 35%, var(--color-border));
+}
+
+.btn-secondary--danger:hover {
+  color: #fff;
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+.duty-staff-form__gender {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.duty-staff-form__gender legend {
+  margin-bottom: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.duty-staff-form__gender label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.duty-staff-table {
+  margin-top: 0.25rem;
+}
+
 .cabinet-form--inline {
   max-width: none;
   flex-direction: row;

@@ -231,6 +231,50 @@
   background: var(--duty-weekend);
 }
 
+.duty-schedule__name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.duty-schedule__name-btn {
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duty-schedule__name-btn:hover,
+.duty-schedule__name-btn:focus-visible {
+  color: var(--duty-primary);
+  text-decoration: underline;
+  outline: none;
+}
+
+.duty-schedule__cell {
+  position: relative;
+}
+
+.duty-schedule__cell--vacation::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: 50%;
+  z-index: 1;
+  height: 2px;
+  background: #dc2626;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
 .duty-day-cell {
   display: flex;
   align-items: center;
@@ -299,6 +343,97 @@
 .duty-legend__sample--phone {
   color: var(--duty-phone);
   background: var(--duty-phone-bg);
+}
+
+.duty-legend__sample--vacation {
+  position: relative;
+  background: color-mix(in srgb, #dc2626 12%, transparent);
+}
+
+.duty-legend__sample--vacation::after {
+  content: '';
+  position: absolute;
+  left: 0.1rem;
+  right: 0.1rem;
+  top: 50%;
+  height: 2px;
+  background: #dc2626;
+  transform: translateY(-50%);
+}
+
+.duty-employee-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.duty-employee-card__meta {
+  margin-top: -0.25rem;
+}
+
+.duty-employee-card__role {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--duty-primary);
+  background: var(--duty-primary-soft);
+  border-radius: var(--radius-sm);
+}
+
+.duty-employee-card__fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.duty-employee-card__fieldset legend {
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.duty-employee-card__hint {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+}
+
+.duty-employee-card__radios,
+.duty-employee-card__vacation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+}
+
+.duty-employee-card__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.duty-employee-card__vacation-row {
+  margin-bottom: 0.5rem;
+}
+
+.duty-employee-card__vacation-label {
+  min-width: 4.5rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.duty-employee-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.82rem;
+}
+
+.duty-employee-card input[type='date'],
+.duty-employee-card textarea {
+  font: inherit;
 }
 
 @media (max-width: 720px) {
