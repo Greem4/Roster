@@ -1,6 +1,9 @@
 /** Метка смены: бригада. */
 export const DUTY_MARK_BRIGADE = 'Б'
 
+/** Право на общий график дежурств (синхронно с backend). */
+export const PERM_DUTY_VIEW = 'duty:view'
+
 /** Метка смены: телефоны. */
 export const DUTY_MARK_PHONE = 'О'
 

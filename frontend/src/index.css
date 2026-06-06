@@ -1905,6 +1905,51 @@ input[type='date']:focus {
   background-size: 12px 12px, 100% 100%;
 }
 
+.users-table__modules-cell {
+  min-width: 9rem;
+}
+
+.users-table__modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.users-table__modules-all {
+  font-size: 0.85rem;
+}
+
+.users-table__module-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+  font-size: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.users-table__module-chip--on {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.users-table__module-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.users-table__module-chip:has(.users-table__module-input:disabled) {
+  opacity: 0.65;
+  cursor: default;
+}
+
 .users-table__actions {
   display: flex;
   justify-content: flex-end;

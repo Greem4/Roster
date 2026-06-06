@@ -1,4 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { ActiveUserRoute, PermissionRoute, ProtectedRoute } from '../../components/ProtectedRoute'
+import { PERM_CA_VIEW } from './constants'
 import CaPage from './pages/CaPage'
 
 /**
@@ -7,7 +9,13 @@ import CaPage from './pages/CaPage'
 export default function CaRoutes() {
   return (
     <Routes>
-      <Route index element={<CaPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<ActiveUserRoute />}>
+          <Route element={<PermissionRoute permission={PERM_CA_VIEW} />}>
+            <Route index element={<CaPage />} />
+          </Route>
+        </Route>
+      </Route>
       <Route path="*" element={<Navigate to="/ca" replace />} />
     </Routes>
   )

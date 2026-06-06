@@ -1,5 +1,10 @@
 /** Подписи и стили ролей (совпадают с backend app.roles). */
 
+import {
+  MODULE_PERMISSION_LABELS,
+  userModulePermissions,
+} from '../constants/moduleAccess'
+
 export const PERM_MANAGE = 'users:manage'
 
 export const ROLE_LABELS = {
@@ -49,6 +54,19 @@ export function assignableRoles(current, target) {
 
 export function roleLabel(role) {
   return ROLE_LABELS[role] ?? ROLE_LABELS.user
+}
+
+/**
+ * Составная подпись: «Администратор · Сотрудник · Pay».
+ * Основатель и супер-админ — без доп. меток (им и так доступно всё).
+ */
+export function userDisplayLabel(user) {
+  if (!user) return ROLE_LABELS.user
+  const base = roleLabel(userEffectiveRole(user))
+  if (user.is_founder || user.is_superadmin) return base
+  const extras = userModulePermissions(user).map((code) => MODULE_PERMISSION_LABELS[code])
+  if (extras.length === 0) return base
+  return `${base} · ${extras.join(' · ')}`
 }
 
 export function roleBadgeClass(role) {

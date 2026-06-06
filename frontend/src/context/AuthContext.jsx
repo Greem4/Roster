@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { api, setToken } from '../api/client'
+import { canAccessModule as checkModuleAccess } from '../constants/moduleAccess'
 import { setCachedYandexAvatar } from '../utils/yandexAvatar'
 
 const AuthContext = createContext(null)
@@ -55,6 +56,16 @@ export function AuthProvider({ children }) {
     return user.permissions.includes(code)
   }
 
+  const canAccessModule = useCallback(
+    (moduleKey) =>
+      checkModuleAccess(moduleKey, {
+        user,
+        isAuthenticated: !!user,
+        hasPermission,
+      }),
+    [user],
+  )
+
   const isFounder = !!user?.is_founder
   const isSuperadmin = !!user?.is_superadmin && !user?.is_founder
   const isAdmin =
@@ -71,6 +82,7 @@ export function AuthProvider({ children }) {
       logout,
       refresh,
       hasPermission,
+      canAccessModule,
       isFounder,
       isSuperadmin,
       isAdmin,
@@ -78,7 +90,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!user,
       isActive: user?.is_active || user?.is_superadmin || user?.is_founder,
     }),
-    [user, loading, refresh, isAdmin, canManageUsers, isFounder, isSuperadmin],
+    [user, loading, refresh, isAdmin, canManageUsers, isFounder, isSuperadmin, canAccessModule],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
