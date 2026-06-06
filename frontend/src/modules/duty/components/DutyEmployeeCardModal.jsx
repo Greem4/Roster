@@ -117,7 +117,24 @@ export default function DutyEmployeeCardModal({
     .join(' · ')
 
   return (
-    <Modal title={employee.name} onClose={saveAndClose} size="medium">
+    <Modal
+      alignTop
+      size="medium"
+      onClose={saveAndClose}
+      title={(
+        <>
+          <span className="duty-employee-card__header-name">{employee.name}</span>
+          <span
+            className={`duty-employee-card__header-badge duty-employee-card__header-badge--role duty-employee-card__header-badge--role-${employee.title || 'unknown'}`}
+          >
+            {getDutyTitleLabel(employee.title)}
+          </span>
+          <span className="duty-employee-card__header-badge duty-employee-card__header-badge--period">
+            {monthLabel}
+          </span>
+        </>
+      )}
+    >
       <form
         className="duty-employee-card"
         onSubmit={handleSubmit}
@@ -129,13 +146,6 @@ export default function DutyEmployeeCardModal({
         }}
       >
         <div className="duty-employee-card__scroll">
-          <div className="duty-employee-card__profile-bar">
-            <span className="duty-employee-card__role duty-employee-card__role--active">
-              {getDutyTitleLabel(employee.title)}
-            </span>
-            <span className="duty-employee-card__period">{monthLabel}</span>
-          </div>
-
           <section className="duty-employee-card__section duty-employee-card__section--primary">
             <h3 className="duty-employee-card__section-title">
               Пожелания на {monthLabel.toLowerCase()}

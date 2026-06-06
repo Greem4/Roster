@@ -766,6 +766,11 @@ input[type='date']:focus {
   padding: 1.25rem 1rem;
 }
 
+.modal-backdrop--align-top {
+  align-items: flex-start;
+  padding-top: clamp(0.5rem, 3vh, 1.25rem);
+}
+
 .modal-panel {
   width: 100%;
   max-width: 420px;
@@ -799,6 +804,19 @@ input[type='date']:focus {
   max-width: min(560px, 100%);
   max-height: min(92vh, 100%);
   height: auto;
+}
+
+.modal-panel--medium .modal-header {
+  padding: 0.65rem 1rem;
+}
+
+.modal-panel--medium .modal-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+  font-size: 0.95rem;
+  line-height: 1.3;
 }
 
 .modal-panel--medium .modal-body {

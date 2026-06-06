@@ -396,7 +396,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  padding: 0.85rem 1.25rem 0.5rem;
+  padding: 0.65rem 1.25rem 0.5rem;
 }
 
 .duty-employee-card__badges {
@@ -567,6 +567,71 @@
 .duty-employee-card__role--active {
   opacity: 1;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--duty-primary) 45%, transparent);
+}
+
+.duty-employee-card__header-name {
+  font-weight: 600;
+}
+
+.duty-employee-card__header-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.14rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.duty-employee-card__header-badge--role {
+  --header-role-text: var(--duty-primary);
+  --header-role-bg-top: color-mix(in srgb, var(--header-role-text) 24%, transparent);
+  --header-role-bg-bottom: color-mix(in srgb, var(--header-role-text) 10%, transparent);
+  --header-role-ring: color-mix(in srgb, var(--header-role-text) 58%, transparent);
+  --header-role-glow: color-mix(in srgb, var(--header-role-text) 20%, transparent);
+
+  color: var(--header-role-text);
+  background: linear-gradient(
+    180deg,
+    var(--header-role-bg-top),
+    var(--header-role-bg-bottom)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent),
+    inset 0 0 0 1px var(--header-role-ring),
+    0 2px 10px var(--header-role-glow);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--header-role-text) 35%, transparent);
+}
+
+.duty-employee-card__header-badge--role-doctor {
+  --header-role-text: #c4b5fd;
+}
+
+.duty-employee-card__header-badge--role-nurse,
+.duty-employee-card__header-badge--role-medbrother {
+  --header-role-text: #93c5fd;
+}
+
+.duty-employee-card__header-badge--role-paramedic {
+  --header-role-text: #6ee7b7;
+}
+
+.duty-employee-card__header-badge--role-unknown {
+  --header-role-text: var(--color-text-secondary);
+}
+
+.duty-employee-card__header-badge--period {
+  color: var(--color-text-secondary);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-text-secondary) 14%, transparent),
+    color-mix(in srgb, var(--color-text-secondary) 7%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-text-secondary) 22%, transparent);
 }
 
 .duty-employee-card__role-switch {

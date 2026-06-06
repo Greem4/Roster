@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
-export default function Modal({ title, onClose, children, size }) {
+export default function Modal({ title, onClose, children, size, alignTop = false }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') onClose()
@@ -26,7 +26,13 @@ export default function Modal({ title, onClose, children, size }) {
 
   return createPortal(
     <div
-      className={`modal-backdrop${size === 'auth' ? ' modal-backdrop--auth' : ''}`}
+      className={[
+        'modal-backdrop',
+        size === 'auth' && 'modal-backdrop--auth',
+        alignTop && 'modal-backdrop--align-top',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onClick={onClose}
       role="presentation"
     >
