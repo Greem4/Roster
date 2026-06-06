@@ -1,12 +1,34 @@
 import { useId, useMemo, useState } from 'react'
 import { formatMoney } from '../utils/formatMoney'
 
-const CHART_LINE = '#5eead4'
 const CHART_GRID = '#27272a'
 const CHART_MUTED = '#71717a'
 const VIEW_W = 720
 const VIEW_H = 320
 const MARGIN = { top: 28, right: 12, left: 52, bottom: 32 }
+/** Столбцы ниже линии: занимают не всю высоту шкалы. */
+const BAR_V_SCALE = 0.8
+/** Зазор между вершиной столбца и точкой линии (px). */
+const LINE_GAP_MIN_PX = 12
+const LINE_GAP_MAX_PX = 30
+
+/** Ограничивает Y точки: выше столбца, но без большого отрыва. */
+function clampLineY(dataY, barTopY) {
+  if (barTopY == null || dataY == null) return dataY
+  return Math.max(barTopY - LINE_GAP_MAX_PX, Math.min(barTopY - LINE_GAP_MIN_PX, dataY))
+}
+
+/** Прямая ломаная через точки линии. */
+function buildAreaPath(points, baselineY) {
+  if (points.length < 2) return ''
+  let d = `M ${points[0].cx} ${points[0].lineY}`
+  for (let i = 1; i < points.length; i++) {
+    d += ` L ${points[i].cx} ${points[i].lineY}`
+  }
+  const last = points[points.length - 1]
+  const first = points[0]
+  return `${d} L ${last.cx} ${baselineY} L ${first.cx} ${baselineY} Z`
+}
 
 /** Верхняя граница оси Y с «круглым» шагом, чтобы подписи не обрезались. */
 function chartMaxY(data) {
@@ -29,7 +51,7 @@ function formatAxis(value) {
 }
 
 /**
- * Комбинированный график зарплаты: столбцы по месяцам и линия чуть выше вершин (без recharts).
+ * Комбинированный график зарплаты: столбцы по месяцам и линия тренда выше вершин (без recharts).
  * @param {{ label: string, amount: number, lineAmount: number }[]} data
  * @param {string} [currency='RUB']
  */
@@ -51,33 +73,32 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
 
     const bars = data.map((row, i) => {
       const cx = MARGIN.left + step * (i + 0.5)
-      const h = row.amount > 0 ? (row.amount / maxY) * plotH : 0
+      const h = row.amount > 0 ? (row.amount / maxY) * plotH * BAR_V_SCALE : 0
+      const barY = MARGIN.top + plotH - h
+      const dataLineY = row.lineAmount > 0 ? yAt(row.lineAmount) : null
+      const lineY = h > 0 ? clampLineY(dataLineY, barY) : dataLineY
       return {
         ...row,
         index: i,
         cx,
         barX: cx - barW / 2,
-        barY: MARGIN.top + plotH - h,
+        barY,
         barW,
         barH: h,
+        lineY,
       }
     })
 
-    const linePoints = data
-      .map((row, i) => {
-        if (row.lineAmount <= 0) return null
-        const cx = MARGIN.left + step * (i + 0.5)
-        return `${cx},${yAt(row.lineAmount)}`
-      })
-      .filter(Boolean)
-      .join(' ')
+    const lineDots = bars.filter((bar) => bar.lineY != null)
+    const linePoints = lineDots.map((bar) => `${bar.cx},${bar.lineY}`).join(' ')
+    const areaPath = buildAreaPath(lineDots, MARGIN.top + plotH)
 
     const yTicks = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
       value: maxY * t,
       y: yAt(maxY * t),
     }))
 
-    return { plotW, plotH, bars, linePoints, yTicks, baselineY: MARGIN.top + plotH }
+    return { plotW, plotH, bars, linePoints, areaPath, yTicks, baselineY: MARGIN.top + plotH }
   }, [data, maxY])
 
   if (!hasValues) {
@@ -102,6 +123,15 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#5eead4" stopOpacity={0.95} />
             <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.75} />
+          </linearGradient>
+          <linearGradient id={`${gradientId}-line`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#2dd4bf" />
+            <stop offset="50%" stopColor="#5eead4" />
+            <stop offset="100%" stopColor="#99f6e4" />
+          </linearGradient>
+          <linearGradient id={`${gradientId}-area`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5eead4" stopOpacity={0.22} />
+            <stop offset="100%" stopColor="#5eead4" stopOpacity={0} />
           </linearGradient>
         </defs>
 
@@ -129,6 +159,10 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
           </g>
         ))}
 
+        {layout.areaPath && (
+          <path d={layout.areaPath} fill={`url(#${gradientId}-area)`} />
+        )}
+
         {layout.bars.map((bar) =>
           bar.barH > 0 ? (
             <rect
@@ -145,27 +179,46 @@ export default function PayMonthlyChart({ data, currency = 'RUB' }) {
         )}
 
         {layout.linePoints && (
-          <polyline
-            points={layout.linePoints}
-            fill="none"
-            stroke={CHART_LINE}
-            strokeWidth={2.5}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
+          <>
+            <polyline
+              points={layout.linePoints}
+              fill="none"
+              stroke="#5eead4"
+              strokeWidth={5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.25}
+            />
+            <polyline
+              points={layout.linePoints}
+              fill="none"
+              stroke={`url(#${gradientId}-line)`}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </>
         )}
 
         {layout.bars.map((bar) =>
-          bar.lineAmount > 0 ? (
-            <circle
-              key={`dot-${bar.index}`}
-              cx={bar.cx}
-              cy={MARGIN.top + layout.plotH - (bar.lineAmount / maxY) * layout.plotH}
-              r={hovered === bar.index ? 6 : 4}
-              fill={CHART_LINE}
-              stroke="#09090b"
-              strokeWidth={2}
-            />
+          bar.lineY != null ? (
+            <g key={`dot-${bar.index}`}>
+              <circle
+                cx={bar.cx}
+                cy={bar.lineY}
+                r={hovered === bar.index ? 8 : 6}
+                fill="#5eead4"
+                opacity={0.35}
+              />
+              <circle
+                cx={bar.cx}
+                cy={bar.lineY}
+                r={hovered === bar.index ? 5 : 4}
+                fill="#ecfeff"
+                stroke="#14b8a6"
+                strokeWidth={2}
+              />
+            </g>
           ) : null,
         )}
 

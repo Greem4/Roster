@@ -60,24 +60,6 @@ export const api = {
         body: JSON.stringify(body),
       }),
   },
-  medicines: {
-    list: (params = {}) => {
-      const q = new URLSearchParams(params).toString()
-      return apiRequest(`/medicines${q ? `?${q}` : ''}`)
-    },
-    get: (id) => apiRequest(`/medicines/${id}`),
-    create: (body) =>
-      apiRequest('/medicines', { method: 'POST', body: JSON.stringify(body) }),
-    update: (id, body) =>
-      apiRequest(`/medicines/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
-    delete: (id) => apiRequest(`/medicines/${id}`, { method: 'DELETE' }),
-  },
-  alerts: {
-    expiring: (days) => {
-      const q = days != null ? `?days=${days}` : ''
-      return apiRequest(`/alerts/expiring${q}`)
-    },
-  },
   users: {
     list: () => apiRequest('/users'),
     update: (id, body) =>

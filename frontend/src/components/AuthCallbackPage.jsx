@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { RX_HOME } from '../constants/routes'
 import { useAuth } from '../context/AuthContext'
 
 /**
@@ -50,7 +51,7 @@ export default function AuthCallbackPage() {
     ;(async () => {
       try {
         await loginWithToken(token)
-        if (!cancelled) navigate('/medicines', { replace: true })
+        if (!cancelled) navigate(RX_HOME, { replace: true })
       } catch (err) {
         if (!cancelled) setMessage(err.message || 'Ошибка входа')
       }

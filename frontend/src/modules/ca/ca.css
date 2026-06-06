@@ -1,0 +1,321 @@
+/* Стили только модуля RosterCA (префикс ca-). */
+
+.ca-page {
+  --ca-primary: var(--module-ca-text);
+  --ca-primary-deep: #7c3aed;
+  --ca-primary-soft: color-mix(in srgb, var(--ca-primary) 14%, transparent);
+  --ca-primary-softer: color-mix(in srgb, var(--ca-primary) 7%, transparent);
+  --ca-surface: color-mix(in srgb, var(--ca-primary) 5%, var(--color-surface-raised));
+  --ca-surface-hover: color-mix(in srgb, var(--ca-primary) 9%, var(--color-surface-raised));
+  --ca-border: color-mix(in srgb, var(--ca-primary) 18%, var(--color-border));
+  --ca-border-strong: color-mix(in srgb, var(--ca-primary) 38%, var(--color-border));
+  --ca-selected-text: #f5f3ff;
+  --ca-glow: color-mix(in srgb, var(--ca-primary-deep) 22%, transparent);
+
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.ca-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.ca-page__title {
+  font-size: 1.25rem;
+}
+
+.ca-page__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.ca-year-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  background: var(--ca-surface);
+  border: 1px solid var(--ca-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--ca-primary) 10%, transparent);
+}
+
+.ca-year-picker__btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.ca-year-picker__btn:hover {
+  color: var(--ca-primary);
+  background: var(--ca-primary-soft);
+}
+
+.ca-year-picker__value {
+  min-width: 3.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--ca-primary);
+}
+
+.ca-year-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 960px) {
+  .ca-year-calendar__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ca-year-calendar__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ca-month {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 0.9rem 1rem;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--ca-primary) 8%, var(--color-surface-raised)) 0%,
+    var(--ca-surface) 42%,
+    var(--color-surface-raised) 100%
+  );
+  border: 1px solid var(--ca-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--color-text) 4%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ca-primary) 12%, transparent);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.ca-month:hover {
+  border-color: var(--ca-border-strong);
+  box-shadow:
+    0 6px 18px var(--ca-glow),
+    inset 0 1px 0 color-mix(in srgb, var(--ca-primary) 16%, transparent);
+}
+
+.ca-month__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ca-month__schedule {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.ca-month__schedule-fill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ca-month__fill-btn {
+  min-width: 1.65rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--ca-primary) 4%, var(--color-surface));
+  border: 1px solid var(--ca-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.ca-month__fill-btn:hover {
+  color: var(--ca-primary);
+  border-color: var(--ca-border-strong);
+  background: var(--ca-primary-softer);
+}
+
+.ca-month__fill-btn--active {
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+  border-color: color-mix(in srgb, var(--ca-primary-deep) 80%, var(--color-border));
+  box-shadow: 0 1px 4px var(--ca-glow);
+}
+
+.ca-month__fill-btn--all {
+  font-weight: 500;
+}
+
+.ca-month__fill-btn--copy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ca-month__fill-btn--copy:not(:disabled):hover {
+  color: var(--ca-primary);
+}
+
+.ca-month__reset-btn {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--ca-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.ca-month__reset-btn:hover {
+  color: var(--ca-primary);
+  border-color: var(--ca-border-strong);
+}
+
+.ca-month__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ca-primary);
+  letter-spacing: 0.01em;
+}
+
+.ca-month__counter {
+  flex-shrink: 0;
+  min-width: 1.5rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ca-primary);
+  background: var(--ca-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--ca-primary) 22%, transparent);
+  border-radius: var(--radius-md);
+}
+
+.ca-month__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.15rem;
+}
+
+.ca-month__weekday {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+
+.ca-month__weekday--weekend {
+  color: color-mix(in srgb, var(--ca-primary) 65%, var(--color-text-muted));
+  background: var(--ca-primary-softer);
+}
+
+.ca-month__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.15rem;
+}
+
+.ca-month__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  min-height: 1.65rem;
+  padding: 0;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.ca-month__day:hover:not(.ca-month__day--empty) {
+  background: var(--ca-primary-soft);
+}
+
+.ca-month__day--empty {
+  visibility: hidden;
+}
+
+.ca-month__day--weekend {
+  color: color-mix(in srgb, var(--ca-primary) 50%, var(--color-text-muted));
+  background: var(--ca-primary-softer);
+}
+
+.ca-month__day--today {
+  font-weight: 700;
+  color: var(--ca-primary);
+  background: color-mix(in srgb, var(--ca-primary) 20%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--ca-primary) 50%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ca-primary-deep) 25%, transparent);
+}
+
+.ca-month__day--selected {
+  font-weight: 600;
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 1px 3px var(--ca-glow);
+}
+
+.ca-month__day--selected.ca-month__day--today {
+  color: var(--ca-selected-text);
+  background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 0 0 2px color-mix(in srgb, var(--ca-primary) 45%, transparent),
+    0 2px 6px var(--ca-glow);
+}
+
+.ca-month__day--selected.ca-month__day--weekend {
+  color: var(--ca-selected-text);
+}

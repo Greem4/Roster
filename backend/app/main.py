@@ -17,7 +17,9 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(auth.router)
+# RosterRX
 app.include_router(medicines.router)
-app.include_router(users.router)
 app.include_router(alerts.router)
+app.include_router(users.router)
+# RosterPay
 app.include_router(pay.router)

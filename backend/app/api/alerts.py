@@ -1,3 +1,5 @@
+"""HTTP API модуля RosterRX: предупреждения по срокам годности. Домен — app.rx."""
+
 from datetime import date
 from typing import Annotated
 

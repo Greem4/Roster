@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import ConfirmDialog from '../components/ConfirmDialog'
+import UserModuleAccess from '../components/cabinet/UserModuleAccess'
 import UserRoleSelect from '../components/cabinet/UserRoleSelect'
 import { IconSave, IconTrash } from '../components/Icons'
 import { useAuth } from '../context/AuthContext'
+import { userModulePermissions } from '../constants/moduleAccess'
 import { assignableRoles, userEffectiveRole } from '../utils/userRole'
 
 function isEditableByCurrent(current, target) {
@@ -133,6 +135,19 @@ export default function AdminUsersPanel() {
     )
   }
 
+  const toggleModulePermission = (userId, code) => {
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id !== userId) return u
+        const has = u.permissions.includes(code)
+        const permissions = has
+          ? u.permissions.filter((p) => p !== code)
+          : [...u.permissions, code]
+        return { ...u, permissions }
+      }),
+    )
+  }
+
   const saveUser = async (user) => {
     setSavingId(user.id)
     setError('')
@@ -141,8 +156,9 @@ export default function AdminUsersPanel() {
       const roleOptions = assignableRoles(current, user)
       if (roleOptions.length > 0) {
         payload.role = userEffectiveRole(user)
-      } else {
-        payload.permissions = user.permissions
+      }
+      if (!user.is_founder && !user.is_superadmin) {
+        payload.permissions = userModulePermissions(user)
       }
       await api.users.update(user.id, payload)
       load()
@@ -208,6 +224,7 @@ export default function AdminUsersPanel() {
                 <th>Email</th>
                 <th className="users-table__th-center">Активен</th>
                 <th>Роль</th>
+                <th>Разделы</th>
                 <th className="users-table__th-actions" />
               </tr>
             </thead>
@@ -253,6 +270,13 @@ export default function AdminUsersPanel() {
                     </td>
                     <td className="users-table__role">
                       <UserRoleSelect user={u} current={current} onSetRole={setRole} />
+                    </td>
+                    <td className="users-table__modules-cell">
+                      <UserModuleAccess
+                        user={u}
+                        editable={!!editable}
+                        onToggle={toggleModulePermission}
+                      />
                     </td>
                     <td className="users-table__actions">
                       <button

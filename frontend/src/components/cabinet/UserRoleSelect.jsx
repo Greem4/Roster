@@ -2,6 +2,7 @@ import {
   assignableRoles,
   roleLabel,
   roleTablePillClass,
+  userDisplayLabel,
   userEffectiveRole,
 } from '../../utils/userRole'
 
@@ -14,7 +15,7 @@ export default function UserRoleSelect({ user, current, onSetRole }) {
   const options = assignableRoles(current, user)
 
   if (options.length === 0) {
-    return <span className={roleTablePillClass(role)}>{roleLabel(role)}</span>
+    return <span className={roleTablePillClass(role)}>{userDisplayLabel(user)}</span>
   }
 
   const selectValue = options.includes(role) ? role : options[0]

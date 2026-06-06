@@ -3,6 +3,7 @@
 from sqlalchemy.orm import Session
 
 from app.models import Permission, User
+from app.module_permissions import MODULE_PERMISSION_CODES
 
 ROLE_FOUNDER = "founder"
 ROLE_SUPERADMIN = "superadmin"
@@ -10,6 +11,11 @@ ROLE_ADMIN = "admin"
 ROLE_USER = "user"
 
 PERM_MANAGE = "users:manage"
+
+
+def _module_permissions(user: User) -> list[Permission]:
+    """Модульные права, которые сохраняются при смене роли."""
+    return [p for p in user.permissions if p.code in MODULE_PERMISSION_CODES]
 
 
 def user_role(user: User) -> str:
@@ -70,17 +76,27 @@ def can_assign_role(actor: User, target: User, new_role: str) -> bool:
 
 
 def apply_role(db: Session, user: User, role: str) -> None:
-    """Применить роль к учётной записи (флаги и право users:manage для админа)."""
+    """Применить роль; модульные права (Duty, CA, Pay) не сбрасываются."""
     manage = db.query(Permission).filter(Permission.code == PERM_MANAGE).first()
+    module_perms = _module_permissions(user)
     user.is_founder = False
     if role == ROLE_SUPERADMIN:
         user.is_superadmin = True
         user.permissions = []
     elif role == ROLE_ADMIN:
         user.is_superadmin = False
-        user.permissions = [manage] if manage else []
+        user.permissions = ([manage] if manage else []) + module_perms
     elif role == ROLE_USER:
         user.is_superadmin = False
-        user.permissions = []
+        user.permissions = module_perms
     else:
         raise ValueError(f"Unknown role: {role}")
+
+
+def apply_module_permissions(db: Session, user: User, module_codes: list[str]) -> None:
+    """Обновить модульные права, не трогая users:manage у администратора."""
+    if user.is_founder or user.is_superadmin:
+        return
+    role_perms = [p for p in user.permissions if p.code not in MODULE_PERMISSION_CODES]
+    module_perms = db.query(Permission).filter(Permission.code.in_(module_codes)).all()
+    user.permissions = role_perms + module_perms

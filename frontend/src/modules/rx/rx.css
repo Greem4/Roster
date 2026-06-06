@@ -1,0 +1,405 @@
+/* RosterRX: список лекарств, сортировка, карточки, форма. */
+
+.roster-page-toolbar .sort-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.medicines-loading {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.medicines-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--color-surface-raised);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.medicines-empty-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.sort-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.sort-select {
+  width: 100%;
+  padding: 0.55rem 2rem 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.sort-dir-btn {
+  flex-shrink: 0;
+  min-width: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.sort-dir-btn:hover {
+  color: var(--color-text);
+  background: var(--color-surface-elevated);
+}
+
+.medicines-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.medicine-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  min-height: 2.75rem;
+}
+
+.medicine-item--ok {
+  background: var(--item-ok-bg);
+  border-color: var(--item-ok-border);
+}
+
+.medicine-item--warn {
+  background: var(--item-warn-bg);
+  border-color: var(--item-warn-border);
+}
+
+.medicine-item--danger {
+  background: var(--item-danger-bg);
+  border-color: var(--item-danger-border);
+}
+
+.medicine-item-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medicine-item-series {
+  flex: 0 0 auto;
+  max-width: 6.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.medicine-item-date {
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.medicine-item-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Срок и остаток дней — одна колонка (блок предупреждений в кабинете, мобильная вёрстка). */
+.medicine-item-expiry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.medicine-item-expiry .medicine-item-badge {
+  margin-left: 0;
+}
+
+.medicine-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.15rem;
+}
+
+.medicine-actions--confirm {
+  gap: 0.35rem;
+}
+
+.btn-inline {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.btn-inline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-inline-cancel {
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-inline-cancel:hover:not(:disabled) {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-inline-delete {
+  background: var(--color-danger, #dc2626);
+  color: #fff;
+}
+
+.btn-inline-delete:hover:not(:disabled) {
+  background: var(--color-danger-hover, #b91c1c);
+}
+
+/*
+ * Десктоп: одна строка, фиксированные колонки (имя · серия · срок · дни).
+ * min-width 641px — не пересекается с мобильным блоком max-width 640px.
+ */
+@media (min-width: 641px) {
+  .medicine-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem 4.5rem;
+    align-items: center;
+    column-gap: 1.25rem;
+    row-gap: 0;
+    padding: 0.7rem 1rem;
+  }
+
+  .medicine-item:not(:has(.medicine-item-expiry)) {
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem;
+  }
+
+  .medicine-item:has(.medicine-actions):not(:has(.medicine-item-expiry)) {
+    grid-template-columns: minmax(0, 1fr) 7.5rem 5.75rem auto;
+  }
+
+  .medicine-item-name {
+    grid-column: 1;
+    flex: unset;
+    font-size: 0.9375rem;
+  }
+
+  .medicine-item-series {
+    grid-column: 2;
+    flex: unset;
+    max-width: none;
+    width: 100%;
+    font-size: 0.875rem;
+    text-align: left;
+    justify-self: start;
+  }
+
+  .medicine-item-date {
+    grid-column: 3;
+    flex: unset;
+    font-size: 0.875rem;
+    min-width: 0;
+    text-align: right;
+    justify-self: end;
+  }
+
+  .medicine-item-expiry {
+    display: contents;
+    margin-left: 0;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-date {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-badge {
+    grid-column: 4;
+    margin-left: 0;
+    justify-self: end;
+  }
+
+  .medicine-actions {
+    grid-column: -1;
+    margin-left: 0;
+    justify-self: end;
+  }
+}
+
+.medicine-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.medicine-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  /* Список лекарств — уже поля, учёт safe-area у вырезов */
+  .app-main:has(.medicines-page) {
+    padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+    padding-top: 0.75rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /*
+   * Карточка в две строки: название на всю ширину, серия и срок — снизу;
+   * кнопки админа — справа на обе строки. Так полезнее ширина экрана.
+   */
+  .medicine-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    column-gap: 0.65rem;
+    row-gap: 0.15rem;
+    padding: 0.55rem 0.6rem;
+    align-items: center;
+  }
+
+  .medicine-item:has(.medicine-actions) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+
+  .medicine-item-name {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    font-size: 0.9375rem;
+    line-height: 1.25;
+  }
+
+  .medicine-item:has(.medicine-actions) .medicine-item-name {
+    grid-column: 1 / 3;
+  }
+
+  .medicine-item-series {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+    min-width: 0;
+    font-size: 0.8125rem;
+  }
+
+  .medicine-item-date {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    font-size: 0.8125rem;
+  }
+
+  .medicine-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-left: 0;
+  }
+
+  .medicine-item:has(.medicine-actions--confirm) .medicine-item-series,
+  .medicine-item:has(.medicine-actions--confirm) .medicine-item-date {
+    display: none;
+  }
+
+  .medicine-item:has(.medicine-actions--confirm) .medicine-item-name {
+    grid-column: 1 / 3;
+    grid-row: 1 / span 2;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  /*
+   * Предупреждения в кабинете: слева название и серия, справа колонка «срок + дн.»
+   * на одной высоте с названием.
+   */
+  .medicine-item:has(.medicine-item-expiry) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: start;
+    row-gap: 0.2rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-name {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    padding-right: 0.35rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-expiry {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-left: 0;
+    gap: 0.25rem;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-series {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: none;
+  }
+
+  .medicine-item:has(.medicine-item-expiry) .medicine-item-date {
+    justify-self: end;
+    line-height: 1.2;
+  }
+}

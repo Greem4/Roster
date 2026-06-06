@@ -1,0 +1,335 @@
+/* Стили только модуля RosterDuty (префикс duty-). */
+
+.duty-page {
+  --duty-primary: var(--module-duty-text);
+  --duty-primary-soft: color-mix(in srgb, var(--duty-primary) 14%, transparent);
+  --duty-primary-softer: color-mix(in srgb, var(--duty-primary) 7%, transparent);
+  --duty-surface: color-mix(in srgb, var(--duty-primary) 5%, var(--color-surface-raised));
+  --duty-border: color-mix(in srgb, var(--duty-primary) 18%, var(--color-border));
+  --duty-brigade: #2563eb;
+  --duty-brigade-bg: color-mix(in srgb, var(--duty-brigade) 18%, transparent);
+  --duty-phone: #059669;
+  --duty-phone-bg: color-mix(in srgb, var(--duty-phone) 18%, transparent);
+  --duty-weekend: color-mix(in srgb, #22c55e 8%, transparent);
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.duty-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  flex-shrink: 0;
+  margin-bottom: 0.6rem;
+}
+
+.duty-page__intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+}
+
+.duty-page__title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.duty-page__subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.duty-page__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.duty-period-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.45rem;
+  background: var(--duty-surface);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-lg);
+}
+
+.duty-period-picker__month-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.duty-period-picker__btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.duty-period-picker__btn:hover {
+  color: var(--duty-primary);
+  background: var(--duty-primary-soft);
+}
+
+.duty-period-picker__month {
+  min-width: 5.5rem;
+  padding: 0 0.15rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text);
+}
+
+.duty-period-picker__year {
+  min-width: 3.25rem;
+  padding: 0.15rem 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--duty-border) 65%, transparent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.duty-period-picker__year:hover,
+.duty-period-picker__year:focus-visible {
+  color: var(--color-text-secondary);
+  border-color: var(--duty-border);
+}
+
+.duty-schedule-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  overflow: hidden;
+}
+
+.duty-schedule {
+  --duty-col-name: 7.55rem;
+
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: clamp(0.68rem, 0.6rem + 0.16vw, 0.82rem);
+}
+
+.duty-schedule th,
+.duty-schedule td {
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  padding: 0;
+  vertical-align: middle;
+}
+
+.duty-schedule__col-name {
+  width: var(--duty-col-name);
+}
+
+.duty-schedule__col-day {
+  width: calc((100% - var(--duty-col-name)) / var(--duty-days, 31));
+}
+
+.duty-schedule__sticky {
+  position: sticky;
+  z-index: 2;
+  background: var(--color-surface-raised);
+}
+
+.duty-schedule__head-name,
+.duty-schedule__name {
+  left: 0;
+  padding: 0.12rem 0.28rem 0.12rem 0.38rem;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.duty-schedule__num {
+  display: inline-block;
+  width: 1.15rem;
+  margin-right: 0.18rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.duty-schedule thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--duty-surface);
+  font-weight: 600;
+}
+
+.duty-schedule__head-name {
+  z-index: 4;
+}
+
+.duty-schedule__head-day {
+  padding: 0.28rem 0.05rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.duty-schedule__head-day--weekend {
+  background: var(--duty-weekend);
+}
+
+.duty-schedule__day-num {
+  display: block;
+  line-height: 1.15;
+}
+
+.duty-schedule__day-week {
+  display: block;
+  font-size: 0.58em;
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.duty-schedule tbody tr {
+  height: 1%;
+}
+
+/* Разделитель: врачи (1–5) и остальные сотрудники. */
+.duty-schedule__row--group-start td,
+.duty-schedule__row--group-start th {
+  border-top-width: 2px;
+  border-top-color: color-mix(in srgb, var(--duty-primary) 45%, var(--color-border));
+}
+
+.duty-schedule__cell--weekend {
+  background: var(--duty-weekend);
+}
+
+.duty-day-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 1.65rem;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.duty-day-cell:hover {
+  background: var(--duty-primary-soft);
+}
+
+.duty-day-cell--brigade {
+  color: var(--duty-brigade);
+  background: var(--duty-brigade-bg);
+}
+
+.duty-day-cell--phone {
+  color: var(--duty-phone);
+  background: var(--duty-phone-bg);
+}
+
+.duty-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1.25rem;
+  flex-shrink: 0;
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid var(--duty-border);
+  font-size: 0.78rem;
+}
+
+.duty-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.duty-legend__sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+}
+
+.duty-legend__sample--brigade {
+  color: var(--duty-brigade);
+  background: var(--duty-brigade-bg);
+}
+
+.duty-legend__sample--phone {
+  color: var(--duty-phone);
+  background: var(--duty-phone-bg);
+}
+
+@media (max-width: 720px) {
+  .duty-page__intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .duty-schedule {
+    --duty-col-name: 6.55rem;
+  }
+
+  .duty-schedule__head-name,
+  .duty-schedule__name {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.2rem 0.1rem 0.3rem;
+  }
+
+  .duty-schedule__num {
+    width: 1rem;
+    margin-right: 0.12rem;
+  }
+
+  .duty-schedule__day-week {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-main:has(.duty-page) {
+    padding-top: 0.4rem;
+  }
+}

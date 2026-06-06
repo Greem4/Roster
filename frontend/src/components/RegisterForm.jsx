@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
+import { RX_HOME } from '../constants/routes'
 import AuthOAuthSection from './AuthOAuthSection'
 
 /**
@@ -39,7 +40,7 @@ export default function RegisterForm({ onSuccess }) {
       <AuthOAuthSection
         disabled={submitting}
         mode="register"
-        onOAuthSuccess={() => navigate('/medicines', { replace: true })}
+        onOAuthSuccess={() => navigate(RX_HOME, { replace: true })}
         onOAuthPending={onSuccess}
         onOAuthError={setError}
       />

@@ -97,11 +97,11 @@ export default function PayPage() {
   const chartData = useMemo(() => {
     return months.map((m, index) => {
       const amount = monthTotal(m.amounts)
-      const bump = amount > 0 ? Math.max(amount * 0.04, amount * 0.01 + 1) : 0
       return {
         label: MONTH_LABELS[index],
         amount,
-        lineAmount: amount > 0 ? amount + bump : 0,
+        // Чуть выше столбца (~8%), чтобы линия не слипалась с вершиной.
+        lineAmount: amount > 0 ? amount * 1.08 : 0,
       }
     })
   }, [months])

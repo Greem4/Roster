@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { ROSTER_MODULES, ROSTER_MODULE_ORDER } from '../constants/rosterModules'
+
+const RX_HOME = ROSTER_MODULES.rx.path
 
 /** Активен ли раздел RX (лекарства, вход, регистрация). */
 function isRxPath(pathname) {
   return (
     pathname === '/' ||
+    pathname === RX_HOME ||
+    pathname.startsWith(`${RX_HOME}/`) ||
     pathname === '/medicines' ||
     pathname.startsWith('/medicines/')
   )
@@ -36,6 +41,8 @@ function ModuleBrand({ moduleKey }) {
  */
 export function RosterModulePicker() {
   const { pathname } = useLocation()
+  const { canAccessModule } = useAuth()
+  const visibleModules = ROSTER_MODULE_ORDER.filter((key) => canAccessModule(key))
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
   const menuId = useId()
@@ -98,7 +105,7 @@ export function RosterModulePicker() {
           role="menu"
           aria-label="Разделы Roster"
         >
-          {ROSTER_MODULE_ORDER.map((key) => {
+          {visibleModules.map((key) => {
             const mod = ROSTER_MODULES[key]
             const active = isModuleActive(key, pathname)
             return (
@@ -128,10 +135,12 @@ export function RosterModulePicker() {
  */
 export default function RosterModuleNav() {
   const { pathname } = useLocation()
+  const { canAccessModule } = useAuth()
+  const visibleModules = ROSTER_MODULE_ORDER.filter((key) => canAccessModule(key))
 
   return (
     <nav className="roster-nav roster-nav--desktop" aria-label="Разделы Roster">
-      {ROSTER_MODULE_ORDER.map((key) => {
+      {visibleModules.map((key) => {
         const mod = ROSTER_MODULES[key]
         const active = isModuleActive(key, pathname)
         return (

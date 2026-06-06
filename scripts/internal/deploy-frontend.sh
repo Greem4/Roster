@@ -25,7 +25,7 @@ pi_route_pick "$ROUTE_VIA" || exit 1
 
 cd "$ROOT/frontend"
 echo "Сборка frontend…"
-npm ci
+frontend_npm_ci_if_needed
 npm run build
 
 echo "Копирование dist/ → ${PI_ROUTE_TARGET}:~/${WEB_ROOT}/ (${PI_ROUTE_MODE})"

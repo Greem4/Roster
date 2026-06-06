@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import ChangePasswordForm from '../components/cabinet/ChangePasswordForm'
 import PromoteFounderBlock from '../components/cabinet/PromoteFounderBlock'
 import YandexLoginButton from '../components/YandexLoginButton'
+import { RX_HOME } from '../constants/routes'
 import { useAuth } from '../context/AuthContext'
 
 /** Настройки аккаунта: пароль, привязка Яндекс ID, выход, назначение основателя. */
@@ -11,7 +12,7 @@ export default function CabinetSettingsPanel() {
 
   const handleLogout = () => {
     logout()
-    navigate('/medicines')
+    navigate(RX_HOME)
   }
 
   return (
