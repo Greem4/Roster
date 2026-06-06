@@ -4,7 +4,7 @@ import { PERM_PAY_VIEW } from './constants'
 import PayPage from './pages/PayPage'
 
 /**
- * Маршруты RosterPay. Изменения Pay не должны трогать MedicinesLayout и /medicines.
+ * Маршруты RosterPay. Изолированы от RX (/rx) и остальных модулей.
  */
 export default function PayRoutes() {
   return (

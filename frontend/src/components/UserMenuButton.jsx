@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { RX_HOME } from '../constants/routes'
 import { useAuth } from '../context/AuthContext'
 
 function profileInitial(username) {
@@ -65,7 +66,7 @@ export default function UserMenuButton() {
   const handleLogout = () => {
     close()
     logout()
-    navigate('/medicines')
+    navigate(RX_HOME)
   }
 
   return (

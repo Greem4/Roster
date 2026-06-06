@@ -11,3 +11,12 @@ roster_load_env() {
     set +a
   fi
 }
+
+# npm ci для frontend: пустой node_modules после сбоя или lockfile новее установки.
+frontend_npm_ci_if_needed() {
+  cd "$ROOT/frontend"
+  if [ ! -x node_modules/.bin/vite ] || [ ! -f node_modules/.package-lock.json ] \
+    || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+    npm ci
+  fi
+}

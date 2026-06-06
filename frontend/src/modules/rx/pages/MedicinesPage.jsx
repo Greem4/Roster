@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { api } from '../api/client'
+import Modal from '../../../components/Modal'
+import { useAuth } from '../../../context/AuthContext'
+import { IconEdit, IconTrash } from '../../../components/Icons'
+import { formatDate } from '../../../utils/formatDate'
+import { rxApi } from '../api'
 import MedicineForm from '../components/MedicineForm'
-import Modal from '../components/Modal'
-import { useAuth } from '../context/AuthContext'
-import { IconEdit, IconTrash } from '../components/Icons'
 import { expiryTier } from '../utils/expiryTier'
-import { formatDate } from '../utils/formatDate'
 import { shortMedicineName } from '../utils/medicineName'
+import '../rx.css'
 
 const SORT_OPTIONS = [
   { key: 'name', label: 'Название' },
@@ -167,7 +168,7 @@ export default function MedicinesPage() {
 
   const load = (showSpinner = true) => {
     if (showSpinner) setLoading(true)
-    api.medicines
+    rxApi.medicines
       .list()
       .then(setItems)
       .catch((e) => setError(e.message))
@@ -205,7 +206,7 @@ export default function MedicinesPage() {
 
   const handleDelete = async (id) => {
     try {
-      await api.medicines.delete(id)
+      await rxApi.medicines.delete(id)
       load(false)
     } catch (e) {
       setError(e.message)

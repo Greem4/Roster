@@ -41,10 +41,5 @@ if lan=$(roster_lan_ip); then
   echo "Телефон (та же Wi‑Fi): http://${lan}:5173"
 fi
 echo "На сайт: ./scripts/deploy-frontend.sh"
-cd "$ROOT/frontend"
-# npm ci, если нет node_modules или package-lock.json новее установленных пакетов
-if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ] \
-  || [ package-lock.json -nt node_modules/.package-lock.json ]; then
-  npm ci
-fi
+frontend_npm_ci_if_needed
 exec npm run dev

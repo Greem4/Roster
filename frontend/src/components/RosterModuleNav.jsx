@@ -3,10 +3,14 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { ROSTER_MODULES, ROSTER_MODULE_ORDER } from '../constants/rosterModules'
 
+const RX_HOME = ROSTER_MODULES.rx.path
+
 /** Активен ли раздел RX (лекарства, вход, регистрация). */
 function isRxPath(pathname) {
   return (
     pathname === '/' ||
+    pathname === RX_HOME ||
+    pathname.startsWith(`${RX_HOME}/`) ||
     pathname === '/medicines' ||
     pathname.startsWith('/medicines/')
   )

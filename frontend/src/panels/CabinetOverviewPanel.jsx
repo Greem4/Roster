@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../api/client'
 import RoleBadge from '../components/cabinet/RoleBadge'
+import { RX_HOME } from '../constants/routes'
 import { useAuth } from '../context/AuthContext'
-import { expiryTier } from '../utils/expiryTier'
+import { rxApi } from '../modules/rx/api'
+import { expiryTier } from '../modules/rx/utils/expiryTier'
+import { shortMedicineName } from '../modules/rx/utils/medicineName'
 import { formatDate } from '../utils/formatDate'
-import { shortMedicineName } from '../utils/medicineName'
+import '../modules/rx/rx.css'
 
 function urgencyClass(days) {
   if (days < 0) return 'badge-danger'
@@ -42,7 +44,7 @@ export default function CabinetOverviewPanel() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    api.alerts
+    rxApi.alerts
       .expiring()
       .then(setAlerts)
       .catch((e) => setError(e.message))
@@ -101,19 +103,19 @@ export default function CabinetOverviewPanel() {
         {alerts && alerts.total > 10 && (
           <p className="muted">
             И ещё {alerts.total - 10} позиций.{' '}
-            <Link to="/medicines">Открыть список лекарств</Link>
+            <Link to={RX_HOME}>Открыть список лекарств</Link>
           </p>
         )}
         {alerts && alerts.total > 0 && alerts.total <= 10 && (
           <p className="muted cabinet-section__footer">
-            <Link to="/medicines">Список лекарств</Link>
+            <Link to={RX_HOME}>Список лекарств</Link>
           </p>
         )}
       </section>
 
       <div className="quick-links">
         {isAdmin && (
-          <Link to="/medicines?add=1" className="btn-primary link-btn">
+          <Link to={`${RX_HOME}?add=1`} className="btn-primary link-btn">
             Добавить лекарство
           </Link>
         )}

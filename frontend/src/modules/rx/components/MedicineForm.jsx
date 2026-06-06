@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '../api/client'
+import { rxApi } from '../api'
 
 export default function MedicineForm({ medicineId, onSuccess, onCancel }) {
   const isEdit = medicineId != null
@@ -13,7 +13,7 @@ export default function MedicineForm({ medicineId, onSuccess, onCancel }) {
   useEffect(() => {
     if (!isEdit) return
     setLoading(true)
-    api.medicines
+    rxApi.medicines
       .get(medicineId)
       .then((m) => {
         setName(m.name)
@@ -31,9 +31,9 @@ export default function MedicineForm({ medicineId, onSuccess, onCancel }) {
     const body = { name, series, expiry_date: expiryDate }
     try {
       if (isEdit) {
-        await api.medicines.update(medicineId, body)
+        await rxApi.medicines.update(medicineId, body)
       } else {
-        await api.medicines.create(body)
+        await rxApi.medicines.create(body)
       }
       onSuccess()
     } catch (err) {

@@ -145,7 +145,6 @@ run_dev_frontend_remote() {
     echo "Телефон (та же Wi‑Fi): http://${lan}:5173"
   fi
   echo "На сайт: ./scripts/deploy-frontend.sh"
-  cd "$ROOT/frontend"
-  [ -d node_modules ] || npm ci
+  frontend_npm_ci_if_needed
   exec npm run dev
 }

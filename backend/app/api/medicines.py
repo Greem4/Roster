@@ -1,3 +1,5 @@
+"""HTTP API модуля RosterRX: CRUD лекарств. Домен — app.rx, модель Medicine."""
+
 from datetime import date
 from typing import Annotated
 
