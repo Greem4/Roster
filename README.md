@@ -11,6 +11,20 @@
 
 Каталог проекта на Pi: `~/Roster`; локальная копия — `AndroidStudioProjects/Roster`.
 
+## Содержание
+
+| Раздел | О чём |
+|--------|--------|
+| [Как работаем](#как-работаем-основной-процесс) | dev, деплой API и фронта |
+| [**SSH на Pi (дома и вне дома)**](#ssh-на-pi-дома-и-вне-дома) | **`192.168.31.96` не работает с LTE** — как зайти через VPS |
+| [Архитектура: VPS + туннель + B3](#архитектура-vps--туннель--b3) | схема, DNS, проверки сайта |
+| [B3: SSH и sudo](#b3-ssh-и-sudo) | ключи, sudo (кратко → см. раздел SSH) |
+| [B3: первый запуск](#b3-первый-запуск) | docker compose, Caddy |
+| [Бэкап и перенос](#бэкап-и-перенос-на-другой-хост) | pg_dump, переезд Pi |
+| [Mac: команды](#mac-команды) | все скрипты в `scripts/` |
+
+---
+
 ## Как работаем (основной процесс)
 
 | Часть | Где живёт | Как проверять | Как выкатить |
@@ -31,48 +45,80 @@ chmod +x scripts/dev.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh
 
 Cursor-агент после правок **API** сам запускает `deploy-backend.sh`; **фронт на сайт** — только если вы попросите.
 
-**Один раз дома** (`scripts/setup/`):
+**Один раз дома** — см. [SSH на Pi](#ssh-на-pi-дома-и-вне-дома) и [Mac: команды → setup](#mac-команды).
 
-```bash
-./scripts/setup/ssh-key.sh           # SSH без пароля
-./scripts/setup/vps-dev-ssh.sh      # деплой/import из интернета
-./scripts/setup/vps-ssh-config.sh   # Host roster-pi-remote в ~/.ssh/config
-./scripts/setup/docker-autostart.sh # Docker после reboot
-./scripts/setup/caddy.sh            # Caddy на Pi
+**Вне дома** (кафе, LTE): SSH на Pi — **`ssh roster-pi-remote`**, не `greem4@192.168.31.96`. Деплой и туннель БД — те же `./scripts/deploy-backend.sh` и `./scripts/internal/tunnel-db.sh` (маршрут выбирается автоматически). Подробно — ниже ↓
+
+---
+
+## SSH на Pi (дома и вне дома)
+
+> **Коротко:** дома — `ssh greem4@192.168.31.96` или `ssh roster-b3`. **Вне дома** — только **`ssh roster-pi-remote`**. Адрес `192.168.31.96` с интернета/LTE **не маршрутизируется** (домашняя LAN + CGNAT у провайдера).
+
+### Какую команду использовать
+
+| Где вы | SSH на Pi | Проверка |
+|--------|-----------|----------|
+| **Дома** (та же Wi‑Fi, что Pi) | `ssh greem4@192.168.31.96` или `ssh roster-b3` | `ssh roster-b3 'hostname'` |
+| **Вне дома** (кафе, LTE, офис) | **`ssh roster-pi-remote`** | `ssh roster-pi-remote 'hostname'` |
+| Сайт / prod API (откуда угодно) | не нужен SSH | `https://medicine.greemlab.ru` |
+
+Почему не `ssh greem4@192.168.31.96` с LTE: это **локальный** адрес роутера; снаружи виден только **VPS** (`176.12.65.86`). Pi сама держит **reverse SSH** на VPS; вы заходите цепочкой **Mac → VPS → туннель → Pi**.
+
+```
+Mac (вне дома)  ──SSH──►  VPS 176.12.65.86  ──127.0.0.1:22022──►  Pi greem4@192.168.31.96
 ```
 
-### Разработка вне дома
-
-С интернета к Pi **напрямую не зайти** (CGNAT). Доступ только через **ваш** VPS и SSH-ключи:
-
-| Что | Как | Кто может |
-|-----|-----|-----------|
-| Сайт / prod API | `https://medicine.greemlab.ru` | все с URL |
-| SSH на Pi | `ProxyJump` → VPS → `127.0.0.1:22022` (туннель с Pi) | только ключи в `authorized_keys` на VPS и Pi |
-| PostgreSQL | `127.0.0.1:5432` на Pi, с Mac — `./scripts/internal/tunnel-db.sh` | тот же SSH |
-| Деплой API | `./scripts/deploy-backend.sh` | тот же SSH (auto: LAN или VPS hop) |
-
-**Один раз дома** (Pi в LAN):
-
-1. `./scripts/setup/ssh-key.sh` — ключ на Pi, без пароля SSH.
-2. `./scripts/setup/vps-dev-ssh.sh` — Pi пробрасывает `127.0.0.1:22022` на VPS (не в интернет, только localhost VPS).
-3. `./scripts/setup/vps-ssh-config.sh` — удобные Host `roster-vps` / `roster-pi-remote`.
-
-**Вне дома** (кафе, LTE):
+Эквивалент без алиаса в `~/.ssh/config`:
 
 ```bash
-./scripts/deploy-backend.sh              # обновить API на Pi
-./scripts/internal/tunnel-db.sh          # БД на localhost:5432 (в другом терминале)
-./scripts/dev.sh                         # UI локально; API — prod, если Pi недоступна
+ssh -J root@176.12.65.86 -p 22022 greem4@127.0.0.1
 ```
 
-Проверка доступа к Pi:
+### Один раз настроить (только из домашней Wi‑Fi)
+
+Порядок важен — выполнять на Mac, пока Pi доступна по LAN:
 
 ```bash
-ssh roster-pi-remote 'hostname'
+./scripts/setup/ssh-key.sh           # 1. ключ на Pi → Host roster-b3
+./scripts/setup/vps-dev-ssh.sh       # 2. Pi пробросит SSH на VPS (порт 22022 на localhost VPS)
+./scripts/setup/vps-ssh-config.sh    # 3. Host roster-vps и roster-pi-remote в ~/.ssh/config
 ```
 
-Безопасность: пароль SSH на Pi отключён; порты API/БД на Pi — `127.0.0.1`; порт `22022` на VPS слушает только `127.0.0.1` — сначала нужен SSH на VPS под **вашим** `root` (или другим пользователем с ключом), затем hop на Pi.
+Опционально в `.env` проекта: `PI_SSH=roster-pi-remote` — тогда деплой/import с Mac вне дома не ищут LAN.
+
+### Команды с Mac после настройки
+
+| Задача | Дома | Вне дома |
+|--------|------|----------|
+| Интерактивный SSH | `ssh roster-b3` | **`ssh roster-pi-remote`** |
+| Деплой API | `./scripts/deploy-backend.sh` | то же (auto: LAN или VPS) |
+| Туннель PostgreSQL | `./scripts/internal/tunnel-db.sh` | то же |
+| Локальный UI | `./scripts/dev.sh` | `./scripts/dev.sh` (API с prod, если Pi недоступна) |
+
+### Если не пускает
+
+1. **Вне дома, «Connection refused» на 22022** — туннель с Pi на VPS не поднят (Pi выключена, нет интернета дома, или не делали `vps-dev-ssh.sh`). Проверка **с VPS** (нужен ваш ключ на VPS):
+
+   ```bash
+   ssh root@176.12.65.86 "ss -tln | grep 22022"
+   ```
+
+   Перезапуск туннеля — **только из домашней LAN** (или попросить кого-то дома):
+
+   ```bash
+   ssh greem4@192.168.31.96 "pkill -f start-vps-tunnel.sh || true; nohup /home/greem4/.local/bin/start-vps-tunnel.sh >>/home/greem4/.config/vps-tunnel/tunnel.log 2>&1 &"
+   ```
+
+2. **Дома, «Permission denied»** — нет ключа: `./scripts/setup/ssh-key.sh`. Пароль SSH на Pi **отключён**.
+
+3. **SSH есть, но sudo просит пароль** — это не SSH; для systemd нужен пароль `greem4` или `NOPASSWD` в `/etc/sudoers.d/`.
+
+4. Лог туннеля на Pi: `ssh greem4@192.168.31.96 "tail -40 ~/.config/vps-tunnel/tunnel.log"` (только из LAN).
+
+Безопасность: порт `22022` на VPS слушает **только** `127.0.0.1`; сначала SSH на VPS под **вашим** пользователем с ключом, затем hop на Pi. API и PostgreSQL на Pi — тоже `127.0.0.1`.
+
+Схема сайта и веб-туннеля (`:18080`) — в [Архитектура](#архитектура-vps--туннель--b3).
 
 ---
 
@@ -173,6 +219,10 @@ ssh roster-pi-remote 'hostname'
 ### Быстрые проверки
 
 ```bash
+# SSH на Pi (вне дома — roster-pi-remote; дома — roster-b3 или greem4@192.168.31.96)
+ssh roster-pi-remote 'hostname && docker ps --format "table {{.Names}}\t{{.Status}}"'
+# см. также раздел «SSH на Pi»
+
 # DNS → VPS
 dig +short medicine.greemlab.ru @8.8.8.8
 
@@ -207,23 +257,26 @@ ssh greem4@192.168.31.96 "tail -20 ~/docker-stacks.log"
 6. На Pi: `docker compose -f ~/Roster/docker-compose.yml ps` и Caddy в `~/server`.
 7. Если после отключения света контейнеры не поднялись: `ssh greem4@192.168.31.96 "/home/greem4/bin/docker-stacks-up.sh"` или `./scripts/setup/docker-autostart.sh`.
 
+SSH с Mac вне дома — [раздел SSH на Pi](#ssh-на-pi-дома-и-вне-дома).
+
 ---
 
 ## B3: SSH и sudo
 
+Команды и сценарии «дома / вне дома» — в разделе [**SSH на Pi**](#ssh-на-pi-дома-и-вне-дома).
+
 | Что | Как настроено |
 |-----|----------------|
-| **SSH по ключу** | `./scripts/setup/ssh-key.sh` → Host `roster-b3` |
-| **Пароль SSH** | отключён на Pi (`PasswordAuthentication no`) — без ключа не войти |
-| **`sudo` на Pi** | **отдельно** от SSH-ключа; для systemd/Cursor-агента нужен пароль или `NOPASSWD` в `/etc/sudoers.d/` |
+| **SSH по ключу (LAN)** | `./scripts/setup/ssh-key.sh` → Host `roster-b3` |
+| **SSH вне дома** | `./scripts/setup/vps-dev-ssh.sh` + `vps-ssh-config.sh` → `roster-pi-remote` |
+| **Пароль SSH** | отключён на Pi — без ключа не войти |
+| **`sudo` на Pi** | отдельно от SSH-ключа; для systemd нужен пароль или `NOPASSWD` |
 
-Проверка ключа с Mac:
+Проверка ключа **дома**:
 
 ```bash
-ssh -o BatchMode=yes greem4@192.168.31.96 'echo OK'
+ssh -o BatchMode=yes roster-b3 'echo OK'
 ```
-
-Если «не пускает» — это обычно не слетевший ключ, а другой хост/устройство без ключа в `authorized_keys`, или запрос **пароля sudo** (не SSH).
 
 ---
 
@@ -348,6 +401,8 @@ docker compose up -d
 
 ## Mac: команды
 
+SSH **дома / вне дома** — [раздел SSH на Pi](#ssh-на-pi-дома-и-вне-дома).
+
 | Команда | Назначение |
 |---------|------------|
 | `./scripts/dev.sh` | UI локально (дома — API с Pi, вне дома — prod) |
@@ -356,13 +411,13 @@ docker compose up -d
 
 **Редко (`scripts/internal/`):** `tunnel-db.sh` — PostgreSQL → `127.0.0.1:5432`; `import.sh` — перезаливка лекарств из JSON.
 
-**Один раз дома** — каталог `scripts/setup/`:
+**Один раз дома** — каталог `scripts/setup/` (подробнее в [SSH на Pi → настройка](#один-раз-настроить-только-из-домашней-wi-fi)):
 
 | Скрипт | Назначение |
 |--------|------------|
-| `setup/ssh-key.sh` | SSH-ключ на Pi |
-| `setup/vps-dev-ssh.sh` | проброс SSH Pi→VPS (`:22022`, деплой вне дома) |
-| `setup/vps-ssh-config.sh` | `~/.ssh/config`: `roster-pi-remote` |
+| `setup/ssh-key.sh` | SSH-ключ на Pi → `roster-b3` |
+| `setup/vps-dev-ssh.sh` | проброс SSH Pi→VPS (`:22022`, вход вне дома) |
+| `setup/vps-ssh-config.sh` | `~/.ssh/config`: **`roster-pi-remote`** |
 | `setup/docker-autostart.sh` | Docker после reboot |
 | `setup/caddy.sh` | Caddy на Pi |
 

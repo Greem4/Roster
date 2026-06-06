@@ -216,15 +216,26 @@
   line-height: 1.05;
 }
 
-.duty-schedule tbody tr {
+.duty-schedule tbody tr:not(.duty-schedule__group-divider) {
   height: 1%;
 }
 
-/* Разделитель: врачи (1–5) и остальные сотрудники. */
-.duty-schedule__row--group-start td,
-.duty-schedule__row--group-start th {
-  border-top-width: 2px;
-  border-top-color: color-mix(in srgb, var(--duty-primary) 45%, var(--color-border));
+/* Разделитель: врачи (1–5) и остальные — одна линия на всю ширину таблицы. */
+.duty-schedule__group-divider {
+  height: 2px;
+}
+
+.duty-schedule__group-divider td {
+  height: 2px;
+  padding: 0;
+  line-height: 0;
+  font-size: 0;
+  border: none;
+  background: color-mix(in srgb, var(--duty-primary) 45%, var(--color-border));
+}
+
+.duty-schedule__group-divider + .duty-schedule__row > td {
+  border-top: none;
 }
 
 .duty-schedule__cell--weekend {

@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { DUTY_MARK_BRIGADE, DUTY_MARK_PHONE } from '../constants'
 import { MONTH_NAMES } from '../constants/months'
 import { cellKey, daysInMonth, isNonWorkingDay, weekdayLabel } from '../utils/scheduleDays'
@@ -66,56 +67,59 @@ export default function DutyScheduleGrid({
           </tr>
         </thead>
         <tbody>
-          {employees.map((employee, index) => (
-            <tr
-              key={employee.id}
-              className={[
-                'duty-schedule__row',
-                index === groupStartIndex && groupStartIndex > 0 && 'duty-schedule__row--group-start',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <td className="duty-schedule__sticky duty-schedule__name">
-                <span className="duty-schedule__num">{index + 1}</span>
-                <button
-                  type="button"
-                  className="duty-schedule__name-btn"
-                  onClick={() => onOpenEmployee(employee.id)}
-                  title="Карточка сотрудника"
-                >
-                  {employee.name}
-                </button>
-              </td>
-              {days.map((day) => {
-                const key = cellKey(employee.id, year, month, day)
-                const mark = marks[key] || ''
-                const onVacation = isDayInVacation(employee.vacations, year, month, day)
-                return (
-                  <td
-                    key={day}
-                    className={[
-                      'duty-schedule__cell',
-                      isNonWorkingDay(year, month, day) && 'duty-schedule__cell--weekend',
-                      onVacation && 'duty-schedule__cell--vacation',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <DutyDayCell
-                      day={day}
-                      mark={mark}
-                      isWeekend={isNonWorkingDay(year, month, day)}
-                      onVacation={onVacation}
-                      monthLabel={monthLabel}
-                      employeeName={employee.name}
-                      onToggle={() => onToggleCell(key)}
-                    />
+          {employees.map((employee, index) => {
+            const showGroupDivider = index === groupStartIndex && groupStartIndex > 0
+
+            return (
+              <Fragment key={employee.id}>
+                {showGroupDivider && (
+                  <tr className="duty-schedule__group-divider" aria-hidden="true">
+                    <td colSpan={dayCount + 1} />
+                  </tr>
+                )}
+                <tr className="duty-schedule__row">
+                  <td className="duty-schedule__sticky duty-schedule__name">
+                    <span className="duty-schedule__num">{index + 1}</span>
+                    <button
+                      type="button"
+                      className="duty-schedule__name-btn"
+                      onClick={() => onOpenEmployee(employee.id)}
+                      title="Карточка сотрудника"
+                    >
+                      {employee.name}
+                    </button>
                   </td>
-                )
-              })}
-            </tr>
-          ))}
+                  {days.map((day) => {
+                    const key = cellKey(employee.id, year, month, day)
+                    const mark = marks[key] || ''
+                    const onVacation = isDayInVacation(employee.vacations, year, month, day)
+                    return (
+                      <td
+                        key={day}
+                        className={[
+                          'duty-schedule__cell',
+                          isNonWorkingDay(year, month, day) && 'duty-schedule__cell--weekend',
+                          onVacation && 'duty-schedule__cell--vacation',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
+                        <DutyDayCell
+                          day={day}
+                          mark={mark}
+                          isWeekend={isNonWorkingDay(year, month, day)}
+                          onVacation={onVacation}
+                          monthLabel={monthLabel}
+                          employeeName={employee.name}
+                          onToggle={() => onToggleCell(key)}
+                        />
+                      </td>
+                    )
+                  })}
+                </tr>
+              </Fragment>
+            )
+          })}
         </tbody>
       </table>
 
