@@ -5,8 +5,8 @@ import MedicineEditRedirect from './components/MedicineEditRedirect'
 import MedicinesLayout from './components/MedicinesLayout'
 import LoginOverlay from './components/overlays/LoginOverlay'
 import CabinetPage from './pages/CabinetPage'
-import ModulePlaceholderPage from './pages/ModulePlaceholderPage'
 import CaRoutes from './modules/ca/CaRoutes'
+import DutyRoutes from './modules/duty/DutyRoutes'
 import PayRoutes from './modules/pay/PayRoutes'
 import RegisterOverlay from './components/overlays/RegisterOverlay'
 import AuthCallbackPage from './components/AuthCallbackPage'
@@ -22,7 +22,7 @@ export default function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/cabinet/*" element={<CabinetPage />} />
             </Route>
-            <Route path="/duty" element={<ModulePlaceholderPage moduleKey="duty" />} />
+            <Route path="/duty/*" element={<DutyRoutes />} />
             <Route path="/ca/*" element={<CaRoutes />} />
             <Route path="/pay/*" element={<PayRoutes />} />
             <Route element={<MedicinesLayout />}>

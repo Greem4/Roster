@@ -8,7 +8,7 @@ export const ROSTER_MODULES = {
     path: '/duty',
     suffix: 'Duty',
     title: 'RosterDuty',
-    description: 'График дежурств и смен — в разработке.',
+    description: 'График выхода на работу: бригада и телефоны.',
   },
   ca: {
     key: 'ca',

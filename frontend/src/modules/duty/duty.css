@@ -1,0 +1,280 @@
+/* Стили только модуля RosterDuty (префикс duty-). */
+
+.duty-page {
+  --duty-primary: var(--module-duty-text);
+  --duty-primary-soft: color-mix(in srgb, var(--duty-primary) 14%, transparent);
+  --duty-primary-softer: color-mix(in srgb, var(--duty-primary) 7%, transparent);
+  --duty-surface: color-mix(in srgb, var(--duty-primary) 5%, var(--color-surface-raised));
+  --duty-border: color-mix(in srgb, var(--duty-primary) 18%, var(--color-border));
+  --duty-brigade: #2563eb;
+  --duty-brigade-bg: color-mix(in srgb, var(--duty-brigade) 18%, transparent);
+  --duty-phone: #059669;
+  --duty-phone-bg: color-mix(in srgb, var(--duty-phone) 18%, transparent);
+  --duty-weekend: color-mix(in srgb, #22c55e 8%, transparent);
+
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.duty-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.duty-page__title {
+  font-size: 1.25rem;
+}
+
+.duty-page__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.duty-period-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--duty-surface);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-lg);
+}
+
+.duty-period-picker__btn {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.duty-period-picker__btn:hover {
+  color: var(--duty-primary);
+  background: var(--duty-primary-soft);
+}
+
+.duty-period-picker__month {
+  min-width: 7rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.duty-period-picker__year {
+  min-width: 3.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--duty-primary);
+}
+
+.duty-schedule-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+
+.duty-schedule {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.duty-schedule th,
+.duty-schedule td {
+  border: 1px solid var(--color-border);
+  padding: 0;
+  vertical-align: middle;
+}
+
+.duty-schedule__sticky {
+  position: sticky;
+  z-index: 2;
+  background: var(--color-surface-raised);
+}
+
+.duty-schedule__head-num,
+.duty-schedule__num {
+  left: 0;
+  width: 2rem;
+  min-width: 2rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.duty-schedule__head-name,
+.duty-schedule__name {
+  left: 2rem;
+  min-width: 9.5rem;
+  max-width: 9.5rem;
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.duty-schedule__head-role,
+.duty-schedule__role {
+  left: 11.5rem;
+  min-width: 5.5rem;
+  max-width: 5.5rem;
+  padding: 0.35rem 0.4rem;
+  text-align: left;
+  font-size: 0.72rem;
+}
+
+.duty-schedule thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--duty-surface);
+  font-weight: 600;
+}
+
+.duty-schedule__head-num,
+.duty-schedule__head-name,
+.duty-schedule__head-role {
+  z-index: 4;
+}
+
+.duty-schedule__head-day {
+  min-width: 2.1rem;
+  padding: 0.2rem 0.1rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.duty-schedule__head-day--weekend {
+  background: var(--duty-weekend);
+}
+
+.duty-schedule__day-num {
+  display: block;
+  line-height: 1.2;
+}
+
+.duty-schedule__day-week {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.duty-schedule__row--group-start td,
+.duty-schedule__row--group-start th {
+  border-top-width: 2px;
+  border-top-color: color-mix(in srgb, var(--duty-primary) 35%, var(--color-border));
+}
+
+.duty-schedule__row--self .duty-schedule__name {
+  font-weight: 600;
+  color: var(--duty-primary);
+}
+
+.duty-schedule__row--self .duty-schedule__sticky {
+  background: var(--duty-primary-softer);
+}
+
+.duty-schedule__cell--weekend {
+  background: var(--duty-weekend);
+}
+
+.duty-day-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.duty-day-cell:hover {
+  background: var(--duty-primary-soft);
+}
+
+.duty-day-cell--brigade {
+  color: var(--duty-brigade);
+  background: var(--duty-brigade-bg);
+}
+
+.duty-day-cell--phone {
+  color: var(--duty-phone);
+  background: var(--duty-phone-bg);
+}
+
+.duty-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--duty-border);
+  font-size: 0.85rem;
+}
+
+.duty-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.duty-legend__sample {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+}
+
+.duty-legend__sample--brigade {
+  color: var(--duty-brigade);
+  background: var(--duty-brigade-bg);
+}
+
+.duty-legend__sample--phone {
+  color: var(--duty-phone);
+  background: var(--duty-phone-bg);
+}
+
+@media (max-width: 640px) {
+  .duty-schedule__head-name,
+  .duty-schedule__name {
+    min-width: 7.5rem;
+    max-width: 7.5rem;
+    font-size: 0.75rem;
+  }
+
+  .duty-schedule__head-role,
+  .duty-schedule__role {
+    left: 9.5rem;
+    min-width: 4.5rem;
+    max-width: 4.5rem;
+  }
+}
