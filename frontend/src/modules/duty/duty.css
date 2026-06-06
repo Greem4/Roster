@@ -118,6 +118,81 @@
   border-color: var(--duty-border);
 }
 
+.duty-page__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.duty-schedule-view {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.18rem;
+  background: var(--duty-surface);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-lg);
+}
+
+.duty-schedule-view__btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.02rem;
+  min-width: 4.6rem;
+  padding: 0.28rem 0.55rem;
+  font: inherit;
+  line-height: 1.15;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-lg) - 3px);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.duty-schedule-view__label {
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.duty-schedule-view__hint {
+  font-size: 0.58rem;
+  font-weight: 500;
+  opacity: 0.82;
+}
+
+.duty-schedule-view__btn--draft:not(.duty-schedule-view__btn--active) {
+  color: color-mix(in srgb, #d97706 78%, var(--color-text));
+}
+
+.duty-schedule-view__btn--clean:not(.duty-schedule-view__btn--active) {
+  color: color-mix(in srgb, var(--duty-primary) 78%, var(--color-text));
+}
+
+.duty-schedule-view__btn:hover {
+  background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+}
+
+.duty-schedule-view__btn--draft.duty-schedule-view__btn--active {
+  color: #fff;
+  background: linear-gradient(145deg, #f59e0b, #d97706);
+  border-color: color-mix(in srgb, #d97706 75%, #000);
+  box-shadow: 0 2px 10px color-mix(in srgb, #f59e0b 38%, transparent);
+}
+
+.duty-schedule-view__btn--clean.duty-schedule-view__btn--active {
+  color: #fff;
+  background: linear-gradient(145deg, var(--duty-primary), color-mix(in srgb, var(--duty-primary) 72%, #000));
+  border-color: color-mix(in srgb, var(--duty-primary) 75%, #000);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--duty-primary) 35%, transparent);
+}
+
+.duty-schedule-view__btn--active .duty-schedule-view__hint {
+  opacity: 0.92;
+}
+
 .duty-schedule-wrap {
   flex: 1;
   min-height: 0;
@@ -286,6 +361,10 @@
   pointer-events: none;
 }
 
+.duty-schedule__cell--blocked {
+  background: color-mix(in srgb, #dc2626 7%, transparent);
+}
+
 .duty-day-cell {
   display: flex;
   align-items: center;
@@ -317,6 +396,15 @@
 .duty-day-cell--phone {
   color: var(--duty-phone);
   background: var(--duty-phone-bg);
+}
+
+.duty-day-cell--blocked {
+  color: color-mix(in srgb, #dc2626 72%, var(--color-text-muted));
+  font-weight: 500;
+}
+
+.duty-day-cell--blocked:hover {
+  background: color-mix(in srgb, #dc2626 12%, transparent);
 }
 
 .duty-legend {
@@ -370,6 +458,12 @@
   height: 2px;
   background: #dc2626;
   transform: translateY(-50%);
+}
+
+.duty-legend__sample--blocked {
+  color: color-mix(in srgb, #dc2626 75%, var(--color-text-secondary));
+  background: color-mix(in srgb, #dc2626 10%, transparent);
+  font-weight: 500;
 }
 
 .duty-employee-card {
@@ -849,6 +943,55 @@
   background: color-mix(in srgb, var(--color-surface-raised) 55%, transparent);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+}
+
+.duty-month-rules__summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.duty-month-rules__summary-row .duty-month-rules__summary {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.duty-month-rules__scope {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.15rem;
+  padding: 0.1rem;
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.duty-month-rules__scope-btn {
+  padding: 0.18rem 0.38rem;
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.duty-month-rules__scope-btn:hover {
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
+}
+
+.duty-month-rules__scope-btn--active {
+  color: #fff;
+  background: var(--duty-rules-avoid);
+  border-color: color-mix(in srgb, var(--duty-rules-avoid) 80%, #000);
 }
 
 .duty-month-rules__summary {

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import {
+  AVOID_SCOPE_MONTH,
+  AVOID_SCOPE_YEAR,
   formatAvoidRulesSummary,
   formatCanWorkRulesSummary,
 } from '../utils/monthPreferences'
@@ -9,6 +11,11 @@ import DutyAvoidWeekdaysPicker from './DutyAvoidWeekdaysPicker'
 const TABS = [
   { id: 'can', label: 'Ставить смены', hint: 'Отмечайте дни, когда можно ставить смены' },
   { id: 'avoid', label: 'Не ставить смены', hint: 'Отмечайте дни, когда смены ставить нельзя' },
+]
+
+const AVOID_SCOPE_OPTIONS = [
+  { id: AVOID_SCOPE_MONTH, label: 'Только на месяц' },
+  { id: AVOID_SCOPE_YEAR, label: 'На весь год' },
 ]
 
 /**
@@ -21,10 +28,12 @@ export default function DutyMonthRulesPicker({
   canWorkWeekdays,
   avoidDays,
   avoidWeekdays,
+  avoidScope,
   onCanWorkDaysChange,
   onCanWorkWeekdaysChange,
   onAvoidDaysChange,
   onAvoidWeekdaysChange,
+  onAvoidScopeChange,
 }) {
   const [tab, setTab] = useState('can')
 
@@ -115,9 +124,33 @@ export default function DutyMonthRulesPicker({
             </p>
           )}
           {avoidSummary && (
-            <p className="muted duty-month-rules__summary duty-month-rules__summary--avoid">
-              Не ставить: {avoidSummary}
-            </p>
+            <div className="duty-month-rules__summary-row">
+              <p className="muted duty-month-rules__summary duty-month-rules__summary--avoid">
+                Не ставить: {avoidSummary}
+              </p>
+              <div
+                className="duty-month-rules__scope"
+                role="group"
+                aria-label="Срок действия правил «не ставить»"
+              >
+                {AVOID_SCOPE_OPTIONS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={[
+                      'duty-month-rules__scope-btn',
+                      avoidScope === id && 'duty-month-rules__scope-btn--active',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    aria-pressed={avoidScope === id}
+                    onClick={() => onAvoidScopeChange(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}

@@ -1,5 +1,11 @@
 import { WEEKDAY_LABELS } from '../constants/months'
-import { weekdayIndex } from './scheduleDays'
+import { daysInMonth, weekdayIndex } from './scheduleDays'
+
+/** Правила «не ставить» действуют только на выбранный месяц. */
+export const AVOID_SCOPE_MONTH = 'month'
+
+/** Правила «не ставить» копируются на все месяцы года. */
+export const AVOID_SCOPE_YEAR = 'year'
 
 /** Ключ месяца для хранения пожеланий: YYYY-MM. */
 export function monthKey(year, month) {
@@ -14,6 +20,7 @@ export function emptyMonthPreferences() {
     canWorkWeekdays: [],
     avoidDays: [],
     avoidWeekdays: [],
+    avoidScope: AVOID_SCOPE_MONTH,
   }
 }
 
@@ -134,6 +141,7 @@ export function normalizePreferencesStorage(raw) {
         canWorkWeekdays: normalizeAvoidWeekdays(value?.canWorkWeekdays),
         avoidDays: normalizeAvoidDays(value?.avoidDays),
         avoidWeekdays: normalizeAvoidWeekdays(value?.avoidWeekdays),
+        avoidScope: value?.avoidScope === AVOID_SCOPE_YEAR ? AVOID_SCOPE_YEAR : AVOID_SCOPE_MONTH,
       }
     }
   }
@@ -153,24 +161,58 @@ export function getMonthPreferences(preferences, year, month, maxDay = 31) {
     canWorkWeekdays: normalizeAvoidWeekdays(stored.canWorkWeekdays),
     avoidDays: normalizeAvoidDays(stored.avoidDays, maxDay),
     avoidWeekdays: normalizeAvoidWeekdays(stored.avoidWeekdays),
+    avoidScope: stored.avoidScope === AVOID_SCOPE_YEAR ? AVOID_SCOPE_YEAR : AVOID_SCOPE_MONTH,
   }
 }
 
-/** Обновляет пожелания выбранного месяца для PATCH API. */
-export function patchMonthPreferences(preferences, year, month, monthPrefs, maxDay = 31) {
-  const key = monthKey(year, month)
+/** Одна запись пожеланий для API. */
+function buildMonthPreferenceEntry(monthPrefs, maxDay) {
   return {
-    months: {
-      ...(preferences?.months || {}),
-      [key]: {
-        canWork: monthPrefs.canWork || '',
-        canWorkDays: normalizeAvoidDays(monthPrefs.canWorkDays, maxDay),
-        canWorkWeekdays: normalizeAvoidWeekdays(monthPrefs.canWorkWeekdays),
-        avoidDays: normalizeAvoidDays(monthPrefs.avoidDays, maxDay),
-        avoidWeekdays: normalizeAvoidWeekdays(monthPrefs.avoidWeekdays),
-      },
-    },
+    canWork: monthPrefs.canWork || '',
+    canWorkDays: normalizeAvoidDays(monthPrefs.canWorkDays, maxDay),
+    canWorkWeekdays: normalizeAvoidWeekdays(monthPrefs.canWorkWeekdays),
+    avoidDays: normalizeAvoidDays(monthPrefs.avoidDays, maxDay),
+    avoidWeekdays: normalizeAvoidWeekdays(monthPrefs.avoidWeekdays),
+    avoidScope: monthPrefs.avoidScope === AVOID_SCOPE_YEAR ? AVOID_SCOPE_YEAR : AVOID_SCOPE_MONTH,
   }
+}
+
+/**
+ * Обновляет пожелания для PATCH API.
+ * При avoidScope «год» правила «не ставить» копируются на все месяцы года.
+ */
+export function patchMonthPreferences(preferences, year, month, monthPrefs, maxDay = 31) {
+  const months = { ...(preferences?.months || {}) }
+
+  if (monthPrefs.avoidScope === AVOID_SCOPE_YEAR) {
+    const avoidWeekdays = normalizeAvoidWeekdays(monthPrefs.avoidWeekdays)
+    const avoidDays = normalizeAvoidDays(monthPrefs.avoidDays, maxDay)
+
+    for (let m = 1; m <= 12; m += 1) {
+      const key = monthKey(year, m)
+      const monthMaxDay = daysInMonth(year, m)
+      const existing = months[key] || {}
+      months[key] = {
+        ...existing,
+        avoidWeekdays,
+        avoidDays: normalizeAvoidDays(avoidDays, monthMaxDay),
+        avoidScope: AVOID_SCOPE_YEAR,
+        ...(m === month
+          ? {
+            canWork: monthPrefs.canWork || '',
+            canWorkDays: normalizeAvoidDays(monthPrefs.canWorkDays, monthMaxDay),
+            canWorkWeekdays: normalizeAvoidWeekdays(monthPrefs.canWorkWeekdays),
+          }
+          : {}),
+      }
+    }
+
+    return { months }
+  }
+
+  const key = monthKey(year, month)
+  months[key] = buildMonthPreferenceEntry(monthPrefs, maxDay)
+  return { months }
 }
 
 /**

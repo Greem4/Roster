@@ -158,10 +158,12 @@ export default function DutyEmployeeCardModal({
               canWorkWeekdays={monthPrefs.canWorkWeekdays}
               avoidDays={monthPrefs.avoidDays}
               avoidWeekdays={monthPrefs.avoidWeekdays}
+              avoidScope={monthPrefs.avoidScope}
               onCanWorkDaysChange={(canWorkDays) => setMonthPrefs((prev) => ({ ...prev, canWorkDays }))}
               onCanWorkWeekdaysChange={(canWorkWeekdays) => setMonthPrefs((prev) => ({ ...prev, canWorkWeekdays }))}
               onAvoidDaysChange={(avoidDays) => setMonthPrefs((prev) => ({ ...prev, avoidDays }))}
               onAvoidWeekdaysChange={(avoidWeekdays) => setMonthPrefs((prev) => ({ ...prev, avoidWeekdays }))}
+              onAvoidScopeChange={(avoidScope) => setMonthPrefs((prev) => ({ ...prev, avoidScope }))}
             />
           </section>
 

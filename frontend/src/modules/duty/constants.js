@@ -10,6 +10,15 @@ export const DUTY_MARK_PHONE = 'О'
 /** Цикл переключения ячейки при клике. */
 export const DUTY_MARK_CYCLE = ['', DUTY_MARK_BRIGADE, DUTY_MARK_PHONE]
 
+/** Черновик графика: видны прочерки в дни, когда сотрудник не может работать. */
+export const SCHEDULE_VIEW_DRAFT = 'draft'
+
+/** Чистовой график: только назначенные смены, без прочерков. */
+export const SCHEDULE_VIEW_CLEAN = 'clean'
+
+/** Прочерк в ячейке «нельзя ставить смену». */
+export const DUTY_MARK_BLOCKED = '—'
+
 /** Четыре должности в графике ОСМП (медсестра, медбрат и фельдшер — одна логика смен). */
 export const DUTY_TITLES = [
   { value: 'doctor', label: 'Врач' },
