@@ -40,12 +40,10 @@ export default function DutyPage() {
 
   return (
     <div className="duty-page">
-      <header className="duty-page__header roster-page-toolbar">
+      <header className="duty-page__header">
         <div className="duty-page__intro">
           <RosterModuleTitle moduleKey="duty" as="h1" className="duty-page__title" />
-          <p className="duty-page__subtitle muted">
-            График выхода на работу · ОСМП
-          </p>
+          <p className="duty-page__subtitle muted">График выхода · ОСМП</p>
         </div>
         <MonthYearPicker
           year={year}
@@ -55,12 +53,14 @@ export default function DutyPage() {
         />
       </header>
 
-      <DutyScheduleGrid
-        year={year}
-        month={month}
-        marks={marks}
-        onToggleCell={onToggleCell}
-      />
+      <div className="duty-page__body">
+        <DutyScheduleGrid
+          year={year}
+          month={month}
+          marks={marks}
+          onToggleCell={onToggleCell}
+        />
+      </div>
     </div>
   )
 }

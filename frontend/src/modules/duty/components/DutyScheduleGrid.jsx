@@ -1,4 +1,4 @@
-import { DUTY_EMPLOYEES, DUTY_MARK_BRIGADE, DUTY_MARK_PHONE, DUTY_ROLE_LABELS } from '../constants'
+import { DUTY_EMPLOYEES, DUTY_MARK_BRIGADE, DUTY_MARK_PHONE } from '../constants'
 import { MONTH_NAMES } from '../constants/months'
 import { cellKey, daysInMonth, isWeekend, weekdayLabel } from '../utils/scheduleDays'
 import DutyDayCell from './DutyDayCell'
@@ -13,17 +13,21 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
 
   return (
     <div className="duty-schedule-wrap">
-      <table className="duty-schedule" aria-label={`График за ${monthLabel} ${year}`}>
+      <table
+        className="duty-schedule"
+        style={{ '--duty-days': dayCount }}
+        aria-label={`График за ${monthLabel} ${year}`}
+      >
+        <colgroup>
+          <col className="duty-schedule__col-name" />
+          {days.map((day) => (
+            <col key={day} className="duty-schedule__col-day" />
+          ))}
+        </colgroup>
         <thead>
           <tr>
-            <th className="duty-schedule__sticky duty-schedule__head-num" scope="col">
-              №
-            </th>
             <th className="duty-schedule__sticky duty-schedule__head-name" scope="col">
-              Фамилия, И. О.
-            </th>
-            <th className="duty-schedule__sticky duty-schedule__head-role" scope="col">
-              Должность
+              ФИО
             </th>
             {days.map((day) => (
               <th
@@ -51,17 +55,14 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
               className={[
                 'duty-schedule__row',
                 employee.isSelf && 'duty-schedule__row--self',
-                employee.role === 'doctor' && index === 0 && 'duty-schedule__row--group-start',
-                employee.role === 'nurse' && employee.id === 6 && 'duty-schedule__row--group-start',
-                employee.role === 'paramedic' && 'duty-schedule__row--group-start',
+                index === 5 && 'duty-schedule__row--group-start',
               ]
                 .filter(Boolean)
                 .join(' ')}
             >
-              <td className="duty-schedule__sticky duty-schedule__num">{index + 1}</td>
-              <td className="duty-schedule__sticky duty-schedule__name">{employee.name}</td>
-              <td className="duty-schedule__sticky duty-schedule__role muted">
-                {DUTY_ROLE_LABELS[employee.role]}
+              <td className="duty-schedule__sticky duty-schedule__name">
+                <span className="duty-schedule__num">{index + 1}</span>
+                {employee.name}
               </td>
               {days.map((day) => {
                 const key = cellKey(employee.id, year, month, day)

@@ -465,6 +465,17 @@ a:hover {
   max-width: 1100px;
 }
 
+/* График Duty: весь месяц в ширину окна, минимум отступов сверху. */
+.app-main:has(.duty-page) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  padding: 0.5rem max(0.75rem, env(safe-area-inset-right, 0px)) 0.65rem
+    max(0.75rem, env(safe-area-inset-left, 0px));
+}
+
 .nav a.nav-link--active {
   color: var(--color-accent-text);
 }
