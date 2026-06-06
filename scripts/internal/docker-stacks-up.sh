@@ -30,7 +30,6 @@ fi
 stacks=(
   "${HOME}/Roster"
   "${HOME}/server"
-  "${HOME}/singbox"
 )
 
 for dir in "${stacks[@]}"; do

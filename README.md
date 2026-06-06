@@ -115,13 +115,12 @@ ssh roster-pi-remote 'hostname'
 | **B3 (Pi)** | дома | PostgreSQL, API, Caddy, статика — **все данные** |
 | **Mac** | dev | Туннель к API/БД на Pi; на прод не участвует |
 
-На Pi **три Docker Compose** (все с `restart: unless-stopped`):
+На Pi **два Docker Compose** (все с `restart: unless-stopped`):
 
 | Каталог | Сервисы |
 |---------|---------|
 | `~/Roster` | `db`, `api` |
 | `~/server` | `caddy` (:80 — то, что видит туннель) |
-| `~/singbox` | `sing-box` (VPN, `network_mode: host`) |
 
 **Важно:**
 
@@ -167,7 +166,7 @@ ssh roster-pi-remote 'hostname'
 | Установка с Mac | `./scripts/setup/docker-autostart.sh` |
 | Опционально systemd | `scripts/internal/docker-stacks.service` |
 
-После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/Roster`, `~/server`, `~/singbox`.
+После загрузки Pi: `docker.service` поднимает контейнеры с `unless-stopped`; через ~45 с crontab ещё раз вызывает `docker compose up -d` для `~/Roster`, `~/server`.
 
 Конфиги туннеля и nginx на VPS **вне этого git-репозитория** — на машинах; здесь только приложение Roster.
 

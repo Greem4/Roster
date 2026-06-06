@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Modal from '../../../components/Modal'
 import { formatDate } from '../../../utils/formatDate'
 import { getDutyTitleLabel } from '../constants'
-import { emptyPreferences, emptyVacation, formatAgeLabel } from '../utils/employeeStorage'
+import { emptyPreferences, emptyVacation } from '../utils/employeeStorage'
 
 /** Есть хотя бы один указанный интервал отпуска. */
 function hasVacationDates(vacations) {
@@ -18,8 +18,7 @@ function formatVacationRange(vacation) {
 }
 
 /**
- * Карточка сотрудника на графике: краткий профиль (только просмотр),
- * пожелания на месяц и отпуска.
+ * Карточка сотрудника на графике: должность (просмотр), пожелания и отпуска.
  */
 export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
   const canWorkRef = useRef(null)
@@ -75,9 +74,6 @@ export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
     .filter(Boolean)
     .join(' · ')
 
-  const genderLabel = employee.gender === 'M' ? 'М' : employee.gender === 'F' ? 'Ж' : null
-  const ageLabel = formatAgeLabel(employee.age)
-
   return (
     <Modal title={employee.name} onClose={onClose} size="wide">
       <form className="duty-employee-card" onSubmit={handleSubmit}>
@@ -85,25 +81,6 @@ export default function DutyEmployeeCardModal({ employee, onClose, onSave }) {
           <span className="duty-employee-card__role duty-employee-card__role--active">
             {getDutyTitleLabel(employee.title)}
           </span>
-          {genderLabel && (
-            <>
-              <span className="duty-employee-card__profile-sep" aria-hidden>
-                ·
-              </span>
-              <span className="duty-employee-card__profile-gender">{genderLabel}</span>
-            </>
-          )}
-          {employee.birthDate && (
-            <>
-              <span className="duty-employee-card__profile-sep" aria-hidden>
-                ·
-              </span>
-              <span className="duty-employee-card__profile-gender">
-                {formatDate(employee.birthDate)}
-                {ageLabel ? ` (${ageLabel})` : ''}
-              </span>
-            </>
-          )}
         </div>
 
         <section className="duty-employee-card__section duty-employee-card__section--primary">
