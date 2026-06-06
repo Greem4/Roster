@@ -12,10 +12,10 @@ const currentMonth = () => new Date().getMonth() + 1
 
 /**
  * RosterDuty: шаблон графика выхода на работу (сетка сотрудники × дни).
- * Метки смен — в памяти; карточки сотрудников — в localStorage.
+ * Метки смен — в памяти; профили сотрудников — API /duty.
  */
 export default function DutyPage() {
-  const { employees, updateEmployee } = useDutyEmployees()
+  const { employees, loading, error, updateEmployee } = useDutyEmployees()
   const [period, setPeriod] = useState(() => ({
     year: currentYear(),
     month: currentMonth(),
@@ -61,8 +61,8 @@ export default function DutyPage() {
     })
   }, [])
 
-  const onSaveEmployee = useCallback((id, patch) => {
-    updateEmployee(id, patch)
+  const onSaveEmployee = useCallback(async (id, patch) => {
+    await updateEmployee(id, patch)
   }, [updateEmployee])
 
   return (
@@ -81,6 +81,9 @@ export default function DutyPage() {
       </header>
 
       <div className="duty-page__body">
+        {loading && <p className="muted duty-page__status">Загрузка справочника…</p>}
+        {error && <p className="error duty-page__status">{error}</p>}
+        {!loading && !error && (
         <DutyScheduleGrid
           year={year}
           month={month}
@@ -89,6 +92,7 @@ export default function DutyPage() {
           onToggleCell={onToggleCell}
           onOpenEmployee={setCardEmployeeId}
         />
+        )}
       </div>
 
       {cardEmployee && (

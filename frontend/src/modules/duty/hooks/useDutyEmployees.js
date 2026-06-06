@@ -1,86 +1,61 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  loadEmployees,
-  nextEmployeeId,
-  normalizeEmployee,
-  saveEmployees,
-  seedEmployees,
-} from '../utils/employeeStorage'
+import { dutyApi } from '../api'
+import { normalizeEmployee } from '../utils/employeeStorage'
 
 /**
- * Справочник сотрудников ОСМП с сохранением в localStorage.
+ * Справочник сотрудников ОСМП — загрузка и изменения через API (/duty).
  */
 export function useDutyEmployees() {
-  const [employees, setEmployeesState] = useState(loadEmployees)
+  const [employees, setEmployeesState] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const persist = useCallback((next) => {
-    const normalized = next.map(normalizeEmployee)
-    saveEmployees(normalized)
-    setEmployeesState(normalized)
-    return normalized
+  const reload = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const rows = await dutyApi.listEmployees()
+      setEmployeesState(rows.map(normalizeEmployee))
+    } catch (err) {
+      setError(err.message || 'Не удалось загрузить справочник ОСМП')
+      setEmployeesState([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
-    const reload = () => setEmployeesState(loadEmployees())
-    const onStorage = (event) => {
-      if (event.key === null || event.key.includes('roster-duty-employees')) {
-        reload()
-      }
-    }
-    window.addEventListener('storage', onStorage)
-    window.addEventListener('duty-employees-changed', reload)
-    return () => {
-      window.removeEventListener('storage', onStorage)
-      window.removeEventListener('duty-employees-changed', reload)
-    }
+    reload()
+  }, [reload])
+
+  const updateEmployee = useCallback(async (id, patch) => {
+    const updated = await dutyApi.patchEmployee(id, patch)
+    const normalized = normalizeEmployee(updated)
+    setEmployeesState((prev) => prev.map((employee) => (
+      employee.id === id ? normalized : employee
+    )))
+    return normalized
   }, [])
 
-  const updateEmployee = useCallback((id, patch) => {
-    setEmployeesState((prev) => {
-      const next = prev.map((employee) => (
-        employee.id === id ? normalizeEmployee({ ...employee, ...patch }) : employee
-      ))
-      saveEmployees(next)
-      return next
-    })
+  const addEmployee = useCallback(async ({ name, title, gender }) => {
+    const created = await dutyApi.createEmployee({ name, title, gender: gender || null })
+    const normalized = normalizeEmployee(created)
+    setEmployeesState((prev) => [...prev, normalized])
+    return normalized
   }, [])
 
-  const addEmployee = useCallback(({ name, role, gender }) => {
-    let created = null
-    setEmployeesState((prev) => {
-      const next = [
-        ...prev,
-        normalizeEmployee({
-          id: nextEmployeeId(prev),
-          name,
-          role,
-          gender,
-        }),
-      ]
-      saveEmployees(next)
-      created = next[next.length - 1]
-      return next
-    })
-    return created
+  const removeEmployee = useCallback(async (id) => {
+    await dutyApi.deleteEmployee(id)
+    setEmployeesState((prev) => prev.filter((employee) => employee.id !== id))
   }, [])
-
-  const removeEmployee = useCallback((id) => {
-    setEmployeesState((prev) => {
-      const next = prev.filter((employee) => employee.id !== id)
-      saveEmployees(next)
-      return next
-    })
-  }, [])
-
-  const resetToSeed = useCallback(() => {
-    persist(seedEmployees())
-  }, [persist])
 
   return {
     employees,
+    loading,
+    error,
+    reload,
     updateEmployee,
     addEmployee,
     removeEmployee,
-    resetToSeed,
   }
 }

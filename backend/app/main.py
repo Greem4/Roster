@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import alerts, auth, health, medicines, pay, users
+from app.api import alerts, auth, duty, health, medicines, pay, users
 from app.config import get_settings
 
 app = FastAPI(title="Roster API")
@@ -23,3 +23,5 @@ app.include_router(alerts.router)
 app.include_router(users.router)
 # RosterPay
 app.include_router(pay.router)
+# RosterDuty
+app.include_router(duty.router)

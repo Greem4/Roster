@@ -364,57 +364,264 @@
 .duty-employee-card {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.1rem;
 }
 
-.duty-employee-card__meta {
+.duty-employee-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
   margin-top: -0.25rem;
 }
 
-.duty-employee-card__role {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
+.duty-employee-card__badges-hint {
+  margin: -0.55rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.duty-employee-card__badges-hint a {
+  color: inherit;
+}
+
+.duty-title-picker {
+  display: inline-flex;
+}
+
+.duty-title-picker__current {
+  cursor: pointer;
+}
+
+.duty-osmp-settings__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.duty-osmp-settings__label {
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.duty-osmp-settings__hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.duty-osmp-settings__picker-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.duty-osmp-settings__saved {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.duty-employee-card__profile-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  margin-top: -0.25rem;
+}
+
+.duty-employee-card__profile-sep,
+.duty-employee-card__profile-gender {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.duty-employee-card__profile-edit {
+  margin-left: auto;
+  padding: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.duty-employee-card__profile-edit:hover {
+  color: var(--color-text);
+}
+
+.duty-employee-card__profile--edit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--duty-primary-softer);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-md);
+}
+
+.duty-employee-card__profile-lead {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.duty-employee-card__profile-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.duty-employee-card__profile-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.duty-employee-card__profile-error {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.duty-employee-card__profile-done {
+  align-self: flex-start;
+  padding: 0.35rem 0.65rem;
+  font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--duty-primary);
   background: var(--duty-primary-soft);
-  border-radius: var(--radius-sm);
-}
-
-.duty-employee-card__fieldset {
-  margin: 0;
-  padding: 0;
   border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
 }
 
-.duty-employee-card__fieldset legend {
-  margin-bottom: 0.45rem;
-  font-size: 0.82rem;
+.duty-employee-card__profile-done:hover {
+  opacity: 0.9;
+}
+
+.duty-employee-card__roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.duty-employee-card__role {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  font: inherit;
+  font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1.3;
+  color: var(--duty-primary);
+  background: var(--duty-primary-soft);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.duty-employee-card__role:hover {
+  opacity: 0.85;
+}
+
+.duty-employee-card__role--active {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--duty-primary) 45%, transparent);
+}
+
+.duty-employee-card__role-switch {
+  padding: 0.15rem 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.duty-employee-card__role-switch:hover {
+  color: var(--color-text);
+}
+
+.duty-employee-card__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.duty-employee-card__section--primary {
+  padding: 0.85rem 0.95rem;
+  background: var(--duty-surface);
+  border: 1px solid var(--duty-border);
+  border-radius: var(--radius-md);
+}
+
+.duty-employee-card__section-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .duty-employee-card__hint {
-  margin: 0 0 0.5rem;
+  margin: -0.15rem 0 0.15rem;
   font-size: 0.78rem;
+  line-height: 1.35;
 }
 
-.duty-employee-card__radios,
+.duty-employee-card__details {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface-raised) 60%, transparent);
+}
+
+.duty-employee-card__details-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.65rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.duty-employee-card__details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.duty-employee-card__details-title {
+  font-weight: 600;
+}
+
+.duty-employee-card__details-meta {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.duty-employee-card__details-body {
+  padding: 0 0.85rem 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
 .duty-employee-card__vacation-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem 1rem;
-}
-
-.duty-employee-card__radio {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  cursor: pointer;
-}
-
-.duty-employee-card__vacation-row {
-  margin-bottom: 0.5rem;
+  margin-top: 0.65rem;
 }
 
 .duty-employee-card__vacation-label {
@@ -431,9 +638,19 @@
   font-size: 0.82rem;
 }
 
+.duty-employee-card__section--primary textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
 .duty-employee-card input[type='date'],
 .duty-employee-card textarea {
   font: inherit;
+}
+
+.duty-staff-form__role-hint {
+  margin: -0.35rem 0 0;
+  font-size: 0.82rem;
 }
 
 @media (max-width: 720px) {

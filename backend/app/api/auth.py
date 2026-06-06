@@ -315,4 +315,5 @@ def me(
         has_password=bool(user.password_hash),
         can_promote_founder=can_promote_founder(user, has_founder),
         permissions=[p.code for p in user.permissions],
+        duty_employee_id=user.duty_employee_id,
     )
