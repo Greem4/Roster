@@ -28,7 +28,7 @@ export const DUTY_EMPLOYEES = [
   { id: 4, name: 'Красницкий Я.И.', role: 'doctor' },
   { id: 5, name: 'Яшин В.А.', role: 'doctor' },
   { id: 6, name: 'Белялов С.В.', role: 'nurse' },
-  { id: 7, name: 'Зеленкин С.Е.', role: 'paramedic', isSelf: true },
+  { id: 7, name: 'Зеленкин С.Е.', role: 'paramedic' },
   { id: 8, name: 'Иванова Е.С.', role: 'nurse' },
   { id: 9, name: 'Кочулаева Н.Е.', role: 'nurse' },
   { id: 10, name: 'Левина Л.Г.', role: 'nurse' },

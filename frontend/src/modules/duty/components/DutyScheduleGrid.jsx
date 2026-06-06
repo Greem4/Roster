@@ -54,7 +54,6 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
               key={employee.id}
               className={[
                 'duty-schedule__row',
-                employee.isSelf && 'duty-schedule__row--self',
                 index === 5 && 'duty-schedule__row--group-start',
               ]
                 .filter(Boolean)

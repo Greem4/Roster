@@ -213,15 +213,6 @@
   border-top-color: color-mix(in srgb, var(--duty-primary) 45%, var(--color-border));
 }
 
-.duty-schedule__row--self .duty-schedule__name {
-  font-weight: 600;
-  color: var(--duty-primary);
-}
-
-.duty-schedule__row--self .duty-schedule__sticky {
-  background: var(--duty-primary-softer);
-}
-
 .duty-schedule__cell--weekend {
   background: var(--duty-weekend);
 }
