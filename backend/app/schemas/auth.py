@@ -35,5 +35,6 @@ class UserMeResponse(BaseModel):
     has_password: bool
     can_promote_founder: bool
     permissions: list[str]
+    duty_employee_id: int | None = None
 
     model_config = {"from_attributes": True}

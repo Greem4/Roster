@@ -1,15 +1,36 @@
-import { DUTY_EMPLOYEES, DUTY_MARK_BRIGADE, DUTY_MARK_PHONE } from '../constants'
+import { Fragment } from 'react'
+import { DUTY_MARK_BLOCKED, DUTY_MARK_BRIGADE, DUTY_MARK_PHONE, SCHEDULE_VIEW_DRAFT } from '../constants'
 import { MONTH_NAMES } from '../constants/months'
-import { cellKey, daysInMonth, isWeekend, weekdayLabel } from '../utils/scheduleDays'
+import { resolveAvoidDaysForSchedule } from '../utils/monthPreferences'
+import { cellKey, daysInMonth, isNonWorkingDay, weekdayLabel } from '../utils/scheduleDays'
+import { isDayInVacation } from '../utils/vacationDays'
 import DutyDayCell from './DutyDayCell'
+
+/**
+ * Индекс первой строки после блока врачей (разделитель в таблице).
+ */
+function firstNonDoctorIndex(employees) {
+  const index = employees.findIndex((employee) => employee.role !== 'doctor')
+  return index === -1 ? employees.length : index
+}
 
 /**
  * Таблица графика: строки — сотрудники, столбцы — дни месяца.
  */
-export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
+export default function DutyScheduleGrid({
+  year,
+  month,
+  marks,
+  employees,
+  scheduleView,
+  onToggleCell,
+  onOpenEmployee,
+}) {
   const dayCount = daysInMonth(year, month)
   const days = Array.from({ length: dayCount }, (_, index) => index + 1)
   const monthLabel = MONTH_NAMES[month - 1]
+  const groupStartIndex = firstNonDoctorIndex(employees)
+  const showRestrictions = scheduleView === SCHEDULE_VIEW_DRAFT
 
   return (
     <div className="duty-schedule-wrap">
@@ -34,7 +55,7 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
                 key={day}
                 className={[
                   'duty-schedule__head-day',
-                  isWeekend(year, month, day) && 'duty-schedule__head-day--weekend',
+                  isNonWorkingDay(year, month, day) && 'duty-schedule__head-day--weekend',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -49,46 +70,66 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
           </tr>
         </thead>
         <tbody>
-          {DUTY_EMPLOYEES.map((employee, index) => (
-            <tr
-              key={employee.id}
-              className={[
-                'duty-schedule__row',
-                index === 5 && 'duty-schedule__row--group-start',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <td className="duty-schedule__sticky duty-schedule__name">
-                <span className="duty-schedule__num">{index + 1}</span>
-                {employee.name}
-              </td>
-              {days.map((day) => {
-                const key = cellKey(employee.id, year, month, day)
-                const mark = marks[key] || ''
-                return (
-                  <td
-                    key={day}
-                    className={[
-                      'duty-schedule__cell',
-                      isWeekend(year, month, day) && 'duty-schedule__cell--weekend',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  >
-                    <DutyDayCell
-                      day={day}
-                      mark={mark}
-                      isWeekend={isWeekend(year, month, day)}
-                      monthLabel={monthLabel}
-                      employeeName={employee.name}
-                      onToggle={() => onToggleCell(key)}
-                    />
+          {employees.map((employee, index) => {
+            const showGroupDivider = index === groupStartIndex && groupStartIndex > 0
+            const blockedDays = new Set(
+              resolveAvoidDaysForSchedule(employee.preferences, year, month, dayCount),
+            )
+
+            return (
+              <Fragment key={employee.id}>
+                {showGroupDivider && (
+                  <tr className="duty-schedule__group-divider" aria-hidden="true">
+                    <td colSpan={dayCount + 1} />
+                  </tr>
+                )}
+                <tr className="duty-schedule__row">
+                  <td className="duty-schedule__sticky duty-schedule__name">
+                    <span className="duty-schedule__num">{index + 1}</span>
+                    <button
+                      type="button"
+                      className="duty-schedule__name-btn"
+                      onClick={() => onOpenEmployee(employee.id)}
+                      title="Карточка сотрудника"
+                    >
+                      {employee.name}
+                    </button>
                   </td>
-                )
-              })}
-            </tr>
-          ))}
+                  {days.map((day) => {
+                    const key = cellKey(employee.id, year, month, day)
+                    const mark = marks[key] || ''
+                    const onVacation = isDayInVacation(employee.vacations, year, month, day)
+                    const isBlocked = blockedDays.has(day)
+                    return (
+                      <td
+                        key={day}
+                        className={[
+                          'duty-schedule__cell',
+                          isNonWorkingDay(year, month, day) && 'duty-schedule__cell--weekend',
+                          onVacation && 'duty-schedule__cell--vacation',
+                          showRestrictions && isBlocked && !mark && !onVacation && 'duty-schedule__cell--blocked',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
+                        <DutyDayCell
+                          day={day}
+                          mark={mark}
+                          isWeekend={isNonWorkingDay(year, month, day)}
+                          onVacation={onVacation}
+                          isBlocked={isBlocked}
+                          showRestrictions={showRestrictions}
+                          monthLabel={monthLabel}
+                          employeeName={employee.name}
+                          onToggle={() => onToggleCell(key)}
+                        />
+                      </td>
+                    )
+                  })}
+                </tr>
+              </Fragment>
+            )
+          })}
         </tbody>
       </table>
 
@@ -101,8 +142,16 @@ export default function DutyScheduleGrid({ year, month, marks, onToggleCell }) {
           <span className="duty-legend__sample duty-legend__sample--phone">{DUTY_MARK_PHONE}</span>
           телефоны
         </span>
+        <span className="duty-legend__item">
+          <span className="duty-legend__sample duty-legend__sample--vacation" aria-hidden />
+          отпуск
+        </span>
+        <span className="duty-legend__item">
+          <span className="duty-legend__sample duty-legend__sample--blocked">{DUTY_MARK_BLOCKED}</span>
+          нельзя ставить
+        </span>
         <span className="duty-legend__item muted">
-          клик по ячейке: пусто → Б → О → пусто
+          клик по ячейке: пусто → Б → О → пусто · по ФИО — карточка
         </span>
       </div>
     </div>

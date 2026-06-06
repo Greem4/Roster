@@ -32,6 +32,12 @@ class User(Base):
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_founder: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    duty_employee_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("duty_employees.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

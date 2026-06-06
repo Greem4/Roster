@@ -1,7 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import RosterModuleTitle from '../../../components/RosterModuleTitle'
+import DutyEmployeeCardModal from '../components/DutyEmployeeCardModal'
 import DutyScheduleGrid from '../components/DutyScheduleGrid'
+import DutyScheduleViewPicker from '../components/DutyScheduleViewPicker'
 import MonthYearPicker from '../components/MonthYearPicker'
+import { SCHEDULE_VIEW_DRAFT } from '../constants'
+import { useDutyEmployees } from '../hooks/useDutyEmployees'
 import { nextMark } from '../utils/scheduleDays'
 import '../duty.css'
 
@@ -10,15 +14,23 @@ const currentMonth = () => new Date().getMonth() + 1
 
 /**
  * RosterDuty: шаблон графика выхода на работу (сетка сотрудники × дни).
- * Данные пока только в памяти браузера.
+ * Метки смен — в памяти; профили сотрудников — API /duty.
  */
 export default function DutyPage() {
+  const { employees, loading, error, updateEmployee } = useDutyEmployees()
   const [period, setPeriod] = useState(() => ({
     year: currentYear(),
     month: currentMonth(),
   }))
   const { year, month } = period
   const [marks, setMarks] = useState({})
+  const [scheduleView, setScheduleView] = useState(SCHEDULE_VIEW_DRAFT)
+  const [cardEmployeeId, setCardEmployeeId] = useState(null)
+
+  const cardEmployee = useMemo(
+    () => employees.find((employee) => employee.id === cardEmployeeId) || null,
+    [employees, cardEmployeeId],
+  )
 
   const onMonthStep = (delta) => {
     setPeriod(({ year, month }) => {
@@ -52,6 +64,10 @@ export default function DutyPage() {
     })
   }, [])
 
+  const onSaveEmployee = useCallback(async (id, patch) => {
+    await updateEmployee(id, patch)
+  }, [updateEmployee])
+
   return (
     <div className="duty-page">
       <header className="duty-page__header">
@@ -59,22 +75,45 @@ export default function DutyPage() {
           <RosterModuleTitle moduleKey="duty" as="h1" className="duty-page__title" />
           <p className="duty-page__subtitle muted">График выхода · ОСМП</p>
         </div>
-        <MonthYearPicker
-          year={year}
-          month={month}
-          onMonthStep={onMonthStep}
-          onYearChange={onYearChange}
-        />
+        <div className="duty-page__toolbar">
+          <MonthYearPicker
+            year={year}
+            month={month}
+            onMonthStep={onMonthStep}
+            onYearChange={onYearChange}
+          />
+          <DutyScheduleViewPicker
+            value={scheduleView}
+            onChange={setScheduleView}
+          />
+        </div>
       </header>
 
       <div className="duty-page__body">
+        {loading && <p className="muted duty-page__status">Загрузка справочника…</p>}
+        {error && <p className="error duty-page__status">{error}</p>}
+        {!loading && !error && (
         <DutyScheduleGrid
           year={year}
           month={month}
           marks={marks}
+          employees={employees}
+          scheduleView={scheduleView}
           onToggleCell={onToggleCell}
+          onOpenEmployee={setCardEmployeeId}
         />
+        )}
       </div>
+
+      {cardEmployee && (
+        <DutyEmployeeCardModal
+          employee={cardEmployee}
+          year={year}
+          month={month}
+          onClose={() => setCardEmployeeId(null)}
+          onSave={onSaveEmployee}
+        />
+      )}
     </div>
   )
 }

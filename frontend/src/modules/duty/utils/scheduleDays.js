@@ -1,3 +1,4 @@
+import { isRussianNonWorkingDay } from '../../../constants/russianHolidays'
 import { WEEKDAY_LABELS } from '../constants/months'
 
 /**
@@ -26,6 +27,14 @@ export function weekdayLabel(year, month, day) {
 export function isWeekend(year, month, day) {
   const index = weekdayIndex(year, month, day)
   return index >= 5
+}
+
+/**
+ * Нерабочий день: выходные, праздники РФ и переносы по производственному календарю.
+ */
+export function isNonWorkingDay(year, month, day) {
+  const index = weekdayIndex(year, month, day)
+  return isRussianNonWorkingDay(year, month, day, index)
 }
 
 /**
