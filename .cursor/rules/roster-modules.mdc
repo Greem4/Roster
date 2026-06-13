@@ -44,7 +44,7 @@ Legacy: `/medicines` → редирект на `/rx` (см. `App.jsx`, `LegacyMe
 
 ## Деплой
 
-- Pay/RX на backend = тот же контейнер `api` → после правок `backend/` запускать `./scripts/deploy-backend.sh`.
+- Pay/RX на backend = тот же контейнер `api` → по запросу `./scripts/deploy-backend.sh`.
 - Фронт на B3 — только по явной просьбе пользователя.
 
 ## Документация модулей

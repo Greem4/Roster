@@ -1,36 +1,32 @@
 ---
-description: Структура scripts/ — только 3 обёртки в корне, остальное в internal/ и setup/
+description: Структура scripts/ — dev, deploy и частичный деплой рядом
 alwaysApply: true
 ---
 
 # Скрипты Roster
 
-## Корень `scripts/` — ровно 3 файла
-
-Только обёртки на `scripts/internal/`:
+## Корень `scripts/` — что видит пользователь
 
 | Скрипт | Назначение |
 |--------|------------|
-| `./scripts/deploy-backend.sh` | Деплой API на Pi |
-| `./scripts/deploy-frontend.sh` | Деплой фронта на сайт |
-| `./scripts/dev.sh` | Локальный UI (Vite) |
+| `./scripts/dev.sh` | Локальная разработка — Docker + Vite на Mac |
+| `./scripts/deploy.sh` | Деплой на Pi — backend + frontend |
+| `./scripts/deploy-backend.sh` | Только API на Pi |
+| `./scripts/deploy-frontend.sh` | Только фронт на сайт |
 
-**Не создавать** в `scripts/` новые `.sh` (ни `tunnel-db.sh`, ни `dev-ui.sh`, ни другие обёртки).
+Частичный деплой — **рядом** с `deploy.sh`, не в `internal/`.
 
-## `scripts/internal/` — реализация и утилиты
+Эквивалент: `deploy.sh --backend`, `deploy.sh --frontend`.
 
-- `dev.sh`, `deploy-backend.sh`, `deploy-frontend.sh` — тело команд из корня
-- `dev-stack.sh` — локальный Docker (db + api на Mac)
-- `sync-db-from-pi.sh`, `sync-db-to-pi.sh` — полный перенос БД Pi ↔ Mac
-- `tunnel-db.sh` — туннель PostgreSQL (legacy; вызывать `./scripts/internal/tunnel-db.sh`)
-- `import.sh`, `_ssh-b3.sh`, `_pi-route.sh` и прочие вспомогательные скрипты
+## Спрятано глубже
 
-## `scripts/setup/` — одноразовая настройка машин
-
-SSH-ключ, VPS-туннель, Caddy, docker-autostart и т.п. Не дублировать в корень `scripts/`.
+| Каталог | Содержимое |
+|---------|------------|
+| `scripts/internal/` | реализация, CI, sync-db, туннели |
+| `scripts/setup/` | одноразовая настройка SSH, VPS, Caddy |
 
 ## Агент
 
-- Новый скрипт по умолчанию — в `internal/` или `setup/`, не в корень.
-- В подсказках пользователю для UI — `./scripts/dev.sh`, не несуществующий `dev-ui.sh`.
-- Туннель БД — `./scripts/internal/tunnel-db.sh` (редко; обычно локальный Docker + `sync-db-from-pi.sh`).
+- Разработка → `./scripts/dev.sh`
+- Всё на Pi → `./scripts/deploy.sh`
+- Только API / только фронт → `deploy-backend.sh` / `deploy-frontend.sh`

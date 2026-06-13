@@ -1,8 +1,9 @@
 # Деплой на Raspberry Pi после push в release.
 # БД на Pi своя: переносится только код, Alembic накатывает миграции при старте api.
 #
-# Секреты GitHub (Settings → Secrets):
-#   ROSTER_SSH_KEY — приватный ключ с доступом к VPS и Pi (как ~/.ssh/id_ed25519_roster)
+# Секреты GitHub (Settings → Environments → Roster → Secrets):
+#   VPS_SSH_KEY    — приватный ключ VPS (~/.ssh/id_ed25519_vps)
+#   ROSTER_SSH_KEY — приватный ключ Pi (~/.ssh/id_ed25519_roster)
 
 name: Deploy to Pi
 
@@ -17,6 +18,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: Roster
     steps:
       - uses: actions/checkout@v4
 
@@ -28,20 +30,22 @@ jobs:
 
       - name: SSH для Pi через VPS
         env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           ROSTER_SSH_KEY: ${{ secrets.ROSTER_SSH_KEY }}
         run: |
-          if [ -z "$ROSTER_SSH_KEY" ]; then
-            echo "Секрет ROSTER_SSH_KEY не задан — пропуск деплоя." >&2
+          if [ -z "$VPS_SSH_KEY" ] || [ -z "$ROSTER_SSH_KEY" ]; then
+            echo "Нужны секреты VPS_SSH_KEY и ROSTER_SSH_KEY в Environment Roster." >&2
             exit 1
           fi
           mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps_key
           printf '%s\n' "$ROSTER_SSH_KEY" > ~/.ssh/roster_key
-          chmod 600 ~/.ssh/roster_key
+          chmod 600 ~/.ssh/vps_key ~/.ssh/roster_key
           cat >> ~/.ssh/config <<'EOF'
           Host roster-vps
             HostName 176.12.65.86
             User root
-            IdentityFile ~/.ssh/roster_key
+            IdentityFile ~/.ssh/vps_key
             StrictHostKeyChecking accept-new
           Host roster-pi-remote
             HostName 127.0.0.1
@@ -57,9 +61,10 @@ jobs:
       - name: Деплой API и фронта
         env:
           PI_SSH: roster-pi-remote
-          ROSTER_SSH_KEY: ~/.ssh/roster_key
         run: |
-          chmod +x scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/internal/*.sh
+          export VPS_SSH_KEY="$HOME/.ssh/vps_key"
+          export ROSTER_SSH_KEY="$HOME/.ssh/roster_key"
+          chmod +x scripts/deploy.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/internal/*.sh
           ./scripts/internal/ci-deploy.sh --via vps-hop
 
       - name: Проверка prod

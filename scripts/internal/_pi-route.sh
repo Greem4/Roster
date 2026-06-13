@@ -13,14 +13,46 @@ PI_ROUTE_MODE=""
 PI_ROUTE_SSH_BASE=""
 PI_ROUTE_TARGET=""
 
-pi_ssh_key_opts() {
-  KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
+pi_expand_path() {
+  case "$1" in
+    "~/"*) printf '%s\n' "$HOME/${1#~/}" ;;
+    "~") printf '%s\n' "$HOME" ;;
+    *) printf '%s\n' "$1" ;;
+  esac
+}
+
+pi_roster_key_path() {
+  KEY="$(pi_expand_path "${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}")"
   if [ -f "$KEY" ]; then
-    echo "-i ${KEY}"
+    echo "$KEY"
   elif [ -f "$HOME/.ssh/id_ed25519" ]; then
-    echo "-i $HOME/.ssh/id_ed25519"
+    echo "$HOME/.ssh/id_ed25519"
   elif [ -f "$HOME/.ssh/id_rsa" ]; then
-    echo "-i $HOME/.ssh/id_rsa"
+    echo "$HOME/.ssh/id_rsa"
+  fi
+}
+
+pi_vps_key_path() {
+  KEY="$(pi_expand_path "${VPS_SSH_KEY:-$HOME/.ssh/id_ed25519_vps}")"
+  if [ -f "$KEY" ]; then
+    echo "$KEY"
+  fi
+}
+
+pi_ssh_key_opts() {
+  KEY="$(pi_roster_key_path)"
+  if [ -n "$KEY" ]; then
+    echo "-i ${KEY}"
+  fi
+}
+
+# ProxyJump на VPS: отдельный ключ VPS, на Pi — roster.
+pi_vps_proxy_opts() {
+  VPS_KEY="$(pi_vps_key_path)"
+  if [ -n "$VPS_KEY" ]; then
+    echo "-o ProxyCommand=ssh -i ${VPS_KEY} -o BatchMode=yes -o StrictHostKeyChecking=accept-new -W %h:%p ${ROSTER_VPS_SSH}"
+  else
+    echo "-o ProxyJump=${ROSTER_VPS_SSH}"
   fi
 }
 
@@ -37,7 +69,7 @@ _pi_vps_direct_base() {
 _pi_vps_hop_base() {
   PI_ROUTE_MODE=vps-hop
   PI_ROUTE_TARGET="greem4@127.0.0.1"
-  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 -o ProxyJump=${ROSTER_VPS_SSH} -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
+  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 $(pi_vps_proxy_opts) -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
 }
 
 pi_vps_reachable() {
@@ -68,6 +100,21 @@ pi_use_vps_hop() {
   _pi_vps_hop_base
 }
 
+# Host из ~/.ssh/config (например roster-pi-remote) — как в CI после шага SSH.
+pi_use_ssh_host() {
+  PI_ROUTE_MODE=ssh-host
+  PI_ROUTE_TARGET="$PI_SSH"
+  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60"
+}
+
+pi_ssh_host_reachable() {
+  [ -n "$PI_SSH" ] || return 1
+  case "$PI_SSH" in *@*) return 1 ;; esac
+  pi_use_ssh_host
+  # shellcheck disable=SC2086
+  ssh $PI_ROUTE_SSH_BASE -o ConnectTimeout=8 -o BatchMode=yes "$PI_ROUTE_TARGET" 'echo ok' >/dev/null 2>&1
+}
+
 # shellcheck disable=SC2034
 pi_route_pick() {
   via="${1:-auto}"
@@ -89,8 +136,11 @@ pi_route_pick() {
       fi
       ;;
     vps-hop)
-      pi_use_vps_hop
-      if ! pi_vps_hop_reachable; then
+      if pi_ssh_host_reachable; then
+        :
+      elif pi_vps_hop_reachable; then
+        pi_use_vps_hop
+      else
         echo "ProxyJump ${ROSTER_VPS_SSH} → 127.0.0.1:${ROSTER_VPS_PI_SSH_PORT} не работает." >&2
         echo "Один раз дома: ./scripts/setup/vps-dev-ssh.sh" >&2
         return 1

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Добавляет в ~/.ssh/config хосты для доступа к Pi вне дома (только ваш ключ на VPS и Pi).
+# Добавляет в ~/.ssh/config хосты для доступа к Pi вне дома.
+# VPS — ключ id_ed25519_vps; Pi — id_ed25519_roster (раздельно).
 set -e
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 if [ -f "$ROOT/.env" ]; then
@@ -18,40 +19,43 @@ if [ -z "$VPS_HOST" ] || [ "$VPS_HOST" = "$ROSTER_VPS_SSH" ]; then
   exit 1
 fi
 PI_PORT="${ROSTER_VPS_PI_SSH_PORT:-22022}"
-KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
-if [ ! -f "$KEY" ] && [ -f "$HOME/.ssh/id_ed25519" ]; then
-  KEY="$HOME/.ssh/id_ed25519"
-fi
+VPS_KEY="${VPS_SSH_KEY:-$HOME/.ssh/id_ed25519_vps}"
+ROSTER_KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
 
 CFG="$HOME/.ssh/config"
 MARKER="# Roster VPS hop"
 mkdir -p "$HOME/.ssh"
 chmod 700 "$HOME/.ssh"
 
+# Перезаписываем блок, если уже был со старым одним ключом.
 if grep -q "$MARKER" "$CFG" 2>/dev/null; then
-  echo "Блок ${MARKER} уже есть в ${CFG}"
-else
-  cat >>"$CFG" <<EOF
+  awk -v marker="$MARKER" '
+    $0 ~ marker { skip=1; next }
+    skip && /^Host / { skip=0 }
+    !skip { print }
+  ' "$CFG" > "${CFG}.tmp" && mv "${CFG}.tmp" "$CFG"
+fi
+
+cat >>"$CFG" <<EOF
 
 $MARKER
 Host roster-vps
   HostName ${VPS_HOST}
   User ${VPS_USER}
-  IdentityFile ${KEY}
+  IdentityFile ${VPS_KEY}
 
 Host roster-pi-remote
   HostName 127.0.0.1
   User greem4
   Port ${PI_PORT}
   ProxyJump roster-vps
-  IdentityFile ${KEY}
+  IdentityFile ${ROSTER_KEY}
 EOF
-  chmod 600 "$CFG"
-  echo "Добавлены Host roster-vps и roster-pi-remote в ${CFG}"
-fi
+chmod 600 "$CFG"
+echo "Обновлены Host roster-vps и roster-pi-remote в ${CFG}"
 
 echo ""
-echo "Проверка (нужен ./scripts/setup/vps-dev-ssh.sh и ключ на VPS):"
+echo "Проверка (нужен ./scripts/setup/vps-dev-ssh.sh и ключи на VPS и Pi):"
 ssh -o BatchMode=yes -o ConnectTimeout=12 roster-pi-remote 'echo OK — Pi через VPS'
 
 echo ""
