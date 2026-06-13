@@ -24,7 +24,7 @@ def _normalize_series(series: str) -> str:
 def _series_taken(db: Session, series: str, exclude_id: int | None = None) -> bool:
     q = db.query(RxMedicine.id).filter(RxMedicine.series == series)
     if exclude_id is not None:
-        q = q.filter(Medicine.id != exclude_id)
+        q = q.filter(RxMedicine.id != exclude_id)
     return q.first() is not None
 
 def _days_until(expiry: date) -> int:

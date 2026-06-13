@@ -92,6 +92,28 @@ if [ "$i" -ge 60 ]; then
   exit 1
 fi
 
+echo "=== Перенос medicines → roster_rx (если пусто) ==="
+pi_ssh "cd ~/${PI_PROJECT_DIR} && sh -s" <<'REMOTE'
+set -e
+# shellcheck disable=SC1091
+[ -f .env ] && . ./.env
+PU="${POSTGRES_USER:-roster}"
+RX="${RX_POSTGRES_DB:-roster_rx}"
+DEST="$(docker compose exec -T db psql -U "$PU" -d "$RX" -t -A -c 'SELECT COUNT(*) FROM medicines' 2>/dev/null || echo no_table)"
+if [ "$DEST" = "no_table" ]; then
+  echo "Таблица medicines в $RX ещё не создана — пропуск"
+  exit 0
+fi
+SRC="$(docker compose exec -T db psql -U "$PU" -d roster -t -A -c 'SELECT COUNT(*) FROM medicines')"
+if [ "$DEST" = "0" ] && [ "$SRC" -gt 0 ]; then
+  docker compose exec -T db pg_dump -U "$PU" -d roster -t medicines --data-only \
+    | docker compose exec -T db psql -U "$PU" -d "$RX" -q
+  echo "Перенесено $SRC позиций в $RX"
+else
+  echo "В $RX уже $DEST записей (roster: $SRC) — пропуск"
+fi
+REMOTE
+
 echo ""
 if curl -sf "${REMOTE_API}/api/health" >/dev/null 2>&1; then
   echo "Прод: $(curl -sf "${REMOTE_API}/api/health")"
