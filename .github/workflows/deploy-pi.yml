@@ -1,0 +1,66 @@
+# Деплой на Raspberry Pi после push в release.
+# БД на Pi своя: переносится только код, Alembic накатывает миграции при старте api.
+#
+# Секреты GitHub (Settings → Secrets):
+#   ROSTER_SSH_KEY — приватный ключ с доступом к VPS и Pi (как ~/.ssh/id_ed25519_roster)
+
+name: Deploy to Pi
+
+on:
+  push:
+    branches: [release]
+
+concurrency:
+  group: deploy-pi
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: SSH для Pi через VPS
+        env:
+          ROSTER_SSH_KEY: ${{ secrets.ROSTER_SSH_KEY }}
+        run: |
+          if [ -z "$ROSTER_SSH_KEY" ]; then
+            echo "Секрет ROSTER_SSH_KEY не задан — пропуск деплоя." >&2
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$ROSTER_SSH_KEY" > ~/.ssh/roster_key
+          chmod 600 ~/.ssh/roster_key
+          cat >> ~/.ssh/config <<'EOF'
+          Host roster-vps
+            HostName 176.12.65.86
+            User root
+            IdentityFile ~/.ssh/roster_key
+            StrictHostKeyChecking accept-new
+          Host roster-pi-remote
+            HostName 127.0.0.1
+            User greem4
+            Port 22022
+            ProxyJump roster-vps
+            IdentityFile ~/.ssh/roster_key
+            StrictHostKeyChecking accept-new
+          EOF
+          chmod 600 ~/.ssh/config
+          ssh -o BatchMode=yes -o ConnectTimeout=20 roster-pi-remote 'echo Pi OK'
+
+      - name: Деплой API и фронта
+        env:
+          PI_SSH: roster-pi-remote
+          ROSTER_SSH_KEY: ~/.ssh/roster_key
+        run: |
+          chmod +x scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/internal/*.sh
+          ./scripts/internal/ci-deploy.sh --via vps-hop
+
+      - name: Проверка prod
+        run: curl -sf https://medicine.greemlab.ru/api/health

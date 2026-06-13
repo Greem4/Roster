@@ -1,7 +1,7 @@
 name: roster
 
-# Запускать на B3 (Pi): одна PostgreSQL + API.
-# Локально на Mac БД не поднимаем — только туннель к этому postgres (см. README).
+# PostgreSQL + API: на B3 (Pi) и локально на Mac для разработки.
+# Mac: ./scripts/internal/dev-stack.sh up  |  Pi: docker compose up -d --build
 
 services:
   db:
