@@ -64,7 +64,7 @@ jobs:
         run: |
           export VPS_SSH_KEY="$HOME/.ssh/vps_key"
           export ROSTER_SSH_KEY="$HOME/.ssh/roster_key"
-          chmod +x scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/internal/*.sh
+          chmod +x scripts/deploy.sh scripts/deploy-backend.sh scripts/deploy-frontend.sh scripts/internal/*.sh
           ./scripts/internal/ci-deploy.sh --via vps-hop
 
       - name: Проверка prod

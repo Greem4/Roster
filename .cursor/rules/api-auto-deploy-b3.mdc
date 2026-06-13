@@ -11,11 +11,13 @@ alwaysApply: true
 
 ## Ручной деплой (если пользователь просит или до merge)
 
+Ручной деплой с Mac (быстрее CI):
+
 ```bash
-./scripts/deploy-backend.sh
+./scripts/deploy.sh
 ```
 
-`required_permissions: ["all"]` при блокировке SSH.
+Только API: `./scripts/deploy-backend.sh`
 
 **Не деплоить фронт** без явной просьбы. Фронт на Pi — через CI при push в `release` или `./scripts/deploy-frontend.sh`.
 

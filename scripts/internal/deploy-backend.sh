@@ -9,16 +9,16 @@ roster_load_env
 PI_PROJECT_DIR="${PI_PROJECT_DIR:-Roster}"
 ROUTE_VIA=auto
 SYNC_ENV=false
-START_DEV=false
 REMOTE_API="${ROSTER_REMOTE_API_URL}"
 
 usage() {
   cat <<EOF
 Деплой backend на малинку (Pi).
 
-  ./scripts/deploy-backend.sh              авто-маршрут (LAN → VPS)
-  ./scripts/deploy-backend.sh --with-env   скопировать .env (OAuth, JWT…)
-  ./scripts/deploy-backend.sh --dev        после деплоя запустить ./scripts/dev.sh
+  ./scripts/deploy.sh --backend           только API
+  ./scripts/deploy.sh --backend --with-env   скопировать .env (OAuth, JWT…)
+
+Снаружи то же: `./scripts/deploy-backend.sh`
 
 EOF
 }
@@ -31,7 +31,6 @@ while [ $# -gt 0 ]; do
       ;;
     --via=*) ROUTE_VIA="${1#*=}"; shift ;;
     --with-env) SYNC_ENV=true; shift ;;
-    --dev) START_DEV=true; shift ;;
     -h|--help) usage; exit 0 ;;
     *)
       echo "Неизвестный аргумент: $1" >&2
@@ -109,8 +108,3 @@ case "$yandex_code" in
 esac
 
 echo "Готово."
-
-if [ "$START_DEV" = true ]; then
-  echo ""
-  exec "$SCRIPTS/dev.sh"
-fi

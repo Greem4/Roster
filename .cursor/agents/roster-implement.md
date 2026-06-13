@@ -17,9 +17,9 @@ description: >-
 
 - Границы модулей Duty / CA / Pay / RX — `.cursor/rules/roster-modules.mdc`; Pay: `frontend/src/modules/pay/`, `backend/app/api/pay.py`.
 - Документация к коду — **на русском** (JSDoc, docstring, комментарии к нетривиальной логике).
-- `backend/` или `docker-compose` (api) → в конце `./scripts/deploy-backend.sh` (`required_permissions: ["all"]`).
-- `frontend/` → не деплоить на B3 без явной просьбы; напомнить `./scripts/dev.sh`.
-- В корне `scripts/` только `dev.sh`, `deploy-backend.sh`, `deploy-frontend.sh`; новое — в `internal/` или `setup/`.
+- `backend/` или `docker-compose` (api) → деплой по запросу: `./scripts/deploy.sh` или `--backend`.
+- `frontend/` → не деплоить на Pi без явной просьбы; напомнить `./scripts/dev.sh`.
+- В корне `scripts/`: `dev.sh`, `deploy.sh`, `deploy-backend.sh`, `deploy-frontend.sh`; новое — в `internal/` или `setup/`.
 - Коммит и `git push` — **только** если в брифе явно просили.
 
 ## Процесс

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Деплой кода на Pi: backend + frontend. Для CI после git push в release.
+# CI: деплой на Pi (вызов общего deploy.sh).
 set -e
 . "$(dirname "$0")/_root.sh"
 
@@ -12,13 +12,7 @@ while [ $# -gt 0 ]; do
       ;;
     --via=*) VIA_ARGS="$1"; shift ;;
     -h|--help)
-      cat <<EOF
-Выкладка кода на Pi (БД на малинке не трогаем — только миграции Alembic).
-
-  ./scripts/internal/ci-deploy.sh
-  ./scripts/internal/ci-deploy.sh --via vps-hop
-
-EOF
+      echo "CI-обёртка: ./scripts/internal/deploy.sh $VIA_ARGS"
       exit 0
       ;;
     *)
@@ -29,8 +23,4 @@ EOF
 done
 
 # shellcheck disable=SC2086
-"$INTERNAL/deploy-backend.sh" $VIA_ARGS
-# shellcheck disable=SC2086
-"$INTERNAL/deploy-frontend.sh" $VIA_ARGS
-
-echo "Деплой на Pi завершён."
+exec "$INTERNAL/deploy.sh" $VIA_ARGS

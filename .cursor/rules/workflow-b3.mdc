@@ -1,52 +1,37 @@
 ---
-description: Рабочий процесс — локальный Docker, автодеплой на Pi после push
+description: Рабочий процесс — dev локально, deploy на Pi
 alwaysApply: true
 ---
 
 # Рабочий процесс Roster
 
-## Разработка — одна команда
+## Две команды снаружи
 
 ```bash
-./scripts/dev.sh
+./scripts/dev.sh      # пишу код локально
+./scripts/deploy.sh   # выкладываю на Pi
 ```
 
-Поднимает локально Docker (db + api) и Vite UI. БД локальная, данные с Pi — один раз через `sync-db-from-pi.sh`.
+`dev.sh` — Docker (db + api) + Vite на Mac, без Pi.
 
-## Деплой на Pi — после git push в release
+`deploy.sh` — backend + frontend на малинку (LAN дома — быстро). Флаги: `--backend`, `--frontend`, `--with-env`, `--via lan`.
 
-Код уходит автоматически: `.github/workflows/deploy-pi.yml` → `ci-deploy.sh` (backend + frontend).
+## Автодеплой
 
-**БД на Pi не перезаливается** — только Alembic-миграции при старте api. Данные Mac → Pi — только по явной просьбе (`sync-db-to-pi.sh --confirm`).
+Push в `release` → GitHub Actions (медленнее, через VPS). БД на Pi не перезаливается.
 
-Ручной деплой (до push или для проверки):
+## Что когда
 
-```bash
-./scripts/deploy-backend.sh
-./scripts/deploy-frontend.sh
-```
+| Задача | Команда |
+|--------|---------|
+| Пишу код | `./scripts/dev.sh` |
+| Готово — на сайт с Mac | `./scripts/deploy.sh` |
+| Только API | `./scripts/deploy-backend.sh` |
+| Только фронт | `./scripts/deploy-frontend.sh` |
+| Без Mac | `git push origin release` |
+| Данные Mac → Pi | `./scripts/internal/sync-db-to-pi.sh --confirm` по запросу |
 
-Секрет GitHub: `ROSTER_SSH_KEY`.
+## Агент
 
-## Frontend
-
-1. **Не** запускать `deploy-frontend.sh` автоматически при локальной разработке.
-2. Напоминать: `./scripts/dev.sh` → http://localhost:5173.
-3. На прод фронт попадает через push в `release` (CI) или по запросу пользователя.
-
-## Оба слоя
-
-| Что меняли | Действие агента |
-|------------|-----------------|
-| Только backend | подсказать push в release (CI); или `deploy-backend.sh` для быстрой проверки |
-| Только frontend | подсказать `dev.sh`; на Pi — push в release |
-| Backend + frontend | push в release; ручной деплой — по запросу |
-| Данные локально → Pi | `sync-db-to-pi.sh --confirm` только по запросу |
-
-## Пользователь
-
-В корне `scripts/` три команды:
-
-- `./scripts/dev.sh` — локальная разработка
-- `./scripts/deploy-backend.sh` — ручной деплой API
-- `./scripts/deploy-frontend.sh` — ручной деплой фронта
+- После правок — напоминать `dev.sh`, не деплоить сам
+- Деплой на Pi по запросу — `deploy.sh`

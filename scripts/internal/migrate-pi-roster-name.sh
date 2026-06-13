@@ -1,6 +1,6 @@
 #!/bin/sh
 # Однократная миграция ~/RosterRx → ~/Roster на Pi: каталог, том PostgreSQL, Docker-сеть.
-# Вызывается из deploy-backend.sh, если на Pi ещё старый путь.
+# Вызывается из internal/deploy-backend.sh, если на Pi ещё старый путь.
 set -eu
 
 OLD_DIR="${HOME}/RosterRx"
