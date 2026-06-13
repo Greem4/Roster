@@ -13,14 +13,38 @@ PI_ROUTE_MODE=""
 PI_ROUTE_SSH_BASE=""
 PI_ROUTE_TARGET=""
 
-pi_ssh_key_opts() {
+pi_roster_key_path() {
   KEY="${ROSTER_SSH_KEY:-$HOME/.ssh/id_ed25519_roster}"
   if [ -f "$KEY" ]; then
-    echo "-i ${KEY}"
+    echo "$KEY"
   elif [ -f "$HOME/.ssh/id_ed25519" ]; then
-    echo "-i $HOME/.ssh/id_ed25519"
+    echo "$HOME/.ssh/id_ed25519"
   elif [ -f "$HOME/.ssh/id_rsa" ]; then
-    echo "-i $HOME/.ssh/id_rsa"
+    echo "$HOME/.ssh/id_rsa"
+  fi
+}
+
+pi_vps_key_path() {
+  KEY="${VPS_SSH_KEY:-$HOME/.ssh/id_ed25519_vps}"
+  if [ -f "$KEY" ]; then
+    echo "$KEY"
+  fi
+}
+
+pi_ssh_key_opts() {
+  KEY="$(pi_roster_key_path)"
+  if [ -n "$KEY" ]; then
+    echo "-i ${KEY}"
+  fi
+}
+
+# ProxyJump на VPS: отдельный ключ VPS, на Pi — roster.
+pi_vps_proxy_opts() {
+  VPS_KEY="$(pi_vps_key_path)"
+  if [ -n "$VPS_KEY" ]; then
+    echo "-o ProxyCommand=ssh -i ${VPS_KEY} -o BatchMode=yes -o StrictHostKeyChecking=accept-new -W %h:%p ${ROSTER_VPS_SSH}"
+  else
+    echo "-o ProxyJump=${ROSTER_VPS_SSH}"
   fi
 }
 
@@ -37,7 +61,7 @@ _pi_vps_direct_base() {
 _pi_vps_hop_base() {
   PI_ROUTE_MODE=vps-hop
   PI_ROUTE_TARGET="greem4@127.0.0.1"
-  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 -o ProxyJump=${ROSTER_VPS_SSH} -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
+  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 $(pi_vps_proxy_opts) -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
 }
 
 pi_vps_reachable() {
