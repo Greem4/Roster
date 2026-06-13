@@ -1,12 +1,15 @@
 ---
-description: После правок backend/API — автоматический деплой на B3 (не трогать фронт)
-globs: backend/**/*
+description: API на B3 — после push в release через CI; ручной деплой по необходимости
 alwaysApply: true
 ---
 
 # API: автодеплой на B3
 
-Если в **этой задаче** менялся `backend/` (Python, Alembic, Dockerfile, requirements) или `docker-compose.yml` для `api` — **перед концом ответа**:
+## После push в release
+
+Деплой на Pi — **GitHub Actions** (`.github/workflows/deploy-pi.yml`). БД на малинке своя, Alembic в entrypoint api.
+
+## Ручной деплой (если пользователь просит или до merge)
 
 ```bash
 ./scripts/deploy-backend.sh
@@ -14,8 +17,8 @@ alwaysApply: true
 
 `required_permissions: ["all"]` при блокировке SSH.
 
-**Фронт на B3 не выкатывать** без явной просьбы пользователя. См. `.cursor/rules/workflow-b3.mdc`.
+**Не деплоить фронт** без явной просьбы. Фронт на Pi — через CI при push в `release` или `./scripts/deploy-frontend.sh`.
 
 Коммит/`git push` — только по запросу пользователя.
 
-После деплоя — кратко: успех или ошибка из вывода.
+После ручного деплоя — кратко: успех или ошибка из вывода.

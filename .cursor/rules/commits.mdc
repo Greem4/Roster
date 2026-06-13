@@ -5,7 +5,9 @@ alwaysApply: true
 
 # Git: короткие коммиты на русском
 
-**Кнопка ✨ в Source Control** читает правила из **`.cursorrules` в корне репозитория**, а не из этого файла. Если ✨ игнорирует формат — правь `.cursorrules`.
+**Кнопка ✨ в Source Control (Cursor)** читает правила из **`.cursorrules` в корне репозитория**, а не из этого файла. Если ✨ игнорирует формат — правь `.cursorrules`.
+
+**IntelliJ IDEA Ultimate** — отдельной кнопки Cursor в Commit нет; один раз `./scripts/setup/intellij-cursor-commit.sh`, затем в Commit (⌘0) горячая клавиша на External Tool «Cursor: commit message» (рекомендуем ⌃⌥C). Скрипт: `./scripts/internal/cursor-commit-msg.sh`.
 
 **Агент в чате** — следуй и этому файлу, и `.cursorrules`.
 
