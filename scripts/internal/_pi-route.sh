@@ -69,7 +69,17 @@ _pi_vps_direct_base() {
 _pi_vps_hop_base() {
   PI_ROUTE_MODE=vps-hop
   PI_ROUTE_TARGET="greem4@127.0.0.1"
-  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 $(pi_vps_proxy_opts) -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
+  ROSTER_KEY="$(pi_roster_key_path)"
+  if [ -f "$HOME/.ssh/config" ] && grep -q '^Host roster-vps' "$HOME/.ssh/config" 2>/dev/null; then
+    PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 -o ProxyJump=roster-vps -p ${ROSTER_VPS_PI_SSH_PORT} -i ${ROSTER_KEY}"
+  else
+    VPS_KEY="$(pi_vps_key_path)"
+    if [ -n "$VPS_KEY" ] && [ -n "$ROSTER_KEY" ]; then
+      PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 -o ProxyJump=${ROSTER_VPS_SSH} -p ${ROSTER_VPS_PI_SSH_PORT} -i ${ROSTER_KEY}"
+    else
+      PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60 -o ProxyJump=${ROSTER_VPS_SSH} -p ${ROSTER_VPS_PI_SSH_PORT} $(pi_ssh_key_opts)"
+    fi
+  fi
 }
 
 pi_vps_reachable() {
@@ -79,10 +89,25 @@ pi_vps_reachable() {
   ssh $PI_ROUTE_SSH_BASE -o ConnectTimeout=8 -o BatchMode=yes "$PI_ROUTE_TARGET" 'echo ok' >/dev/null 2>&1
 }
 
+pi_ssh_config_reachable() {
+  host="$1"
+  [ -n "$host" ] || return 1
+  ssh -o ConnectTimeout=8 -o BatchMode=yes "$host" 'echo ok' >/dev/null 2>&1
+}
+
 pi_vps_hop_reachable() {
+  if pi_ssh_config_reachable roster-pi-remote; then
+    return 0
+  fi
   _pi_vps_hop_base
   # shellcheck disable=SC2086
   ssh $PI_ROUTE_SSH_BASE -o ConnectTimeout=8 -o BatchMode=yes "$PI_ROUTE_TARGET" 'echo ok' >/dev/null 2>&1
+}
+
+pi_use_config_host() {
+  PI_ROUTE_MODE=ssh-host
+  PI_ROUTE_TARGET="$1"
+  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60"
 }
 
 pi_use_lan() {
@@ -102,17 +127,13 @@ pi_use_vps_hop() {
 
 # Host из ~/.ssh/config (например roster-pi-remote) — как в CI после шага SSH.
 pi_use_ssh_host() {
-  PI_ROUTE_MODE=ssh-host
-  PI_ROUTE_TARGET="$PI_SSH"
-  PI_ROUTE_SSH_BASE="-o ServerAliveInterval=60"
+  pi_use_config_host "$PI_SSH"
 }
 
 pi_ssh_host_reachable() {
   [ -n "$PI_SSH" ] || return 1
   case "$PI_SSH" in *@*) return 1 ;; esac
-  pi_use_ssh_host
-  # shellcheck disable=SC2086
-  ssh $PI_ROUTE_SSH_BASE -o ConnectTimeout=8 -o BatchMode=yes "$PI_ROUTE_TARGET" 'echo ok' >/dev/null 2>&1
+  pi_ssh_config_reachable "$PI_SSH"
 }
 
 # shellcheck disable=SC2034
@@ -137,9 +158,15 @@ pi_route_pick() {
       ;;
     vps-hop)
       if pi_ssh_host_reachable; then
-        :
+        pi_use_ssh_host
+      elif pi_ssh_config_reachable roster-pi-remote; then
+        pi_use_config_host roster-pi-remote
       elif pi_vps_hop_reachable; then
-        pi_use_vps_hop
+        if pi_ssh_config_reachable roster-pi-remote; then
+          pi_use_config_host roster-pi-remote
+        else
+          pi_use_vps_hop
+        fi
       else
         echo "ProxyJump ${ROSTER_VPS_SSH} → 127.0.0.1:${ROSTER_VPS_PI_SSH_PORT} не работает." >&2
         echo "Один раз дома: ./scripts/setup/vps-dev-ssh.sh" >&2
@@ -150,12 +177,22 @@ pi_route_pick() {
       if pi_lan_reachable; then
         pi_use_lan
         roster_ssh_ensure_master || return 1
+      elif pi_ssh_host_reachable; then
+        pi_use_ssh_host
+        echo "LAN недоступна — ${PI_SSH} (~/.ssh/config)."
+      elif pi_ssh_config_reachable roster-pi-remote; then
+        pi_use_config_host roster-pi-remote
+        echo "LAN недоступна — roster-pi-remote (~/.ssh/config)."
       elif pi_vps_reachable; then
         pi_use_vps_direct
         echo "LAN недоступна — связь через VPS (:${ROSTER_VPS_PI_SSH_PORT})."
       elif pi_vps_hop_reachable; then
-        pi_use_vps_hop
-        echo "Связь через ${ROSTER_VPS_SSH} → Pi:${ROSTER_VPS_PI_SSH_PORT}."
+        if pi_ssh_config_reachable roster-pi-remote; then
+          pi_use_config_host roster-pi-remote
+        else
+          pi_use_vps_hop
+        fi
+        echo "Связь через VPS → Pi:${ROSTER_VPS_PI_SSH_PORT}."
       else
         echo "Не удалось достучаться до Pi." >&2
         echo "  Дома:     PI_SSH=${PI_SSH}  (./scripts/setup/ssh-key.sh)" >&2
@@ -172,13 +209,51 @@ pi_route_pick() {
 }
 
 pi_ssh() {
-  # shellcheck disable=SC2086
-  ssh $PI_ROUTE_SSH_BASE "$PI_ROUTE_TARGET" "$@"
+  case "$PI_ROUTE_MODE" in
+    ssh-host)
+      ssh -o ServerAliveInterval=60 "$PI_ROUTE_TARGET" "$@"
+      ;;
+    *)
+      # shellcheck disable=SC2086
+      ssh $PI_ROUTE_SSH_BASE "$PI_ROUTE_TARGET" "$@"
+      ;;
+  esac
 }
 
 pi_rsync() {
-  # shellcheck disable=SC2086
-  rsync -e "ssh $PI_ROUTE_SSH_BASE" "$@"
+  case "$PI_ROUTE_MODE" in
+    ssh-host)
+      rsync -e "ssh -o ServerAliveInterval=60" "$@"
+      ;;
+    *)
+      # shellcheck disable=SC2086
+      rsync -e "ssh $PI_ROUTE_SSH_BASE" "$@"
+      ;;
+  esac
+}
+
+# SSH -L для tunnel-db.sh и import.sh
+pi_ssh_port_forward() {
+  local_port="$1"
+  bg="${2:-}"
+  case "$PI_ROUTE_MODE" in
+    ssh-host)
+      if [ "$bg" = bg ]; then
+        ssh -o ServerAliveInterval=60 -f -N -L "${local_port}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+      else
+        exec ssh -o ServerAliveInterval=60 -N -L "${local_port}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+      fi
+      ;;
+    *)
+      if [ "$bg" = bg ]; then
+        # shellcheck disable=SC2086
+        ssh $PI_ROUTE_SSH_BASE -f -N -L "${local_port}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+      else
+        # shellcheck disable=SC2086
+        exec ssh $PI_ROUTE_SSH_BASE -N -L "${local_port}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+      fi
+      ;;
+  esac
 }
 
 remote_api_ok() {

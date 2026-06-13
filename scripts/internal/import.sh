@@ -1,5 +1,7 @@
 #!/bin/sh
-# Полная перезаливка medicines из JSON. Туннель к БД — auto.
+# УСТАРЕЛО: полная перезаливка из архивного medicines-invoices.json (TRUNCATE + INSERT).
+# Не запускать, если список ведётся в БД и позиции удаляются вручную — вернёт удалённые.
+# Для новых накладных: SELECT rx_import_medicines('…'::jsonb) — см. scripts/internal/data/README.md
 set -e
 . "$(dirname "$0")/_root.sh"
 roster_load_env
@@ -20,8 +22,7 @@ if nc -z 127.0.0.1 "$LOCAL_PORT" 2>/dev/null; then
 else
   pi_route_pick auto || exit 1
   echo "Туннель к БД (${PI_ROUTE_MODE})…"
-  # shellcheck disable=SC2086
-  ssh $PI_ROUTE_SSH_BASE -f -N -L "${LOCAL_PORT}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+  pi_ssh_port_forward "$LOCAL_PORT" bg
   TUNNEL_PID=$!
   STARTED_TUNNEL=1
   sleep 1

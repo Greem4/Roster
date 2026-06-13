@@ -18,5 +18,4 @@ pi_route_pick auto || exit 1
 echo "Туннель БД (${PI_ROUTE_MODE}): 127.0.0.1:${LOCAL_PORT} → Pi:5432"
 echo "Остановка: Ctrl+C"
 echo "DATABASE_URL=postgresql://\${POSTGRES_USER}:\${POSTGRES_PASSWORD}@127.0.0.1:${LOCAL_PORT}/\${POSTGRES_DB}"
-# shellcheck disable=SC2086
-exec ssh $PI_ROUTE_SSH_BASE -N -L "${LOCAL_PORT}:127.0.0.1:5432" "$PI_ROUTE_TARGET"
+pi_ssh_port_forward "$LOCAL_PORT"
