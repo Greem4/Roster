@@ -1,6 +1,21 @@
--- Один раз в консоли БД, если rx_import_medicines ещё нет.
--- После deploy API с миграцией 016 это не нужно — всё создаст Alembic.
+"""Схема RosterRX в отдельной БД roster_rx.
 
+Revision ID: rx001
+Revises:
+Create Date: 2026-06-13
+"""
+
+from typing import Sequence, Union
+
+import sqlalchemy as sa
+from alembic import op
+
+revision: str = "rx001"
+down_revision: Union[str, None] = None
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+_RX_PARSE_EXPIRY = """
 CREATE OR REPLACE FUNCTION rx_parse_expiry(raw text)
 RETURNS date
 LANGUAGE plpgsql
@@ -28,14 +43,9 @@ BEGIN
   RETURN make_date(y, mo, d);
 END;
 $$;
+"""
 
--- Удалить дубликаты по серии (оставить строку с меньшим id)
-DELETE FROM medicines a
-USING medicines b
-WHERE a.id > b.id AND trim(a.series) = trim(b.series);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_medicines_series ON medicines (series);
-
+_RX_IMPORT_MEDICINES = """
 CREATE OR REPLACE FUNCTION rx_import_medicines(items jsonb)
 RETURNS text
 LANGUAGE plpgsql
@@ -77,3 +87,29 @@ BEGIN
   RETURN format('Добавлено: %s, пропущено (серия уже есть): %s, всего: %s', added, skipped, total);
 END;
 $$;
+"""
+
+
+def upgrade() -> None:
+    op.create_table(
+        "medicines",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("series", sa.String(length=128), nullable=False),
+        sa.Column("expiry_date", sa.Date(), nullable=False),
+        sa.Column("created_by_id", sa.Integer(), nullable=True),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("series", name="uq_medicines_series"),
+    )
+    op.create_index("ix_medicines_expiry_date", "medicines", ["expiry_date"])
+    op.execute(_RX_PARSE_EXPIRY)
+    op.execute(_RX_IMPORT_MEDICINES)
+
+
+def downgrade() -> None:
+    op.execute("DROP FUNCTION IF EXISTS rx_import_medicines(jsonb);")
+    op.execute("DROP FUNCTION IF EXISTS rx_parse_expiry(text);")
+    op.drop_index("ix_medicines_expiry_date", table_name="medicines")
+    op.drop_table("medicines")

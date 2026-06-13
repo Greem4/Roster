@@ -106,9 +106,7 @@ def main() -> None:
             f"SELECT {_sql_literal(name)}, {_sql_literal(series)}, {_sql_literal(expiry.isoformat())}::date, "
             f"NULL, {_sql_literal(now)}::timestamptz, {_sql_literal(now)}::timestamptz\n"
             f"WHERE NOT EXISTS (\n"
-            f"  SELECT 1 FROM medicines m\n"
-            f"  WHERE m.name = {_sql_literal(name)} AND m.series = {_sql_literal(series)} "
-            f"AND m.expiry_date = {_sql_literal(expiry.isoformat())}::date\n"
+            f"  SELECT 1 FROM medicines m WHERE m.series = {_sql_literal(series)}\n"
             ");"
         )
     lines.append("COMMIT;")

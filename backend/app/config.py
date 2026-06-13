@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     database_url: str = "postgresql://roster:roster@localhost:5432/roster"
+    rx_database_url: str = "postgresql://roster:roster@localhost:5432/roster_rx"
     jwt_secret: str = "dev-secret-change-in-production"
     jwt_expire_minutes: int = 43_200  # 30 суток
     cors_origins: str = "http://localhost:5173"

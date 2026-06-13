@@ -7,16 +7,17 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.database import get_db
+from app.rx.db import get_rx_db
 from app.deps import require_active_user
-from app.models import Medicine, User
+from app.models import User
+from app.rx.models.medicine import RxMedicine
 from app.schemas.alert import ExpiringAlertsResponse, ExpiringMedicineAlert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 @router.get("/expiring", response_model=ExpiringAlertsResponse)
 def expiring_alerts(
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[Session, Depends(get_rx_db)],
     _: Annotated[User, Depends(require_active_user)],
     days: int | None = Query(default=None, description="Max days until expiry; default = max warn threshold"),
 ):
@@ -26,9 +27,9 @@ def expiring_alerts(
     items: list[ExpiringMedicineAlert] = []
 
     medicines = (
-        db.query(Medicine)
-        .filter(Medicine.expiry_date <= date.fromordinal(today.toordinal() + max_days))
-        .order_by(Medicine.expiry_date.asc())
+        db.query(RxMedicine)
+        .filter(RxMedicine.expiry_date <= date.fromordinal(today.toordinal() + max_days))
+        .order_by(RxMedicine.expiry_date.asc())
         .all()
     )
 

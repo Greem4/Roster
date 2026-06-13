@@ -1,6 +1,20 @@
--- Один раз в консоли БД, если rx_import_medicines ещё нет.
--- После deploy API с миграцией 016 это не нужно — всё создаст Alembic.
+"""Функции rx_parse_expiry и rx_import_medicines — вставка лекарств из JSON в консоли БД.
 
+Revision ID: 015
+Revises: 014
+Create Date: 2026-06-13
+"""
+
+from typing import Sequence, Union
+
+from alembic import op
+
+revision: str = "015"
+down_revision: Union[str, None] = "014"
+branch_labels: Union[str, Sequence[str], None] = None
+depends_on: Union[str, Sequence[str], None] = None
+
+_RX_PARSE_EXPIRY = """
 CREATE OR REPLACE FUNCTION rx_parse_expiry(raw text)
 RETURNS date
 LANGUAGE plpgsql
@@ -28,14 +42,9 @@ BEGIN
   RETURN make_date(y, mo, d);
 END;
 $$;
+"""
 
--- Удалить дубликаты по серии (оставить строку с меньшим id)
-DELETE FROM medicines a
-USING medicines b
-WHERE a.id > b.id AND trim(a.series) = trim(b.series);
-
-CREATE UNIQUE INDEX IF NOT EXISTS uq_medicines_series ON medicines (series);
-
+_RX_IMPORT_MEDICINES = """
 CREATE OR REPLACE FUNCTION rx_import_medicines(items jsonb)
 RETURNS text
 LANGUAGE plpgsql
@@ -46,7 +55,6 @@ DECLARE
   v_series text;
   v_expiry date;
   added int := 0;
-  skipped int := 0;
   total int;
 BEGIN
   IF jsonb_typeof(items) IS DISTINCT FROM 'array' THEN
@@ -63,17 +71,30 @@ BEGIN
       RAISE EXCEPTION 'Пустое name или series: %', item;
     END IF;
 
-    BEGIN
-      INSERT INTO medicines (name, series, expiry_date, created_by_id, created_at, updated_at)
-      VALUES (v_name, v_series, v_expiry, NULL, NOW(), NOW());
+    INSERT INTO medicines (name, series, expiry_date, created_by_id, created_at, updated_at)
+    SELECT v_name, v_series, v_expiry, NULL, NOW(), NOW()
+    WHERE NOT EXISTS (
+      SELECT 1 FROM medicines m
+      WHERE m.name = v_name AND m.series = v_series AND m.expiry_date = v_expiry
+    );
+
+    IF FOUND THEN
       added := added + 1;
-    EXCEPTION
-      WHEN unique_violation THEN
-        skipped := skipped + 1;
-    END;
+    END IF;
   END LOOP;
 
   SELECT COUNT(*) INTO total FROM medicines;
-  RETURN format('Добавлено: %s, пропущено (серия уже есть): %s, всего: %s', added, skipped, total);
+  RETURN format('Добавлено: %s, всего в medicines: %s', added, total);
 END;
 $$;
+"""
+
+
+def upgrade() -> None:
+    op.execute(_RX_PARSE_EXPIRY)
+    op.execute(_RX_IMPORT_MEDICINES)
+
+
+def downgrade() -> None:
+    op.execute("DROP FUNCTION IF EXISTS rx_import_medicines(jsonb);")
+    op.execute("DROP FUNCTION IF EXISTS rx_parse_expiry(text);")

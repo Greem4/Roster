@@ -1,27 +1,37 @@
+"""Alembic для изолированной БД RosterRX (roster_rx)."""
+
 import os
+import sys
 from logging.config import fileConfig
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from app.database import Base
-from app.models import Permission, User  # noqa: F401
+from app.rx.db import RxBase
+from app.rx.models.medicine import RxMedicine  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = Base.metadata
+target_metadata = RxBase.metadata
 
 
 def get_url() -> str:
-    return os.environ.get("DATABASE_URL", "postgresql://roster:roster@localhost:5432/roster")
+    return os.environ.get(
+        "RX_DATABASE_URL",
+        "postgresql://roster:roster@localhost:5432/roster_rx",
+    )
 
 
 def run_migrations_offline() -> None:
-    url = get_url()
     context.configure(
-        url=url,
+        url=get_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},

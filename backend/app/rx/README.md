@@ -2,18 +2,30 @@
 
 Реестр лекарств и предупреждения по срокам годности.
 
-- API: `app/api/medicines.py` — `GET/POST/PATCH/DELETE /medicines`
-- API: `app/api/alerts.py` — `GET /alerts/expiring`
-- Модель: `app/models/medicine.py` → таблица `medicines`
+## База данных
+
+| БД | Содержимое |
+|----|------------|
+| `roster` | users, pay, duty |
+| **`roster_rx`** | `medicines`, `rx_import_medicines`, `rx_parse_expiry` |
+
+- Модель: `app/rx/models/medicine.py` (`RxMedicine`)
+- Подключение: `app/rx/db.py` → `get_rx_db()`, env `RX_DATABASE_URL`
+- Миграции RX: `backend/alembic_rx/` (`alembic -c alembic_rx/alembic.ini`)
+
+Локальная настройка: `python3 scripts/internal/export-medicines-from-pi.py` → `./scripts/internal/setup-rx-db.sh`.
+
+## API
+
+- `app/api/medicines.py` — CRUD `/medicines` (БД `roster_rx`)
+- `app/api/alerts.py` — `/alerts/expiring`
 - Схемы: `app/schemas/medicine.py`, `app/schemas/alert.py`
-- Права: `app/rx/permissions.py` — CRUD через `users:manage` (`PERM_RX_MANAGE`)
+- Права: `app/rx/permissions.py` — `users:manage` (`PERM_RX_MANAGE`)
 
-## Добавление из фото накладной
-
-Фото → ИИ → JSON → в консоли SQL (только новые строки, удаления в БД не откатывает):
+## Импорт из JSON в SQL
 
 ```sql
 SELECT rx_import_medicines('[{"name":"…","series":"…","expiry":"01/06/26"}]'::jsonb);
 ```
 
-Шаблон: **`scripts/internal/data/rx-import.sql`**, промпт: **`scripts/internal/data/README.md`**. Не использовать `import.sh` / `medicines-invoices.json` — архив, вернёт удалённые позиции.
+Документация и промпт для ИИ: **`scripts/internal/data/README.md`**.
