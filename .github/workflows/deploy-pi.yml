@@ -1,7 +1,7 @@
 # Деплой на Raspberry Pi после push в release.
 # БД на Pi своя: переносится только код, Alembic накатывает миграции при старте api.
 #
-# Секреты GitHub (Settings → Secrets):
+# Секреты GitHub (Settings → Environments → Roster → Secrets):
 #   ROSTER_SSH_KEY — приватный ключ с доступом к VPS и Pi (как ~/.ssh/id_ed25519_roster)
 
 name: Deploy to Pi
@@ -17,6 +17,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: Roster
     steps:
       - uses: actions/checkout@v4
 
