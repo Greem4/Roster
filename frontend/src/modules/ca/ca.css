@@ -89,9 +89,197 @@
   }
 }
 
-@media (max-width: 560px) {
+/* Строка «год + месяцы» — только на телефоне (см. @media ниже). */
+.ca-mobile-bar {
+  display: none;
+}
+
+/*
+ * Телефон: заголовок страницы прячется (модуль уже назван в шапке), вместо него —
+ * одна тонкая прилипшая строка: слева «‹ 2026 ›», справа лента месяцев со свайпом.
+ * Под ней один месяц на всю ширину, месяцы листаются свайпом (scroll-snap).
+ */
+@media (max-width: 640px) {
+  .ca-page__header {
+    display: none;
+  }
+
+  .ca-mobile-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: -1rem -1rem 0.75rem;
+    padding: 0.5rem 0 0.5rem 1rem;
+    background: rgba(9, 9, 11, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .ca-year-picker--compact {
+    flex-shrink: 0;
+    gap: 0;
+    padding: 0.1rem;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+
+  .ca-year-picker--compact .ca-year-picker__btn {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 1rem;
+  }
+
+  .ca-year-picker--compact .ca-year-picker__value {
+    min-width: 2.6rem;
+    font-size: 0.875rem;
+  }
+
+  .ca-month-strip {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    gap: 0.3rem;
+    padding-right: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Мягкий край — видно, что лента листается. */
+    mask-image: linear-gradient(90deg, transparent 0, #000 0.6rem, #000 calc(100% - 1.25rem), transparent 100%);
+  }
+
+  .ca-month-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ca-month-strip__chip {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 1.95rem;
+    padding: 0 0.65rem;
+    font: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+
+  .ca-month-strip__chip--active {
+    color: var(--ca-selected-text);
+    background: linear-gradient(180deg, var(--ca-primary) 0%, var(--ca-primary-deep) 100%);
+    box-shadow: 0 2px 8px var(--ca-glow);
+  }
+
+  .ca-month-strip__count {
+    min-width: 1rem;
+    padding: 0 0.25rem;
+    font-size: 0.625rem;
+    line-height: 1rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    color: var(--ca-primary);
+    background: var(--ca-primary-soft);
+    border-radius: 999px;
+  }
+
+  /* Текущий месяц — точка под названием, пока он не выбран. */
+  .ca-month-strip__chip--today:not(.ca-month-strip__chip--active) {
+    position: relative;
+    color: var(--ca-primary);
+  }
+
+  .ca-month-strip__chip--today:not(.ca-month-strip__chip--active)::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0.1rem;
+    width: 0.25rem;
+    height: 0.25rem;
+    margin-left: -0.125rem;
+    border-radius: 50%;
+    background: var(--ca-primary);
+  }
+
+  /* «Сегодня» — справа в строке, только когда ушли с текущего месяца/года. */
+  .ca-today-btn {
+    flex-shrink: 0;
+    height: 1.95rem;
+    margin-right: 0.75rem;
+    padding: 0 0.7rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ca-primary);
+    background: var(--ca-primary-soft);
+    border: 1px solid var(--ca-border-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    animation: ca-today-in 0.18s ease;
+  }
+
+  .ca-today-btn:active {
+    transform: scale(0.94);
+  }
+
+  @keyframes ca-today-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+  }
+
+  .ca-month-strip__chip--active .ca-month-strip__count {
+    color: var(--ca-selected-text);
+    background: color-mix(in srgb, #fff 22%, transparent);
+  }
+
   .ca-year-calendar__grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    align-items: flex-start;
+  }
+
+  .ca-year-calendar__grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ca-year-calendar__grid > .ca-month {
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* Крупные дни — под палец. */
+  .ca-month__grid,
+  .ca-month__weekdays {
+    gap: 0.3rem;
+  }
+
+  .ca-month__day {
+    min-height: 2.75rem;
+    aspect-ratio: auto;
+    font-size: 1rem;
+  }
+
+  .ca-month__weekday {
+    padding: 0.2rem 0;
+    font-size: 0.7rem;
   }
 }
 
@@ -270,14 +458,26 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  /* Телефон: быстрый второй тап не превращается в зум, подсветка тапа не мигает. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   transition:
     color 0.12s ease,
     background 0.12s ease,
-    box-shadow 0.12s ease;
+    box-shadow 0.12s ease,
+    transform 0.08s ease;
 }
 
-.ca-month__day:hover:not(.ca-month__day--empty) {
-  background: var(--ca-primary-soft);
+/* Hover только там, где есть мышь: на тач-экране он залипал и снятый день выглядел выделенным. */
+@media (hover: hover) {
+  .ca-month__day:hover:not(.ca-month__day--empty):not(.ca-month__day--selected) {
+    background: var(--ca-primary-soft);
+  }
+}
+
+.ca-month__day:active:not(.ca-month__day--empty) {
+  transform: scale(0.9);
 }
 
 .ca-month__day--empty {

@@ -1,9 +1,12 @@
 /**
- * Переключатель года для годового календаря RosterCA.
+ * Переключатель года для годового календаря RosterCA. compact — в строке месяцев на телефоне.
  */
-export default function YearPicker({ year, onChange }) {
+export default function YearPicker({ year, onChange, compact = false }) {
   return (
-    <div className="ca-year-picker roster-page-toolbar__action" aria-label="Год">
+    <div
+      className={compact ? 'ca-year-picker ca-year-picker--compact' : 'ca-year-picker roster-page-toolbar__action'}
+      aria-label="Год"
+    >
       <button
         type="button"
         className="ca-year-picker__btn"
