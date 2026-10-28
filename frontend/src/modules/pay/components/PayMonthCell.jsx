@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { formatMoney } from '../utils/formatMoney'
+import { parseAmount } from '../utils/parseAmount'
 
 /**
  * Ячейка месяца: несколько сумм и итог под полями.
@@ -10,6 +12,7 @@ import { formatMoney } from '../utils/formatMoney'
  * @param {(amounts: string[]) => void} props.onChange
  * @param {() => void} props.onAddLine
  * @param {(index: number) => void} props.onRemoveLine
+ * @param {boolean} [props.defaultOpen] — на телефоне месяц раскрыт сразу (текущий)
  */
 export default function PayMonthCell({
   label,
@@ -19,14 +22,17 @@ export default function PayMonthCell({
   onChange,
   onAddLine,
   onRemoveLine,
+  defaultOpen = false,
 }) {
+  // Телефон: месяц — строка «название · сумма», поля раскрываются по нажатию. На десктопе всегда открыто (CSS).
+  const [open, setOpen] = useState(defaultOpen)
   const total = amounts.reduce((sum, raw) => {
-    const n = Number(raw)
+    const n = parseAmount(raw)
     return sum + (Number.isNaN(n) ? 0 : n)
   }, 0)
   const showTotal = total > 0 || amounts.length > 1
   const filledAmounts = amounts
-    .map((s) => Number(s))
+    .map((s) => parseAmount(s))
     .filter((n) => !Number.isNaN(n) && n > 0)
 
   const updateLine = (index, value) => {
@@ -57,16 +63,30 @@ export default function PayMonthCell({
   }
 
   return (
-    <div className="pay-month-cell">
-      <span className="pay-month-cell__label">{label}</span>
+    <div className={`pay-month-cell${open ? ' pay-month-cell--open' : ''}`}>
+      <button
+        type="button"
+        className="pay-month-cell__head"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className="pay-month-cell__label">{label}</span>
+        <span className={`pay-month-cell__head-total${total > 0 ? '' : ' muted'}`}>
+          {total > 0 ? formatMoney(total, currency) : '—'}
+        </span>
+        <svg className="pay-month-cell__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
       <div className="pay-month-cell__lines">
         {amounts.map((value, index) => (
           <div key={index} className="pay-month-cell__line">
             <input
               className="input pay-month-cell__input"
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
+              enterKeyHint="done"
+              autoComplete="off"
               placeholder="0"
               value={value}
               onChange={(e) => updateLine(index, e.target.value)}
@@ -90,7 +110,7 @@ export default function PayMonthCell({
           onClick={onAddLine}
           aria-label={`Добавить сумму, ${label}`}
         >
-          +
+          +<span className="pay-month-cell__add-text"> сумма</span>
         </button>
       </div>
       {showTotal && (

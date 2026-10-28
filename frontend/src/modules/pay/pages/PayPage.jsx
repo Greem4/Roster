@@ -7,6 +7,7 @@ import PayMonthlyChart from '../components/PayMonthlyChart'
 import { PERM_PAY_MANAGE } from '../constants'
 import { MONTH_LABELS, MONTH_NAMES } from '../constants/months'
 import { formatMoney } from '../utils/formatMoney'
+import { parseAmount } from '../utils/parseAmount'
 import '../pay.css'
 
 const currentYear = () => new Date().getFullYear()
@@ -24,7 +25,7 @@ function emptyMonths(year) {
 /** Сумма по строковым полям месяца. */
 function monthTotal(amounts) {
   return amounts.reduce((sum, raw) => {
-    const n = Number(raw)
+    const n = parseAmount(raw)
     return sum + (Number.isNaN(n) ? 0 : n)
   }, 0)
 }
@@ -34,7 +35,7 @@ function amountsForApi(amounts) {
   return amounts
     .map((s) => s.trim())
     .filter((s) => s !== '')
-    .map((s) => Number(s))
+    .map((s) => parseAmount(s))
     .filter((n) => !Number.isNaN(n) && n >= 0)
 }
 
@@ -52,6 +53,9 @@ export default function PayPage() {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [savedHint, setSavedHint] = useState('')
+  // Есть несохранённые правки — на телефоне показывается плавающая кнопка «Сохранить».
+  const [dirty, setDirty] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
 
   const load = useCallback(async (y) => {
     setError('')
@@ -78,6 +82,7 @@ export default function PayPage() {
         }),
       )
       if (rows[0]?.currency) setCurrency(rows[0].currency)
+      setDirty(false)
     } catch (e) {
       setError(e.message || 'Не удалось загрузить данные')
     } finally {
@@ -99,9 +104,8 @@ export default function PayPage() {
       const amount = monthTotal(m.amounts)
       return {
         label: MONTH_LABELS[index],
+        fullLabel: MONTH_NAMES[index],
         amount,
-        // Чуть выше столбца (~8%), чтобы линия не слипалась с вершиной.
-        lineAmount: amount > 0 ? amount * 1.08 : 0,
       }
     })
   }, [months])
@@ -116,6 +120,7 @@ export default function PayPage() {
       prev.map((row) => (row.month === month ? { ...row, amounts } : row)),
     )
     setSavedHint('')
+    setDirty(true)
   }
 
   const onAddLine = (month) => {
@@ -125,6 +130,7 @@ export default function PayPage() {
       ),
     )
     setSavedHint('')
+    setDirty(true)
   }
 
   const onRemoveLine = (month, index) => {
@@ -135,6 +141,7 @@ export default function PayPage() {
       }),
     )
     setSavedHint('')
+    setDirty(true)
   }
 
   const onSave = async () => {
@@ -168,6 +175,8 @@ export default function PayPage() {
         .filter(Boolean)
       await Promise.all(tasks)
       setSavedHint('Сохранено')
+      setJustSaved(true)
+      window.setTimeout(() => setJustSaved(false), 2000)
       await load(year)
     } catch (e) {
       setError(e.message || 'Не удалось сохранить')
@@ -214,10 +223,11 @@ export default function PayPage() {
 
       <section className="pay-salary" aria-label="Зарплата по месяцам">
         <div className="pay-salary__toolbar">
-          <div>
+          <div className="pay-salary__summary">
             <h2 className="pay-salary__heading">{year} год</h2>
             <p className="pay-salary__total muted">
-              Итого за год:{' '}
+              <span className="pay-salary__total-label">Итого за год</span>
+              <span className="pay-salary__total-sep">:</span>{' '}
               <strong className="pay-salary__total-value">
                 {formatMoney(yearTotal, currency)}
               </strong>
@@ -241,8 +251,9 @@ export default function PayPage() {
         <div className="pay-salary__grid">
           {months.map((row, index) => (
             <PayMonthCell
-              key={row.month}
+              key={`${year}-${row.month}`}
               label={MONTH_NAMES[index]}
+              defaultOpen={year === currentYear() && row.month === new Date().getMonth() + 1}
               amounts={row.amounts}
               canManage={canManage}
               currency={currency}
@@ -254,8 +265,20 @@ export default function PayPage() {
         </div>
       </section>
 
+      {canManage && (dirty || saving || justSaved) && (
+        <div className="pay-savebar" role="status">
+          {justSaved && !dirty ? (
+            <span className="pay-savebar__done">✓ {savedHint}</span>
+          ) : (
+            <button type="button" className="pay-savebar__btn" disabled={saving} onClick={onSave}>
+              {saving ? 'Сохранение…' : 'Сохранить'}
+            </button>
+          )}
+        </div>
+      )}
+
       <section className="pay-chart" aria-label="График зарплаты по месяцам">
-        <h2 className="pay-chart__heading">Динамика по месяцам</h2>
+        <h2 className="pay-chart__heading">По месяцам</h2>
         <PayMonthlyChart data={chartData} currency={currency} />
       </section>
     </div>

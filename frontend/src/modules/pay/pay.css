@@ -282,15 +282,111 @@
 .pay-chart__tooltip-value {
   margin: 0;
   font-weight: 600;
-  color: var(--color-accent-text);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
 }
 
+.pay-chart__tooltip {
+  white-space: nowrap;
+}
+
+/* Две цифры над графиком: среднее и лучший месяц. */
+.pay-chart__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.pay-chart__stat {
+  padding: 0.65rem 0.8rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pay-chart__stat dt {
+  margin: 0 0 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.pay-chart__stat dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.4rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* Пунктир в подписи «В среднем» — легенда к пунктиру на графике. */
+.pay-chart__avg-swatch {
+  display: inline-block;
+  width: 0.9rem;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+  border-top: 2px dashed #a1a1aa;
+  opacity: 0.8;
+}
+
+.pay-chart__stat-note {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Шапка месяца: на десктопе — просто подпись; сумма, стрелка и раскрытие — только на телефоне. */
+.pay-month-cell__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: none;
+  pointer-events: none;
+}
+
+.pay-month-cell__head-total,
+.pay-month-cell__chevron,
+.pay-month-cell__add-text,
+.pay-savebar {
+  display: none;
+}
+
+/*
+ * Телефон, тёмная тема: год — тонкая прилипшая строка, итог за год — крупная карточка,
+ * месяцы — список строк «месяц · сумма», поля раскрываются по нажатию;
+ * «Сохранить» — плавающая кнопка внизу, только когда есть правки.
+ */
 @media (max-width: 640px) {
+  .pay-page {
+    padding: 0 0 6rem;
+  }
+
   .pay-page__header.roster-page-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     flex-wrap: nowrap;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin: -1rem -1rem 0.85rem;
+    padding: 0.5rem 1rem;
+    background: rgba(9, 9, 11, 0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
 
   .pay-page__intro {
@@ -298,6 +394,263 @@
   }
 
   .pay-page__header .pay-year-picker {
-    margin-left: auto;
+    margin: 0;
+    padding: 0.1rem;
+    border-radius: 999px;
+  }
+
+  .pay-page__header .pay-year-picker__btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    touch-action: manipulation;
+  }
+
+  .pay-page__header .pay-year-picker__value {
+    min-width: 3.5rem;
+    font-size: 1rem;
+  }
+
+  /* Блок месяцев без рамки — карточки сами по себе. */
+  .pay-salary {
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  /* Итог за год — крупная карточка с мягким акцентным свечением. */
+  .pay-salary__toolbar {
+    display: block;
+    margin-bottom: 0.85rem;
+    padding: 1.1rem 1.15rem 1.2rem;
+    background:
+      radial-gradient(120% 140% at 0% 0%, var(--color-accent-soft) 0%, transparent 60%),
+      var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .pay-salary__heading,
+  .pay-salary__total-sep,
+  .pay-salary__actions {
+    display: none;
+  }
+
+  .pay-salary__total {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .pay-salary__total-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .pay-salary__total-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Месяцы — список строк. */
+  .pay-salary__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .pay-month-cell {
+    gap: 0;
+    padding: 0;
+    background: var(--color-surface-raised);
+    border-color: var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+  }
+
+  .pay-month-cell--open {
+    border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  }
+
+  .pay-month-cell__head {
+    min-height: 3.25rem;
+    padding: 0 0.95rem;
+    pointer-events: auto;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pay-month-cell__head:active {
+    background: var(--color-surface-elevated);
+  }
+
+  .pay-month-cell__label {
+    flex: 1;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .pay-month-cell__head-total {
+    display: inline;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+  }
+
+  .pay-month-cell__chevron {
+    display: block;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform 0.2s ease;
+  }
+
+  .pay-month-cell--open .pay-month-cell__chevron {
+    transform: rotate(180deg);
+  }
+
+  .pay-month-cell:not(.pay-month-cell--open) .pay-month-cell__lines,
+  .pay-month-cell:not(.pay-month-cell--open) .pay-month-cell__sum,
+  .pay-month-cell--open .pay-month-cell__sum {
+    display: none;
+  }
+
+  .pay-month-cell__lines {
+    gap: 0.45rem;
+    padding: 0.25rem 0.95rem 0.95rem;
+  }
+
+  .pay-month-cell__line {
+    gap: 0.4rem;
+  }
+
+  /* 16px — iOS не зумит страницу при фокусе. */
+  .pay-month-cell__input {
+    height: 2.875rem;
+    padding: 0 0.85rem;
+    font-size: 1rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+  }
+
+  .pay-month-cell__remove {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.35rem;
+    touch-action: manipulation;
+  }
+
+  .pay-month-cell__add {
+    align-self: stretch;
+    width: auto;
+    height: 2.5rem;
+    font-size: 0.875rem;
+    border: 1px dashed color-mix(in srgb, var(--color-accent) 40%, transparent);
+    background: transparent;
+    touch-action: manipulation;
+  }
+
+  .pay-month-cell__add-text {
+    display: inline;
+  }
+
+  /* Только просмотр: та же строка «месяц · сумма», разбивка под ней. */
+  .pay-month-cell--readonly {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.6rem 0.95rem;
+  }
+
+  .pay-month-cell--readonly .pay-month-cell__total,
+  .pay-month-cell--readonly .pay-month-cell__empty {
+    justify-self: end;
+    font-size: 0.9375rem;
+  }
+
+  .pay-month-cell--readonly .pay-month-cell__breakdown {
+    grid-column: 1 / -1;
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  /* Плавающая «Сохранить» над нижним краем, с учётом выреза. */
+  .pay-savebar {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
+    z-index: 60;
+    display: flex;
+    justify-content: center;
+    animation: pay-savebar-in 0.2s ease;
+  }
+
+  .pay-savebar__btn {
+    width: 100%;
+    height: 3.25rem;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #04201c;
+    background: var(--color-accent);
+    border: none;
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(45, 212, 191, 0.4);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .pay-savebar__btn:disabled {
+    opacity: 0.7;
+  }
+
+  .pay-savebar__done {
+    padding: 0.7rem 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  }
+
+  @keyframes pay-savebar-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+
+  .pay-chart {
+    margin-top: 1rem;
+    padding: 1rem 0.85rem 0.75rem;
+  }
+
+  .pay-chart__stat {
+    padding: 0.6rem 0.7rem;
+  }
+
+  .pay-chart__stat dd {
+    font-size: 0.95rem;
+  }
+
+  /* Палец по графику — без выделения текста и зума. */
+  .pay-chart__wrap {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
