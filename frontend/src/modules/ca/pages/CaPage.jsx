@@ -85,6 +85,8 @@ export default function CaPage() {
 
       <YearCalendar
         year={year}
+        yearControl={<YearPicker year={year} onChange={onYearChange} compact />}
+        onGoToCurrentYear={() => setYear(currentYear())}
         selectedDates={selectedDates}
         filledMonths={filledMonths}
         onToggleDay={onToggleDay}

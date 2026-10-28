@@ -18,7 +18,9 @@
 ## API
 
 - `app/api/medicines.py` — CRUD `/medicines` (БД `roster_rx`)
-- `app/api/alerts.py` — `/alerts/expiring`
+  - удаление мягкое: `DELETE` ставит `deleted_at`, строка остаётся; `GET /medicines?deleted=true` — вкладка «Удалённые»; `POST /medicines/{id}/restore` — вернуть
+  - серия уникальна и у удалённых: создать такую же нельзя, удалённую надо восстановить
+- `app/api/alerts.py` — `/alerts/expiring` (без удалённых)
 - Схемы: `app/schemas/medicine.py`, `app/schemas/alert.py`
 - Права: `app/rx/permissions.py` — `users:manage` (`PERM_RX_MANAGE`)
 
