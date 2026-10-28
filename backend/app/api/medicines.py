@@ -1,6 +1,6 @@
 """HTTP API модуля RosterRX: CRUD лекарств. Домен — app.rx, модель Medicine."""
 
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -21,11 +21,17 @@ def _normalize_series(series: str) -> str:
     return series.strip()[:128]
 
 
-def _series_taken(db: Session, series: str, exclude_id: int | None = None) -> bool:
-    q = db.query(RxMedicine.id).filter(RxMedicine.series == series)
+def _series_conflict(db: Session, series: str, exclude_id: int | None = None) -> str | None:
+    """Текст 409, если серия занята; удалённые тоже держат серию — их восстанавливают."""
+    q = db.query(RxMedicine.deleted_at).filter(RxMedicine.series == series)
     if exclude_id is not None:
         q = q.filter(RxMedicine.id != exclude_id)
-    return q.first() is not None
+    row = q.first()
+    if row is None:
+        return None
+    if row.deleted_at is not None:
+        return "Лекарство с такой серией есть в удалённых — восстановите его"
+    return "Лекарство с такой серией уже есть"
 
 def _days_until(expiry: date) -> int:
     return (expiry - date.today()).days
@@ -39,6 +45,7 @@ def _to_response(m: RxMedicine) -> MedicineResponse:
         expiry_date=m.expiry_date,
         created_at=m.created_at,
         updated_at=m.updated_at,
+        deleted_at=m.deleted_at,
         days_until_expiry=_days_until(m.expiry_date),
     )
 
@@ -48,8 +55,13 @@ def list_medicines(
     db: Annotated[Session, Depends(get_rx_db)],
     sort: str = Query(default="expiry_date"),
     expiring_within: int | None = None,
+    deleted: bool = Query(default=False, description="true — вкладка «Удалённые»"),
 ):
     q = db.query(RxMedicine)
+    if deleted:
+        q = q.filter(RxMedicine.deleted_at.is_not(None))
+    else:
+        q = q.filter(RxMedicine.deleted_at.is_(None))
     if expiring_within is not None:
         limit = date.today().toordinal() + expiring_within
         q = q.filter(RxMedicine.expiry_date <= date.fromordinal(limit))
@@ -69,11 +81,9 @@ def create_medicine(
     user: Annotated[User, Depends(require_admin)],
 ):
     series = _normalize_series(body.series)
-    if _series_taken(db, series):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Лекарство с такой серией уже есть",
-        )
+    conflict = _series_conflict(db, series)
+    if conflict:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=conflict)
     medicine = RxMedicine(
         name=body.name.strip()[:255],
         series=series,
@@ -118,11 +128,9 @@ def update_medicine(
         medicine.name = body.name.strip()[:255]
     if body.series is not None:
         series = _normalize_series(body.series)
-        if _series_taken(db, series, exclude_id=medicine.id):
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Лекарство с такой серией уже есть",
-            )
+        conflict = _series_conflict(db, series, exclude_id=medicine.id)
+        if conflict:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=conflict)
         medicine.series = series
     if body.expiry_date is not None:
         medicine.expiry_date = body.expiry_date
@@ -144,8 +152,26 @@ def delete_medicine(
     db: Annotated[Session, Depends(get_rx_db)],
     _: Annotated[User, Depends(require_admin)],
 ):
+    """Мягкое удаление: позиция уходит во вкладку «Удалённые», строка в БД остаётся."""
     medicine = db.get(RxMedicine, medicine_id)
     if not medicine:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    db.delete(medicine)
-    db.commit()
+    if medicine.deleted_at is None:
+        medicine.deleted_at = datetime.now(timezone.utc)
+        db.commit()
+
+
+@router.post("/{medicine_id}/restore", response_model=MedicineResponse)
+def restore_medicine(
+    medicine_id: int,
+    db: Annotated[Session, Depends(get_rx_db)],
+    _: Annotated[User, Depends(require_admin)],
+):
+    medicine = db.get(RxMedicine, medicine_id)
+    if not medicine:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    if medicine.deleted_at is not None:
+        medicine.deleted_at = None
+        db.commit()
+        db.refresh(medicine)
+    return _to_response(medicine)

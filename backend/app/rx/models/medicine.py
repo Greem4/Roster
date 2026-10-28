@@ -28,3 +28,5 @@ class RxMedicine(RxBase):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+    # Мягкое удаление: строка остаётся в реестре и видна во вкладке «Удалённые».
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)

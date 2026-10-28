@@ -16,6 +16,7 @@ export const rxApi = {
     update: (id, body) =>
       apiRequest(`/medicines/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: (id) => apiRequest(`/medicines/${id}`, { method: 'DELETE' }),
+    restore: (id) => apiRequest(`/medicines/${id}/restore`, { method: 'POST' }),
   },
   alerts: {
     expiring: (days) => {

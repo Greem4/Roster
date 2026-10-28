@@ -28,6 +28,7 @@ def expiring_alerts(
 
     medicines = (
         db.query(RxMedicine)
+        .filter(RxMedicine.deleted_at.is_(None))
         .filter(RxMedicine.expiry_date <= date.fromordinal(today.toordinal() + max_days))
         .order_by(RxMedicine.expiry_date.asc())
         .all()
